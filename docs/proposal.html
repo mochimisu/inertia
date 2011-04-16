@@ -1,0 +1,48 @@
+<h1>AS10</h1>
+<p>Final Project Proposal.</p>
+<p>Group:
+<ul>
+  <li><a href="http://inst.eecs.berkeley.edu/~cs184-di/"
+  target="_blank">Brandon Wang (cs184-di)</a></li>
+  <li><a href="http://inst.eecs.berkeley.edu/~cs184-ei/"
+  target="_blank">Andrew Lee (cs184-ei)</a></li>
+  <li><a href="http://inst.eecs.berkeley.edu/~cs184-ew/"
+  target="_blank">Chris Tandiono (cs184-ew)</a></li>
+</ul></p>
+
+<h1>Inertia</h1>
+<p>We propose to create a futuristic racing game reminiscent of F-Zero
+for SNES <sup>(<a href="#r1">1</a>)</sup>. We plan to utilize the concepts learned in CS184 to
+create a modern game with similar gameplay, akin to WipEout HD for PS3
+<sup>(<a href="#r2">2</a>)</sup>. The design challenge is to allow the user to interface to play
+the game, rendering the graphics with modern techniques, and
+maintaining an acceptable framerate on typical computers. We plan to
+extend our classical rendering pipeline from AS7/AS8 to include
+arbitrary movement with an independent velocity vector and friction
+coefficients of a racing ship on a b-spline track. The ship will allow
+for quaternion rotations based on a function of velocity,
+acceleration, and a friction coefficient. Furthermore, we will build
+upon general rendering techniques by adding soft shadows<sup>(<a href="#r3">3</a>)(<a href="#r4">4</a>)</sup>, HUD
+rendering, and light scattering <sup>(<a href="#r5">5</a>)</sup><sup>(<a href="#r6">6</a>)</sup>. For these topics, we will
+investigate multiple methods to attain acceptable performance. If time
+permits, we may pursue a motion blur effect <sup>(<a href="#r7">7</a>)</sup>, or add multi-player
+functionality.</p>
+
+<h1>References</h1>
+<ol>
+  <li id="r1"><a href="http://www.youtube.com/watch?v=2T5u9nD_I0I"
+  target="_blank">F-Zero SNES (YouTube Video)</a></li>
+  <li id="r2"><a href="http://www.youtube.com/watch?v=UeJpDQKFOSI"
+  target="_blank">WipEout HD Demonstration (YouTube Video)</a></li>
+  <li id="r3"><a href="http://developer.download.nvidia.com/shaderlibrary/docs/shadow_PCSS.pdf"
+  target="_blank">Percentage-Closer Soft Shadows</a></li>
+  <li id="r4"><a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.104.2569&rep=rep1&type=pdf"
+  target="_blank">Variance Shadow Maps</a></li>
+  <li id="r5"><a href="http://www.cs.berkeley.edu/~sequin/CS184/AS_2011/031-delalandre.pdf"
+  target="_blank">Transmittance Function Mapping</a></li>
+  <li id="r6"><a href="http://www.cs.berkeley.edu/~sequin/CS184/AS_2011/039-chen.pdf"
+  target="_blank">Real-Time Volumetric Shadows using 1D Min-Max Mipmaps</a></li>
+  <li id="r7"><a href="http://www2.disney.co.uk/cms_res/blackrockstudio/pdf/SSMBNotes.pdf"
+  target="_blank">Split-Second Motion Blur</a></li>
+</ol>
+  
