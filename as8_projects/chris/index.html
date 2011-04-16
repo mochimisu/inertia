@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Chris's Awesome CS184 AS8</title>
+</head>
+<body>
+<div id="content">
+<h1>Chris's Awesome CS184 AS8</h1>
+<p>For AS8, I completed the minimum requirements of rendering a sweep with texture and bump mapping, as well as both Phong and Gouraud shading models.</p>
+<img src="pretzel_gouraud.png">
+<p>In the above image, only Gouraud shading is enabled. Despite the high polygon count, there is still visible banding of the specular highlight.</p>
+<img src="pretzel_phong.png">
+<p>In the above image, only Phong shading is enabled. It has the same polygon count as the above image but the image quality is much improved.</p>
+<img src="pretzel_texture.png">
+<p>In the above image, Phong shading is used to render a texture-mapped object.</p>
+<img src="pretzel_texturebump.png">
+<p>In the above image, Phong shading is used to render a bump-mapped object.</p>
+<img src="animation.gif">
+<p>In the above animation, the pretzel is rotated around. It has toon shading, displacement mapping, texturemapping , and bump mapping neabled.</p>
+
+<p>From the above images it should be fairly clear that the minimum requirements for the <i>renderer</i> are complete.</p>
+
+<img src="regular_pretzel.png" width=500>
+<p>In the above image, a pretzel sweep is rendered with displacement mapping. You can clearly see the salt coming out of the pretzel, in contrast to the boring bump mapped version (not shown). You can download the .trk file <a href="pretzel.trk">here</a> and the texture/bump map <a href="pretzel.png">here</a>.</p>
+<img src="cartoon_pretzel.png" width=500>
+<p>In the above image, the pretzel sweep above is rendered with toon-ish shading instead.</p>
+
+<p>Below are some images I made by scanning in a real homecoming wristband, then making it the texture for the sweep (<a href="homecoming.trk">trk</a>, <a href="lame_texture.jpg">texture</a>, <a href="lame_bump.jpg">bump</a>):</p>
+
+<img src="homecoming.png" width=500>
+<img src="homecoming2.png" width=500>
+<img src="homecoming3.png">
+
+<h2>Summary of useful keys</h2>
+<p>h: toon shading</p>
+<p>d: displacement mapping</p>
+<p>w: shaders</p>
+
+<h2>Extra credit</h2>
+<p>Below you can find a summary of the extra credit demoed above.</p>
+
+<ul>
+<li>Dynamic recompilation of shaders based on options: inspired by the ATI SDK parallax mapping demo, I implemented dynamic recompilation of shader programs to avoid excessive, expensive branching in the shader. This enables even displacement mapping to be rendered at more than 20 frames per second even with a very bad GPU (see below under Mac OS X), even with 40 samples per point in both the length-wise and around directions</li>
+<li>Displacement mapping: displacement mapping according to the height map is implemented. Parallax mapping, a cheaper but slightly inferior-looking version, is NOT implemented.</li>
+<li>Toon shading: by pressing "h", one can enable/disable toon shading, which merely discretizes the light levels that can be taken by the object. The Phong number has to be increased to make it look shiny instead of just weird.</li>
+<li>"Back"-face culling: (really culls the front faces because it's whack) culls the invisible faces for faster rendering</li>
+</ul>
+<p>The program has been tested on the following platforms:</p>
+<ul>
+	<li>Mac OS X Intel, with a GMA 950 "GPU". Yes, it runs on this chip, which is present in many netbooks as well. However, it actually only runs on this chip in Mac OS X because Apple somehow managed to get significantly better drivers for the GMA 950 in Mac OS X. However, OpenGL causes frequent crashes if settings are changed too often. The dynamic recompilation of shaders merely enables all the fancy stuff to show up at once.</li>
+	<li>Windows 7, with an ATI Radeon HD 5450 and an ATI Radeon HD 4890.</li>
+</ul>
+</div>
+</body>
+</html>
