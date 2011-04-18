@@ -133,13 +133,12 @@ void main()
 
 
   //SHADOWS
-
   if(shadowMapEnabled) {
     if (shadowCoord.w > 0.0) {
       if(pcfEnabled) {
 	float x,y;
 	shadow = 0.0;
-	/*	
+	/*	 smaller kernel for smaller blur
 		for (y = -3.5 ; y <=3.5 ; y+=1.0)
 		for (x = -3.5 ; x <=3.5 ; x+=1.0)
 	*/
@@ -150,10 +149,7 @@ void main()
 	    shadow += lookupShadow(vec2(x,y));
 	shadow /= 64.0;
 	shadow += 0.2;
-	//shadow *= 0.5;
-	//shadow += 0.5;
 	
-
       } else {
 	//no need to recompute
 	shadow = distanceFromLight < shadowCoordinateWdivide.z ? 0.5 : 1.0 ;
@@ -180,12 +176,10 @@ void main()
     vec3 normal;
   
     if (bumpMapEnabled) {
-      // @TODO: put in a correct normal here
       normal = normalize ( (texture2D(normalMap, gl_TexCoord[0].st).xyz) - vec3(0.5));
     } else {
       normal = vec3(0,0,1);
     }
-    // @TODO: transform normal in to eye space
     normal = mat3(normalize(t),normalize(b),normalize(n)) * normal;
     normal = normalize(normal);
     // HINT: also use the normalize() function to normalize things
@@ -212,25 +206,20 @@ void main()
     color = cr * (ca + cl * max(0.0,dot(normal,l))) + 
       cl * pow(max(0.0,dot(r,-e)),p);
 
+// Environment mapping: hardcoded to be disabled by default; has warnings about loading the same texture
+/*
     if(envEnabled) {
       vec3 reflected = normalize(reflect(l,normal));
-      //color = mix(color,textureCube(skyMap,reflected),0.5);
+      color = mix(color,textureCube(skyMap,reflected),0.5);
     }
-
+*/
   } else {
 
     color = cr * gouradColorDiffuse + gouradColorSpecular;
   }
 
-
-
-
-
   // set the output color to what we've computed
   gl_FragColor = shadow * color * ao;
   if(dispAmbientLayer)
     gl_FragColor = vec4(ao,ao,ao,1);
-
-
-  //gl_FragColor = textureCube(skyMap, vec3(0,0,0));
 }
