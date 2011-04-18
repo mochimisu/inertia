@@ -83,4 +83,8 @@ void main()
 
   shadowCoord= gl_TextureMatrix[4] * gl_Vertex;
 
+
+
+		gl_FrontColor = gl_Color;
+
 }

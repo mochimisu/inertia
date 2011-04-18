@@ -47,6 +47,8 @@ class Shader {
   bool isEnv() { return envEnabled; }
 
   void setPixelOffset(float x, float y) { xPixelOffset = x; yPixelOffset = y; }
+  GLint getXPixelOffsetAttrib() { return xPixelOffsetUniform; }
+  GLint getYPixelOffsetAttrib() { return yPixelOffsetUniform; }
   
 
   GLint getTangentAttrib() { return tangentAttrib; }
@@ -54,6 +56,12 @@ class Shader {
 
   GLhandleARB getProgram() { return program; }
   GLint getShadowMapAttrib() { return shadowMapUniform; }
+
+  GLint getScaleAttrib() { return scaleUniform; }
+  GLint getTextureSourceAttrib() { return textureSourceUniform; }
+
+  void setScale(float x, float y) { scaleU = x; scaleUb = y; }
+  void setTextureSource(int a) { textureSource = a; } 
 
   bool on() { return shadersOn; }
 
@@ -71,6 +79,9 @@ class Shader {
       glUniform1fARB(xPixelOffsetUniform, xPixelOffset);
       glUniform1fARB(yPixelOffsetUniform, yPixelOffset);
       glUniform1iARB(envEnabledUniform, envEnabled);
+
+      glUniform2fARB(scaleUniform,scaleU,scaleUb);
+      glUniform1iARB(textureSourceUniform, textureSource);
     } else {
       glUseProgramObjectARB(0);
     }
@@ -78,6 +89,8 @@ class Shader {
 
  private:
   bool shadersFailed;
+
+  GLhandleARB shadowShaderProgram, blurShaderProgram;
   GLhandleARB program; // shaders
   GLint tangentAttrib, bitangentAttrib; // tangent space for uploading to shaders
   GLint bumpMapEnabledUniform, textureMapEnabledUniform, phongEnabledUniform;
@@ -92,6 +105,12 @@ class Shader {
 
   bool bumpMapEnabled, textureMapEnabled, phongEnabled;
   bool shadersOn;
+
+  //blur shader
+  GLint scaleUniform, textureSourceUniform;
+
+  float scaleU,scaleUb;
+  int textureSource;
 };
 
 #endif 

@@ -131,6 +131,12 @@ Shader::Shader(string vertProg, string fragProg) {
   xPixelOffset = 0.01;
   yPixelOffset = 0.01;
 
+  scaleU = 0;
+  scaleUb = 0;
+  textureSource = 0;
+
+  //for blur shader
+
   // set up variables for the shaders to use
   glUseProgramObjectARB(program);
   glUniform1iARB(glGetUniformLocationARB(program, "textureMap"), 0);
@@ -151,9 +157,10 @@ Shader::Shader(string vertProg, string fragProg) {
   dispAmbientLayerUniform = glGetUniformLocationARB(program,"dispAmbientLayer");
   pcfEnabledUniform = glGetUniformLocationARB(program,"pcfEnabled");
   envEnabledUniform = glGetUniformLocationARB(program,"envEnabled");
-
   
   xPixelOffsetUniform = glGetUniformLocationARB(program,"xPixelOffset");
   yPixelOffsetUniform = glGetUniformLocationARB(program,"yPixelOffset");
-}
 
+  scaleUniform = glGetUniformLocationARB(program,"ScaleU");
+  textureSourceUniform = glGetUniformLocationARB(program,"textureSource");
+}

@@ -23,11 +23,12 @@ varying vec4 gouradColorSpecular;
 
 varying vec4 shadowCoord;
 
+
 float lookupShadow(vec2 offset) {
   vec4 shadowCoordinateWdivide;
   shadowCoordinateWdivide = shadowCoord / shadowCoord.w ;
   vec4 shadowCoordWdivideOffset = shadowCoordinateWdivide+vec4(offset.x*xPixelOffset,offset.y*yPixelOffset, 0.00, 0.0);
-  shadowCoordWdivideOffset.z += 0.002;
+  //shadowCoordWdivideOffset.z += 0.002;
   //vec4 shadowCoordWdivideOffset = shadowCoordinateWdivide+vec4(offset.x,offset.y, 0.05, 0.0);
   float distanceFromLight = texture2D(shadowMap,shadowCoordWdivideOffset.st).z;
   if(distanceFromLight < shadowCoordWdivideOffset.z)
@@ -35,6 +36,28 @@ float lookupShadow(vec2 offset) {
   else
     return 1.0;
 }
+
+
+
+float chebyshevUpperBound(vec4 shadowCoordTrans)
+{
+	vec2 moments = texture2D(shadowMap,shadowCoordTrans.xy).rg;
+	
+	// Surface is fully lit. as the current fragment is before the light occluder
+	if (shadowCoordTrans.z <= moments.x)
+		return 1.0 ;
+
+	// The fragment is either in shadow or penumbra. We now use chebyshev's upperBound to check
+	// How likely this pixel is to be lit (p_max)
+	float variance = moments.y - (moments.x*moments.x);
+	variance = max(variance,0.002);
+
+	float d = shadowCoordTrans.z - moments.x;
+	float p_max = variance / (variance + d*d);
+
+	return p_max;
+}
+
 
 void main()
 {
@@ -134,14 +157,20 @@ void main()
 
   //SHADOWS
   if(shadowMapEnabled) {
+
+	shadow = chebyshevUpperBound(shadowCoord / shadowCoord.w );
+	if(shadow < 0.01)
+	  shadow = 1.0;
+	/*
     if (shadowCoord.w > 0.0) {
       if(pcfEnabled) {
+	
 	float x,y;
 	shadow = 0.0;
-	/*	 smaller kernel for smaller blur
-		for (y = -3.5 ; y <=3.5 ; y+=1.0)
-		for (x = -3.5 ; x <=3.5 ; x+=1.0)
-	*/
+	//	 smaller kernel for smaller blur
+	//	for (y = -3.5 ; y <=3.5 ; y+=1.0)
+	//	for (x = -3.5 ; x <=3.5 ; x+=1.0)
+	
 	
 	for (y = -15.5 ; y <=15.5 ; y+=5.0)
 	  for (x = -15.5 ; x <=15.5 ; x+=5.0)
@@ -149,12 +178,15 @@ void main()
 	    shadow += lookupShadow(vec2(x,y));
 	shadow /= 64.0;
 	shadow += 0.2;
+  
+	
 	
       } else {
 	//no need to recompute
 	shadow = distanceFromLight < shadowCoordinateWdivide.z ? 0.5 : 1.0 ;
       }
-    }
+    }*/
+
   }
 
 
