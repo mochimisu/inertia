@@ -635,12 +635,10 @@ void reshape(int w, int h) {
   const float deltaMovement = 1;
 void myKeyboardFunc (unsigned char key, int x, int y) {
   switch (key) {
-  case 27:			// Escape key
-    exit(0);
-    break;
   case 'Q':
   case 'q':
-    framesToSave=100;
+  case 27:			// Escape key
+    exit(0);
     break;
   case 'S':
   case 's':
