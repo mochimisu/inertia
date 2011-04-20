@@ -471,9 +471,9 @@ int main(int argc,char** argv) {
   //generate the shadow FBO 
   generateShadowFBO();
 
-  shade = new ShadowShader("shaders/VertexShader.c", "shaders/FragmentShader.c");
-  blurShade = new BlurShader("shaders/blurVertexShader2.c", "shaders/blurFragmentShader2.c");
-  depthShade = new GeometryShader("shaders/StoreDepthVertexShader.c", "shaders/StoreDepthFragmentShader.c");
+  shade = new ShadowShader("shaders/MainVertexShader.c", "shaders/MainFragmentShader.c");
+  blurShade = new BlurShader("shaders/GaussianBlurVertexShader.c", "shaders/GaussianBlurFragmentShader.c");
+  depthShade = new GeometryShader("shaders/DepthVertexShader.c", "shaders/DepthFragmentShader.c");
 
   sweep = new Sweep(argv[1]);
   
