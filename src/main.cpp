@@ -375,42 +375,10 @@ void renderScene()
   glutSwapBuffers();
 }
 
-<<<<<<< local
 /*
  * Interface Stuff
  */
 void processNormalKeys(unsigned char key, int x, int y) {
-  switch(key) {
-  case 27:
-=======
-
-//-------------------------------------------------------------------------------
-/// \brief	Called when the screen gets resized.
-/// This gives you the opportunity to set up all the relevant transforms.
-///
-void reshape(int w, int h) {
-  glViewport(0, 0, w, h);
-
-  int newDim = min(w,h);
-  viewport.w = newDim;
-  viewport.h = newDim;
-  generateShadowFBO();
-
-
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluPerspective(45.0, ((double)w / MAX(h, 1)), 1.0, 100.0);
-  //glOrtho(-10,10,-10,10,1,100);
-
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-}
-
-
-//-------------------------------------------------------------------------------
-/// Called to handle keyboard events.
-  const float deltaMovement = 1;
-void myKeyboardFunc (unsigned char key, int x, int y) {
   switch (key) {
   case 'Q':
   case 'q':
@@ -420,6 +388,10 @@ void myKeyboardFunc (unsigned char key, int x, int y) {
   case 'D':
   case 'd':
     renderOpt.toggleDispDepthBuffer();
+    break;
+  case 'G':
+  case 'g':
+    renderOpt.toggleDispGround();
     break;
   }
 }
