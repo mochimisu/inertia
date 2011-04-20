@@ -381,6 +381,8 @@ void renderScene()
 void processNormalKeys(unsigned char key, int x, int y) {
   switch(key) {
   case 27:
+  case 'Q':
+  case 'q':
     exit(0);
     break;
   case 'G':
