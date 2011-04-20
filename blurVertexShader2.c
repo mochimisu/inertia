@@ -10,6 +10,6 @@ void main(void)
    Pos = sign(gl_Vertex.xy);
  
    gl_Position = vec4(Pos, 0.0, 1.0);
-   // Image-space
+   // texture space
    vTexCoord = Pos * 0.5 + 0.5;
 }

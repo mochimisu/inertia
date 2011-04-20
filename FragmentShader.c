@@ -1,16 +1,11 @@
-
-// this is the texture map data we can sample
+//texture maps
 uniform sampler2D textureMap, heightMap, normalMap; //0,1,2
-uniform sampler2D shadowMap; //4
-uniform samplerCube skyMap; //3
+uniform sampler2D shadowMap; //7
 
-// these are the texture and bump mapping settings we can toggle
+//toggled settings
 uniform bool bumpMapEnabled, textureMapEnabled, phongEnabled;
-uniform bool shadowMapEnabled, ambientOcclusionEnabled, dispAmbientLayer;
-uniform bool pcfEnabled, aoPcfEnabled, envEnabled;
+uniform bool shadowMapEnabled, ambientOcclusionEnabled;
 
-uniform float xPixelOffset;
-uniform float yPixelOffset;
 
 // These varying values are interpolated over the surface
 varying vec4 v;
@@ -23,14 +18,12 @@ varying vec4 gouradColorSpecular;
 
 varying vec4 shadowCoord;
 
-vec4 ShadowCoordPostW;
-
-float chebyshevUpperBound( float distance)
+float chebyshevUpperBound( vec4 shadowCoordPostW)
 {
-	vec2 moments = texture2D(shadowMap,ShadowCoordPostW.xy).rg;
+	vec2 moments = texture2D(shadowMap,shadowCoordPostW.xy).rg;
 	
 	// Surface is fully lit. as the current fragment is before the light occluder
-	if (distance <= moments.x)
+	if (shadowCoordPostW.z <= moments.x)
 		return 1.0 ;
 
 	// The fragment is either in shadow or penumbra. We now use chebyshev's upperBound to check
@@ -38,7 +31,7 @@ float chebyshevUpperBound( float distance)
 	float variance = moments.y - (moments.x*moments.x);
 	variance = max(variance,0.002);
 
-	float d = distance - moments.x;
+	float d = shadowCoordPostW.z - moments.x;
 	float p_max = variance / (variance + d*d);
 
 	return p_max;
@@ -47,9 +40,9 @@ float chebyshevUpperBound( float distance)
 
 void main()
 {	
-	ShadowCoordPostW = shadowCoord / shadowCoord.w;
-	ShadowCoordPostW.z += 0.002;
-
+  vec4 shadowCoordPostW;
+  shadowCoordPostW = shadowCoord / shadowCoord.w;
+  shadowCoordPostW.z += 0.002;
 
   float ao = 1.0;
   float shadow = 1.0;
@@ -58,9 +51,8 @@ void main()
   float distanceFromLight;
 
   // shadows
-  if(shadowMapEnabled) {
-    shadow = chebyshevUpperBound(ShadowCoordPostW.z);
-  }
+  if(shadowMapEnabled)
+      shadow = chebyshevUpperBound(shadowCoordPostW);
 
   // sample from a texture map
   vec4 texcolor;
@@ -109,8 +101,6 @@ void main()
   }
   // set the output color to what we've computed
   gl_FragColor = shadow * color * ao;
-  if(dispAmbientLayer)
-    gl_FragColor = vec4(ao,ao,ao,1);
   
-  //gl_FragColor = (texture2D(heightMap, gl_TexCoord[0].st));
+  //gl_FragColor = (texture2D(normalMap, gl_TexCoord[0].st));
 }

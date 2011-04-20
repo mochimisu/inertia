@@ -11,6 +11,7 @@
 
 #include <cmath>
 #include <vector>
+#include <map>
 
 #include "algebra3.h"
 #include "main.h"
@@ -75,8 +76,8 @@ class Sweep {
   vector<vec2> profilePts; // control points for cross section to be swept
 
   // display list for caching sweep geometry
-  GLuint DLid;
-  bool hasDL;
+  //y hashmap not a c++ standard :<
+  map<int, GLuint> shaderDL;
 
   GLuint texture, normalMap, heightMap, skyMap; // texture data
   int lengthRepeats, widthRepeats;
@@ -86,6 +87,7 @@ class Sweep {
   vec3 getFirstUp(); // helper to get initial frame (default to frenet, fallback to 'up=+Y')
   // rotates vector from RMF to account for twist, azimuth, etc:
   void orientVectorInFrame(const vec3 &dir, double percent, double localAz, vec3 &inFrame);
+
 };
 
 

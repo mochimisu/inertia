@@ -82,9 +82,6 @@ class ShadowShader : public GeometryShader {
   void togglePhong() { phongEnabled = !phongEnabled; }
   void toggleShadows() { shadowMapEnabled = !shadowMapEnabled; }
   void toggleAmbientOcclusion() { ambientOcclusionEnabled = !ambientOcclusionEnabled; }
-  void toggleDispAmbientLayer() { dispAmbientLayer = !dispAmbientLayer; }
-  void togglePcf() { pcfEnabled = !pcfEnabled; }
-  //void toggleEnv() { envEnabled = !envEnabled; }
 
   //Booleans
   bool isShader() { return shadersOn; }
@@ -93,9 +90,6 @@ class ShadowShader : public GeometryShader {
   bool isPhong() { return phongEnabled; }
   bool isShadows() { return shadowMapEnabled; }
   bool isAmbientOcclusion() { return ambientOcclusionEnabled; }
-  bool isDispAmbientLayer() { return dispAmbientLayer; }
-  bool isPcf() { return pcfEnabled; }
-  //bool isEnv() { return envEnabled; }
 
   //Setting shader options
   void setPixelOffset(float x, float y) { xPixelOffset = x; yPixelOffset = y; }
@@ -117,7 +111,7 @@ class ShadowShader : public GeometryShader {
   //Uniform handles
   GLint bumpMapEnabledUniform, textureMapEnabledUniform, phongEnabledUniform;
   GLint shadowMapEnabledUniform, shadowMapUniform;
-  GLint ambientOcclusionEnabledUniform, dispAmbientLayerUniform, pcfEnabledUniform;
+  GLint ambientOcclusionEnabledUniform;
   GLint xPixelOffsetUniform, yPixelOffsetUniform, envEnabledUniform;
 
   //bool toggles

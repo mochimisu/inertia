@@ -132,7 +132,7 @@ void sampleBSpline(const vector<Pt> &pathPts, vector<Pt> &polyline, int totalSam
   }
 }
 
-Sweep::Sweep(string filename) : globalTwist(0), globalAzimuth(0), hasDL(false) {
+Sweep::Sweep(string filename) : globalTwist(0), globalAzimuth(0) {
   // Load the track file
   ifstream f(filename.c_str());
   if (!f) {
@@ -459,20 +459,23 @@ void Sweep::render(GeometryShader &shader, int pathSamplesPerPt, double crossSec
 }
 
 void Sweep::renderWithDisplayList(GeometryShader &shader, int pathSamplesPerPt, double crossSectionScale, int xsectSamplesPerPt) {
-  if (!hasDL) {
-    DLid = glGenLists(1);
+  
+  int shadeId = shader.getId();
+  if (shaderDL.count(shadeId) == 0) {
+    GLuint DLid = glGenLists(1);
     glNewList(DLid, GL_COMPILE);
     render(shader, pathSamplesPerPt, crossSectionScale, xsectSamplesPerPt);
     glEndList();
-    hasDL = true;
+    shaderDL[shadeId] = DLid;
   }
-  glCallList(DLid);
+  glCallList(shaderDL[shadeId]);
+  
 }
 
 void Sweep::clearDisplayList() {
-  if (hasDL) {
-    glDeleteLists(DLid, 1);
-    hasDL = false;
+  for(map<int, GLuint>::iterator it=shaderDL.begin(); it != shaderDL.end(); it++) {
+    glDeleteLists(it->second, 1);
   }
+  shaderDL.clear();
 }
 
