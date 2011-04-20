@@ -1,7 +1,3 @@
-/////////////////////////////////////////////////
-// 7x1 gaussian blur fragment shader
-/////////////////////////////////////////////////
-
 uniform vec2 ScaleU;
 uniform sampler2D textureSource;
 
@@ -18,4 +14,5 @@ void main()
 	color += texture2D( textureSource, gl_TexCoord[0].st + vec2( 3.0*ScaleU.x, -3.0*ScaleU.y ) ) * 0.015625;
 
 	gl_FragColor = color;
+	gl_FragColor = vec4(0.5);
 }

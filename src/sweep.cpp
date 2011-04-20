@@ -277,7 +277,7 @@ vec3 Sweep::getFirstUp() {
 
 
 // sweep the cross section along the curve (helper for the big render function)
-void Sweep::renderSweep(Shader &shader, vector<PathPoint> &polyline, vector<vec2> &profile, double crossSectionScale) {
+void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vector<vec2> &profile, double crossSectionScale) {
   PathPoint pts[3]; // pts[1] is us, pts[0] and pts[3] surround us
   vector<vec2> & crossSection = profile;
   int size = (int) polyline.size();
@@ -425,13 +425,13 @@ void Sweep::renderSweep(Shader &shader, vector<PathPoint> &polyline, vector<vec2
 }
 
 // the big render function
-void Sweep::render(Shader &shader, int pathSamplesPerPt, double crossSectionScale, int xsectSamplesPerPt) {
+void Sweep::render(GeometryShader &shader, int pathSamplesPerPt, double crossSectionScale, int xsectSamplesPerPt) {
 
   shader.set();
 
   // load textures
-  glActiveTexture(GL_TEXTURE3);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, skyMap);
+  //glActiveTexture(GL_TEXTURE3);
+  //glBindTexture(GL_TEXTURE_CUBE_MAP, skyMap);
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, heightMap);
   glActiveTexture(GL_TEXTURE2);
@@ -458,7 +458,7 @@ void Sweep::render(Shader &shader, int pathSamplesPerPt, double crossSectionScal
   renderSweep(shader, polyline, profile, crossSectionScale);
 }
 
-void Sweep::renderWithDisplayList(Shader &shader, int pathSamplesPerPt, double crossSectionScale, int xsectSamplesPerPt) {
+void Sweep::renderWithDisplayList(GeometryShader &shader, int pathSamplesPerPt, double crossSectionScale, int xsectSamplesPerPt) {
   if (!hasDL) {
     DLid = glGenLists(1);
     glNewList(DLid, GL_COMPILE);

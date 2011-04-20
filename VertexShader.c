@@ -1,22 +1,11 @@
+// Used for shadow lookup
+varying vec4 shadowCoord;
 attribute vec3 tangent;
 attribute vec3 bitangent;
-varying vec4 shadowCoord;
 
 uniform sampler2D textureMap, heightMap, normalMap;
 
-// NOTE:
-// varying variables are set by the vertex shader
-// then interpolated by the harder 
-// and the interpolated values are passed to the fragment shader
-// so the corresponding varying vec4 v in the fragment shader
-// will be the linearly interpolated position of the spot you're shading.
 varying vec4 v;
-
-// NOTE:
-// we'll pass the TBN matrix down
-// in order to do the lighting in eye space
-// many people do it in tangent space instead, for efficiency
-// but for the sake of exercise we'll do it all in eye space
 varying vec3 t;
 varying vec3 b;
 varying vec3 n;
@@ -31,11 +20,9 @@ varying vec2 uv;
 
 void main()
 {
-  // put everything varying in eye space
-  v = gl_ModelViewMatrix * gl_Vertex;
 
-  // @TODO: SET t,b,n appropriately
-  // HINT: remember normals transform by the gl_NormalMatrix
+ // put everything varying in eye space
+  v = gl_ModelViewMatrix * gl_Vertex;
 
   n=normalize(gl_NormalMatrix * gl_Normal);
   t=normalize(gl_NormalMatrix * tangent);
@@ -81,10 +68,5 @@ void main()
     gl_Position =  gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
   }
 
-  shadowCoord= gl_TextureMatrix[4] * gl_Vertex;
-
-
-
-		gl_FrontColor = gl_Color;
-
+  shadowCoord= gl_TextureMatrix[7] * gl_Vertex;
 }

@@ -31,7 +31,7 @@ vec3 Mesh::getNormal(int f) {
     return n.normalize();
 }
 
-void Mesh::draw(Shader &shade) {
+void Mesh::draw(GeometryShader &shade) {
     shade.set();
 
     glActiveTexture(GL_TEXTURE0);

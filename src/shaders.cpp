@@ -92,9 +92,10 @@ bool linkAndValidateShader(GLhandleARB p) {
   return true;
 }
 
-
-
 Shader::Shader(string vertProg, string fragProg) {
+  static int tempId = 0;
+  shadeId = tempId;
+  ++tempId;
   // compile link and validate shader programs
   shadersFailed = false;
   program = glCreateProgramObjectARB();
@@ -109,58 +110,89 @@ Shader::Shader(string vertProg, string fragProg) {
     cout << "Shaders failed to initialize correctly" << endl;
   }
 
-
-
-
-  // start with all the nice settings on
+  //By default, shaders are on
   shadersOn = true;
+}
+
+GeometryShader::GeometryShader(string vertProg, string fragProg) : Shader(vertProg, fragProg){
+  displacementEnabled = true;
+
+  glUniform1iARB(glGetUniformLocationARB(program, "heightMap"), 1);
+  glUniform1iARB(glGetUniformLocationARB(program, "normalMap"), 2);
+
+  tangentAttrib = glGetAttribLocationARB(program, "tangent");
+  bitangentAttrib = glGetAttribLocationARB(program, "bitangent");
+  displacementEnabledUniform = glGetUniformLocationARB(program, "displacementEnabled");
+}
+
+ShadowShader::ShadowShader(string vertProg, string fragProg) : GeometryShader(vertProg, fragProg) {
   bumpMapEnabled = true;
   textureMapEnabled = true;
-
   phongEnabled = true;
-
   displacementEnabled = true;
   shadowMapEnabled = true;
   ambientOcclusionEnabled = true;
   pcfEnabled = true;
-
-  envEnabled = false;
-
+  //envEnabled = false;
   dispAmbientLayer = false;
 
   xPixelOffset = 0.01;
   yPixelOffset = 0.01;
 
-  scaleU = 0;
-  scaleUb = 0;
-  textureSource = 0;
-
-  //for blur shader
-
-  // set up variables for the shaders to use
-  glUseProgramObjectARB(program);
   glUniform1iARB(glGetUniformLocationARB(program, "textureMap"), 0);
-  glUniform1iARB(glGetUniformLocationARB(program, "heightMap"), 1);
-  glUniform1iARB(glGetUniformLocationARB(program, "normalMap"), 2);
   glUniform1iARB(glGetUniformLocationARB(program, "skyMap"), 3);
 
   bumpMapEnabledUniform = glGetUniformLocationARB(program, "bumpMapEnabled");
   textureMapEnabledUniform = glGetUniformLocationARB(program, "textureMapEnabled");
   phongEnabledUniform = glGetUniformLocationARB(program, "phongEnabled");
-  tangentAttrib = glGetAttribLocationARB(program, "tangent");
-  bitangentAttrib = glGetAttribLocationARB(program, "bitangent");
 
-  displacementEnabledUniform = glGetUniformLocationARB(program, "displacementEnabled");
   shadowMapUniform = glGetUniformLocationARB(program,"shadowMap");
   shadowMapEnabledUniform = glGetUniformLocationARB(program,"shadowMapEnabled");
   ambientOcclusionEnabledUniform = glGetUniformLocationARB(program,"ambientOcclusionEnabled");
   dispAmbientLayerUniform = glGetUniformLocationARB(program,"dispAmbientLayer");
   pcfEnabledUniform = glGetUniformLocationARB(program,"pcfEnabled");
-  envEnabledUniform = glGetUniformLocationARB(program,"envEnabled");
+  //envEnabledUniform = glGetUniformLocationARB(program,"envEnabled");
+
   
   xPixelOffsetUniform = glGetUniformLocationARB(program,"xPixelOffset");
   yPixelOffsetUniform = glGetUniformLocationARB(program,"yPixelOffset");
+}
 
-  scaleUniform = glGetUniformLocationARB(program,"ScaleU");
-  textureSourceUniform = glGetUniformLocationARB(program,"textureSource");
+BlurShader::BlurShader(string vertProg, string fragProg) : Shader(vertProg, fragProg) {
+  scaleUa = 0.0;
+  scaleUb = 0.0;
+  textureSource = 0;
+
+  scaleUniform = glGetUniformLocationARB(program, "ScaleU");
+  //textureSourceUniform = glGetUniformLocationARB(program, "textureSource");
+  glUniform1iARB(glGetUniformLocationARB(program, "textureSource"), 0);
+}
+
+void Shader::setUniformValues() {
+  glUseProgramObjectARB(program);
+}
+
+void GeometryShader::setUniformValues() {
+  Shader::setUniformValues();
+  glUniform1iARB(displacementEnabledUniform, displacementEnabled);
+}
+
+void ShadowShader::setUniformValues() {
+  GeometryShader::setUniformValues();
+  glUniform1iARB(bumpMapEnabledUniform, bumpMapEnabled);
+  glUniform1iARB(textureMapEnabledUniform, textureMapEnabled);
+  glUniform1iARB(phongEnabledUniform, phongEnabled);
+  glUniform1iARB(shadowMapEnabledUniform, shadowMapEnabled);
+  glUniform1iARB(ambientOcclusionEnabledUniform, ambientOcclusionEnabled);
+  glUniform1iARB(dispAmbientLayerUniform, dispAmbientLayer);
+  glUniform1iARB(pcfEnabledUniform, pcfEnabled);
+  glUniform1fARB(xPixelOffsetUniform, xPixelOffset);
+  glUniform1fARB(yPixelOffsetUniform, yPixelOffset);
+  glUniform1iARB(envEnabledUniform, envEnabled);
+}
+
+void BlurShader::setUniformValues() {
+  Shader::setUniformValues();
+  glUniform2fARB(scaleUniform,scaleUa,scaleUb);
+  glUniform1iARB(textureSourceUniform, textureSource);
 }

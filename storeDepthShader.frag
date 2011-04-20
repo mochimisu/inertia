@@ -13,7 +13,7 @@ void main()
   float dy = dFdy(depth);
   moment2 += 0.25*(dx*dx+dy*dy) ;
 
-  //[bmw] todo: double precision floats by storing in all rgba channels (2 channels per double)	
+  //todo: double precision floats by storing in all rgba channels (2 channels per double)	
 
   gl_FragColor = vec4( moment1,moment2, 0.0, 0.0 );
 }
