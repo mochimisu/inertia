@@ -793,6 +793,15 @@ void myKeyboardFunc2 (int key, int x, int y) {
 }
 
 //-------------------------------------------------------------------------------
+/// Called when a special key is released
+void myKeyboardFunc3(int key, int x, int y) {
+  switch (key) {
+  }
+  return;
+}
+
+
+//-------------------------------------------------------------------------------
 /// Called whenever the mouse moves while a button is pressed
 void myActiveMotionFunc(int x, int y) {
 
@@ -822,6 +831,15 @@ void myPassiveMotionFunc(int x, int y) {
   //Force a redraw of the window.
   glutPostRedisplay();
 }
+
+//-------------------------------------------------------------------------------
+/// Called during idle to update velocity etc.
+void myIdleFunc() {
+  return;
+}
+  
+
+
 
 //-------------------------------------------------------------------------------
 /// Called to update the screen at 30 fps.
@@ -880,6 +898,8 @@ int main(int argc,char** argv) {
   glutMotionFunc(myActiveMotionFunc);
   glutPassiveMotionFunc(myPassiveMotionFunc);
   glutSpecialFunc(myKeyboardFunc2);
+  glutSpecialUpFunc(myKeyboardFunc3);
+  glutIdlefunc(myIdleFunc); // handles stuff hopefully
   frameTimer(0);
   //glClearColor(1,1,1,0);
 
