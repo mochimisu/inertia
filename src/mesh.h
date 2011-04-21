@@ -85,7 +85,7 @@ public:
     vec3 getNormal(int f);
 
     // an inefficient render routine
-	void draw(Shader &shade);
+	void draw(GeometryShader &shade);
 
 	// just naively sums all nearby triangle normals; no area weighting
     void computeVertexNormals();
