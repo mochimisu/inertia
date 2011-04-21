@@ -13,143 +13,85 @@
 bool setShader(GLhandleARB p, const char *srcfile, GLenum type);
 bool linkAndValidateShader(GLhandleARB p);
 
+// helpful class to set up shader
 class Shader {
  public:
   Shader(string vertShader, string fragmentShader);
   ~Shader() {
     glDeleteObjectARB(program);
   }
-  //Toggles
+
   void toggleShader() { shadersOn = !shadersOn; }
-
-  //Bools
-  bool isShader() { return shadersOn; }
-
-  //Setting Shader Options
-
-  //Handles
-  GLhandleARB getProgram() { return program; }
-
-  //etc
-  bool on() { return shadersOn; }
-  void set(bool forceOff = false) {
-    if (!forceOff && on()) {
-      this->setUniformValues();
-    } else {
-      glUseProgramObjectARB(0);
-    }
-  }
-  virtual void setUniformValues();
-
-  int getId() { return shadeId; }
-
- protected:
-  int shadeId;
-  bool shadersOn;
-  GLhandleARB program; // shader
-  bool shadersFailed;
-  //Uniform handles
-  GLint tangentAttrib, bitangentAttrib; 
-};
-
-class GeometryShader : public Shader {
- public:
-  GeometryShader(string vertShader, string fragmentShader);
-  //Toggles
-  void toggleDisplacement() { displacementEnabled = !displacementEnabled; }
-
-  //Bools
-  bool isDisplacement() { return displacementEnabled; }
-
-  //Handles
-  GLint getTangentAttrib() { return tangentAttrib; }
-  GLint getBitangentAttrib() { return bitangentAttrib; }
-
-  //etc
-  virtual void setUniformValues();
-
- protected:
-  GLint displacementEnabled;
-  GLint displacementEnabledUniform;
-};
-
-class ShadowShader : public GeometryShader {
- public:
-  ShadowShader(string vertShader, string fragmentShader);
-  //Toggles
   void toggleBumpMap() { bumpMapEnabled = !bumpMapEnabled; }
   void toggleTextureMap() { textureMapEnabled = !textureMapEnabled; }
   void togglePhong() { phongEnabled = !phongEnabled; }
+  void toggleDisplacement() { displacementEnabled = !displacementEnabled; }
+
   void toggleShadows() { shadowMapEnabled = !shadowMapEnabled; }
   void toggleAmbientOcclusion() { ambientOcclusionEnabled = !ambientOcclusionEnabled; }
-
-  //Booleans
+  void toggleDispAmbientLayer() { dispAmbientLayer = !dispAmbientLayer; }
+  void togglePcf() { pcfEnabled = !pcfEnabled; }
+  void toggleEnv() { envEnabled = !envEnabled; }
+  
+  //return bools to unify for console output
   bool isShader() { return shadersOn; }
   bool isBumpMap() { return bumpMapEnabled; }
   bool isTextureMap() { return textureMapEnabled; }
   bool isPhong() { return phongEnabled; }
+  bool isDisplacement() { return displacementEnabled; }
+
   bool isShadows() { return shadowMapEnabled; }
   bool isAmbientOcclusion() { return ambientOcclusionEnabled; }
+  bool isDispAmbientLayer() { return dispAmbientLayer; }
+  bool isPcf() { return pcfEnabled; }
+  bool isEnv() { return envEnabled; }
 
-  //Setting shader options
   void setPixelOffset(float x, float y) { xPixelOffset = x; yPixelOffset = y; }
-  void setXPixelOffset(float x) { xPixelOffset = x; }
-  void setYPixelOffset(float y) { yPixelOffset = y; }
-  void setShadowMap(int x) { shadowMap = x; }
+  
 
-  //Handles
+  GLint getTangentAttrib() { return tangentAttrib; }
+  GLint getBitangentAttrib() { return bitangentAttrib; }
+
+  GLhandleARB getProgram() { return program; }
   GLint getShadowMapAttrib() { return shadowMapUniform; }
 
-  //etc
-  virtual void setUniformValues();
-  
-  //temp
-  GLint getXPixelOffsetAttrib() { return xPixelOffsetUniform; }
-  GLint getYPixelOffsetAttrib() { return yPixelOffsetUniform; }
+  bool on() { return shadersOn; }
 
- protected:
-  //Uniform handles
+  void set(bool forceOff = false) {
+    if (!forceOff && on()) {
+      glUseProgramObjectARB(program);
+      glUniform1iARB(bumpMapEnabledUniform, bumpMapEnabled);
+      glUniform1iARB(textureMapEnabledUniform, textureMapEnabled);
+      glUniform1iARB(phongEnabledUniform, phongEnabled);
+      glUniform1iARB(displacementEnabledUniform, displacementEnabled);
+      glUniform1iARB(shadowMapEnabledUniform, shadowMapEnabled);
+      glUniform1iARB(ambientOcclusionEnabledUniform, ambientOcclusionEnabled);
+      glUniform1iARB(dispAmbientLayerUniform, dispAmbientLayer);
+      glUniform1iARB(pcfEnabledUniform, pcfEnabled);
+      glUniform1fARB(xPixelOffsetUniform, xPixelOffset);
+      glUniform1fARB(yPixelOffsetUniform, yPixelOffset);
+      glUniform1iARB(envEnabledUniform, envEnabled);
+    } else {
+      glUseProgramObjectARB(0);
+    }
+  }
+
+ private:
+  bool shadersFailed;
+  GLhandleARB program; // shaders
+  GLint tangentAttrib, bitangentAttrib; // tangent space for uploading to shaders
   GLint bumpMapEnabledUniform, textureMapEnabledUniform, phongEnabledUniform;
-  GLint shadowMapEnabledUniform, shadowMapUniform;
-  GLint ambientOcclusionEnabledUniform;
+  GLint displacementEnabledUniform, shadowMapEnabledUniform, shadowMapUniform;
+  GLint ambientOcclusionEnabledUniform, dispAmbientLayerUniform, pcfEnabledUniform;
   GLint xPixelOffsetUniform, yPixelOffsetUniform, envEnabledUniform;
 
-  //bool toggles
-  bool bumpMapEnabled, textureMapEnabled, phongEnabled;
   bool shadowMapEnabled, ambientOcclusionEnabled, dispAmbientLayer;
-  bool pcfEnabled, envEnabled;
+  bool displacementEnabled, pcfEnabled, envEnabled;
 
-  //values
   float xPixelOffset, yPixelOffset;
-  int shadowMap;
-  
-};
 
-class BlurShader : public Shader {
- public:
-  BlurShader(string vertShader, string fragmentShader);
-  //Toggles
-  //Booleans
-  //Shader Options
-  void setScale(float a, float b) { scaleUa = a; scaleUb = b; }
-  void setTextureSource(int x) { textureSource = x; }
-
-  //etc
-  virtual void setUniformValues();
-
-
-  //temp
-  GLint getScaleAttrib() { return scaleUniform; }
-  GLint getTextureSourceAttrib() { return textureSourceUniform; }
-  
-  //Handles
- protected:
-  //Uniform Handles
-  GLint scaleUniform, textureSourceUniform;
-
-  //values
-  float scaleUa, scaleUb;
-  int textureSource;
+  bool bumpMapEnabled, textureMapEnabled, phongEnabled;
+  bool shadersOn;
 };
 
 #endif 

@@ -133,7 +133,7 @@ void sampleBSpline(const vector<Pt> &pathPts, vector<Pt> &polyline, int totalSam
   }
 }
 
-Sweep::Sweep(string filename) : globalTwist(0), globalAzimuth(0) {
+Sweep::Sweep(string filename) : globalTwist(0), globalAzimuth(0), hasDL(false) {
   // Load the track file
   ifstream f(filename.c_str());
   if (!f) {
@@ -278,7 +278,7 @@ vec3 Sweep::getFirstUp() {
 
 
 // sweep the cross section along the curve (helper for the big render function)
-void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vector<vec2> &profile, double crossSectionScale) {
+void Sweep::renderSweep(Shader &shader, vector<PathPoint> &polyline, vector<vec2> &profile, double crossSectionScale) {
   PathPoint pts[3]; // pts[1] is us, pts[0] and pts[3] surround us
   vector<vec2> & crossSection = profile;
   int size = (int) polyline.size();
@@ -426,13 +426,13 @@ void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vec
 }
 
 // the big render function
-void Sweep::render(GeometryShader &shader, int pathSamplesPerPt, double crossSectionScale, int xsectSamplesPerPt) {
+void Sweep::render(Shader &shader, int pathSamplesPerPt, double crossSectionScale, int xsectSamplesPerPt) {
 
   shader.set();
 
   // load textures
-  //glActiveTexture(GL_TEXTURE3);
-  //glBindTexture(GL_TEXTURE_CUBE_MAP, skyMap);
+  glActiveTexture(GL_TEXTURE3);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, skyMap);
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, heightMap);
   glActiveTexture(GL_TEXTURE2);
@@ -459,24 +459,21 @@ void Sweep::render(GeometryShader &shader, int pathSamplesPerPt, double crossSec
   renderSweep(shader, polyline, profile, crossSectionScale);
 }
 
-void Sweep::renderWithDisplayList(GeometryShader &shader, int pathSamplesPerPt, double crossSectionScale, int xsectSamplesPerPt) {
-  
-  int shadeId = shader.getId();
-  if (shaderDL.count(shadeId) == 0) {
-    GLuint DLid = glGenLists(1);
+void Sweep::renderWithDisplayList(Shader &shader, int pathSamplesPerPt, double crossSectionScale, int xsectSamplesPerPt) {
+  if (!hasDL) {
+    DLid = glGenLists(1);
     glNewList(DLid, GL_COMPILE);
     render(shader, pathSamplesPerPt, crossSectionScale, xsectSamplesPerPt);
     glEndList();
-    shaderDL[shadeId] = DLid;
+    hasDL = true;
   }
-  glCallList(shaderDL[shadeId]);
-  
+  glCallList(DLid);
 }
 
 void Sweep::clearDisplayList() {
-  for(map<int, GLuint>::iterator it=shaderDL.begin(); it != shaderDL.end(); it++) {
-    glDeleteLists(it->second, 1);
+  if (hasDL) {
+    glDeleteLists(DLid, 1);
+    hasDL = false;
   }
-  shaderDL.clear();
 }
 

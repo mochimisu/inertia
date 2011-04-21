@@ -19,9 +19,6 @@
 #include "Console.h"
 #include "Vehicle.h"
 
-#include "Viewport.h"
-#include "RenderOptions.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
