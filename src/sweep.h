@@ -11,6 +11,7 @@
 
 #include <cmath>
 #include <vector>
+#include <map>
 
 #include "algebra3.h"
 //#include "main.h"
@@ -48,9 +49,9 @@ class Sweep {
   }
 
   // renders the coaster
-  void render(Shader &shade, int pathSamplesPerPt, double crossSectionScale=.2, int xsectSamplesPerPt=3);
+  void render(GeometryShader &shade, int pathSamplesPerPt, double crossSectionScale=.2, int xsectSamplesPerPt=3);
   // renders the coaster with a cache.  Ignores parameters after display list is set; use clearDisplayList() before updating parameters
-  void renderWithDisplayList(Shader &shade, int pathSamplesPerPt, double crossSectionScale=.2, int xsectSamplesPerPt=3);
+  void renderWithDisplayList(GeometryShader &shade, int pathSamplesPerPt, double crossSectionScale=.2, int xsectSamplesPerPt=3);
   void clearDisplayList();
 
   // --- these functions can provide a local frame along the track
@@ -75,17 +76,18 @@ class Sweep {
   vector<vec2> profilePts; // control points for cross section to be swept
 
   // display list for caching sweep geometry
-  GLuint DLid;
-  bool hasDL;
+  //y hashmap not a c++ standard :<
+  map<int, GLuint> shaderDL;
 
   GLuint texture, normalMap, heightMap, skyMap; // texture data
   int lengthRepeats, widthRepeats;
 
   // --- internal helper functions
-  void renderSweep(Shader &shade, vector<PathPoint> &pts, vector<vec2> &profile, double crossSectionScale);
+  void renderSweep(GeometryShader &shade, vector<PathPoint> &pts, vector<vec2> &profile, double crossSectionScale);
   vec3 getFirstUp(); // helper to get initial frame (default to frenet, fallback to 'up=+Y')
   // rotates vector from RMF to account for twist, azimuth, etc:
   void orientVectorInFrame(const vec3 &dir, double percent, double localAz, vec3 &inFrame);
+
 };
 
 
