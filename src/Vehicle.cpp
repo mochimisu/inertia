@@ -64,7 +64,10 @@ void Vehicle::setAccelerate(bool isAccelerating) {
 
 void Vehicle::draw() {
 
+  //glutSoldiTeapot's faces are backwards
+  glFrontFace(GL_CW);
   glutSolidTeapot(100);
+  glFrontFace(GL_CCW);
 }
 
 void Vehicle::setLocation(mat4 location) {

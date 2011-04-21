@@ -314,11 +314,16 @@ void drawObjects(GeometryShader * curShade) {
 
   startTranslate(0,0,-5);
   sweep->renderWithDisplayList(*curShade,20,0.3,20);
-  endTranslate();
   vec3 location = vehicle->getPerspectiveLocation();
   vec3 center = vehicle->getPerspectiveCenter();
   vec4 uVec = vehicle->uVec();
   vehicle->draw();
+  endTranslate();
+
+  //Chris: i dont know if you want to store position inside of vehicle, but you would change reference by
+  //p_camera = something
+  //l_camera = something
+
   //gluLookAt(location[VX], location[VY], location[VZ], center[VX], center[VY], center[VZ], uVec[VX], uVec[VY], uVec[VZ]);
 }
 
@@ -457,6 +462,7 @@ int main(int argc,char** argv) {
   glEnable(GL_DEPTH_TEST);
   glClearColor(0,0,0,1.0f);
   glEnable(GL_CULL_FACE);
+  glFrontFace(GL_CCW);
   glHint(GL_PERSPECTIVE_CORRECTION_HINT,GL_NICEST);
 	
   glutDisplayFunc(renderScene);
