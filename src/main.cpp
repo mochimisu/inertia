@@ -42,6 +42,7 @@ GeometryShader *depthShade;
 
 //==OBJECTS
 Sweep *sweep;
+Vehicle *vehicle;
 //for the sake of cleanliness
 RenderOptions renderOpt;
 
@@ -314,6 +315,11 @@ void drawObjects(GeometryShader * curShade) {
   startTranslate(0,0,-5);
   sweep->renderWithDisplayList(*curShade,20,0.3,20);
   endTranslate();
+  vec3 location = vehicle->getPerspectiveLocation();
+  vec3 center = vehicle->getPerspectiveCenter();
+  vec4 uVec = vehicle->uVec();
+  vehicle->draw();
+  //gluLookAt(location[VX], location[VY], location[VZ], center[VX], center[VY], center[VZ], uVec[VX], uVec[VY], uVec[VZ]);
 }
 
 void renderScene() 
@@ -487,6 +493,8 @@ int main(int argc,char** argv) {
   if(argc > 2)
     bg = argv[2];
   loadTexture(bg,bgText);
+
+  vehicle = new Vehicle(sweep, mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(0,0,0,1)), vec3(1,0,0));
 
   //And Go!
   glutMainLoop();

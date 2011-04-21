@@ -5,3 +5,5 @@ sweep
 
 syntax: glob
 *.o
+*.orig
+*.swp
