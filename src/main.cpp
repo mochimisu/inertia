@@ -23,6 +23,7 @@ int frameCount = 0;
 Sweep *sweep;
 Mesh *mesh;
 Shader *shade;
+Vehicle *vehicle;
 
 GLuint skyText, skyTextCube;
 
@@ -237,7 +238,7 @@ void drawSkyBox2() {
 }
 
 void drawSkyBox() {
-    glUseProgramObjectARB(NULL);
+    glUseProgramObjectARB(0);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(-viewport.w/2,viewport.w/2,-viewport.h/2,viewport.h/2,1,20);
@@ -286,7 +287,7 @@ void drawStuff() {
 }
 
 void drawDepthBuffer() {
-    glUseProgramObjectARB(NULL);
+    glUseProgramObjectARB(0);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(-viewport.w/2,viewport.w/2,-viewport.h/2,viewport.h/2,1,20);
@@ -310,7 +311,7 @@ void drawDepthBuffer() {
 }
 
 void drawTestBuffer() {
-    glUseProgramObjectARB(NULL);
+    glUseProgramObjectARB(0);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(-viewport.w/2,viewport.w/2,-viewport.h/2,viewport.h/2,1,20);
@@ -342,7 +343,7 @@ void drawConsole() {
 
   std::ostringstream buff;
 
-  glUseProgramObjectARB(NULL);
+  glUseProgramObjectARB(0);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glOrtho(-viewport.w/2,viewport.w/2,-viewport.h/2,viewport.h/2,1,20);
@@ -573,6 +574,10 @@ void display()
 	
   setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2]);
   glCullFace(GL_BACK);
+  vec3 location = vehicle->getPerspectiveLocation();
+  vec3 center = vehicle->getPerspectiveCenter();
+  vec4 uVec = vehicle->uVec();
+  //gluLookAt(location[VX], location[VY], location[VZ], center[VX], center[VY], center[VZ], uVec[VX], uVec[VY], uVec[VZ]);
   drawStuff();
   if(dispSkybox)
     drawSkyBox2();
@@ -602,6 +607,8 @@ void display()
     imgSaver->saveFrame();
     rotationDeg--;
   }
+
+  vehicle->draw();
 	
   glutSwapBuffers();
 }
@@ -951,6 +958,7 @@ int main(int argc,char** argv) {
   Mesh temp; mesh->subdivide(temp); temp.subdivide(*mesh);
   // recompute vertex normals
   mesh->computeVertexNormals();
+  vehicle = new Vehicle(sweep, mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(0,0,0,1)), vec3(1,0,0));
 
   //And Go!
   glutMainLoop();
