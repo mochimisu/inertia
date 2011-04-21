@@ -2,8 +2,9 @@
 
 class Vehicle {
   public:
-    void accelerate();
-    void decelerate();
-    void draw(mat4 rotation); // handles translation on its own
+    void setAccelerate(bool is Accelerating);
+    void draw(); // handles translation on its own
   private:
+    bool isAccelerating;
+    mat4 location; // location based on whackness
 };
