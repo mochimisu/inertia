@@ -95,11 +95,14 @@
     <ClInclude Include="src\LoadImage.h" />
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\mesh.h" />
+    <ClInclude Include="src\RenderOptions.h" />
     <ClInclude Include="src\shaders.h" />
     <ClInclude Include="src\sweep.h" />
     <ClInclude Include="src\ucb\Image.h" />
     <ClInclude Include="src\ucb\ImageSaver.h" />
     <ClInclude Include="src\UCB\UCBglobal.h" />
+    <ClInclude Include="src\Vehicle.h" />
+    <ClInclude Include="src\Viewport.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="sweep.trk" />
@@ -115,6 +118,7 @@
     <ClCompile Include="src\sweep.cpp" />
     <ClCompile Include="src\ucb\Image.cpp" />
     <ClCompile Include="src\ucb\ImageSaver.cpp" />
+    <ClCompile Include="src\Vehicle.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
