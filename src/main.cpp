@@ -24,34 +24,7 @@ enum { DISPLAY_DEPTH_BUFFER,
        DISPLAY_DEPTH_SQUARED_HALF_BLUR_BUFFER,
        DISPLAY_DEPTH_SQUARED_COMPLETE_BUFFER };
 
-//****************************************************
-// Global Variables
-//****************************************************
-Viewport viewport;
-UCB::ImageSaver * imgSaver;
-int frameCount = 0;
-Sweep *sweep;
-Mesh *mesh;
-Shader *shade;
-Vehicle *vehicle;
-
-GLuint skyText, skyTextCube;
-
-//fps counter
-int fpsFrame=0, fpsTime, fpsTimebase = 0;
-double curFps=0;
-bool dispFps;
-
-//to save a movie
-int framesToSave = 0;
-int rotationDeg = 0;
-
-//static console output
-Console staticConsole;
-
-//shadow map resolution
-#define SHADOW_MAP_RATIO 2
-				
+//===SHADOW STUFF
 // Hold id of the framebuffer for light POV rendering
 GLuint fboId;
 // Z values will be rendered to this texture when using fboId framebuffer
@@ -292,289 +265,58 @@ void drawDebugBuffer(int option) {
   glLoadIdentity();
   glColor4f(1,1,1,1);
   glActiveTextureARB(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D,skyText);
-  drawInvertedTextureCube(100);
-  glPopMatrix();
-}
 
-void drawSkyBox() {
-    glUseProgramObjectARB(NULL);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(-viewport.w/2,viewport.w/2,-viewport.h/2,viewport.h/2,1,20);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glColor4f(1,1,1,1);
-    glActiveTextureARB(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D,skyText);
-    glEnable(GL_TEXTURE_2D);
-    glTranslatef(0,0,-15);
-    glBegin(GL_QUADS);
-
-    glTexCoord2d(0,0);glVertex3f(-viewport.w/2,-viewport.h/2,0);
-    glTexCoord2d(1,0);glVertex3f(viewport.w/2,-viewport.h/2,0);
-    glTexCoord2d(1,1);glVertex3f(viewport.w/2,viewport.h/2,0);
-    glTexCoord2d(0,1);glVertex3f(-viewport.w/2,viewport.h/2,0);
-	 
-    glEnd();
-    glDisable(GL_TEXTURE_2D);
-}
-
-void drawStuff() {
-
-  if(dispGround) {
-    // Ground
-    glColor4f(1.0f,1.0f,1.0f,1);
-  
-    glActiveTextureARB(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D,skyText);
-    glBegin(GL_QUADS);
-    glTexCoord2d(0,0);glVertex3f(-50,-10,-50);
-    glTexCoord2d(1,0);glVertex3f(-50,-10, 50);
-    glTexCoord2d(1,1);glVertex3f( 50,-10, 50);
-    glTexCoord2d(0,1);glVertex3f( 50,-10,-50);
-    glEnd();
+  switch(option) {
+  default:
+  case DISPLAY_DEPTH_BUFFER:
+    glBindTexture(GL_TEXTURE_2D,depthTextureId);
+  break;
+  case DISPLAY_DEPTH_SQUARED_HALF_BLUR_BUFFER:
+    glBindTexture(GL_TEXTURE_2D,blurFboIdColorTextureId);
+  break;
+  case DISPLAY_DEPTH_SQUARED_COMPLETE_BUFFER:
+    glBindTexture(GL_TEXTURE_2D,colorTextureId);
+  break;
   }
 
+  glEnable(GL_TEXTURE_2D);
+  glTranslated(0,0,-1);
+  glBegin(GL_QUADS);
+  glTexCoord2d(0,0);glVertex3f(0,0,0);
+  glTexCoord2d(1,0);glVertex3f(RENDER_WIDTH/2,0,0);
+  glTexCoord2d(1,1);glVertex3f(RENDER_WIDTH/2,RENDER_HEIGHT/2,0);
+  glTexCoord2d(0,1);glVertex3f(0,RENDER_HEIGHT/2,0);
+  glEnd();
+  glDisable(GL_TEXTURE_2D);
+}
 
-  //maintain orientation with depth buffer
+void drawObjects(GeometryShader * curShade) {
+
+  // Ground [double for face culling]
+  if(renderOpt.isDispGround()) {
+      glColor4f(1.0f,1.0f,1.0f,1);
+      glActiveTextureARB(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D,bgText);
+      glBegin(GL_QUADS);
+      glTexCoord2d(0,1);glVertex3f( 50,-10,-50);
+      glTexCoord2d(1,1);glVertex3f( 50,-10, 50);
+      glTexCoord2d(1,0);glVertex3f(-50,-10, 50);
+      glTexCoord2d(0,0);glVertex3f(-50,-10,-50);
+      glEnd();
+      glBegin(GL_QUADS);
+      glTexCoord2d(0,0);glVertex3f(-50,-10,-50);
+      glTexCoord2d(1,0);glVertex3f(-50,-10, 50);
+      glTexCoord2d(1,1);glVertex3f( 50,-10, 50);
+      glTexCoord2d(0,1);glVertex3f( 50,-10,-50);
+      glEnd();
+    }
+
   startTranslate(0,0,-5);
   sweep->renderWithDisplayList(*curShade,20,0.3,20);
   endTranslate();
 }
 
-void drawDepthBuffer() {
-    glUseProgramObjectARB(NULL);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(-viewport.w/2,viewport.w/2,-viewport.h/2,viewport.h/2,1,20);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glColor4f(1,1,1,1);
-    glActiveTextureARB(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D,depthTextureId);
-    //glBindTexture(GL_TEXTURE_2D,skyTextCube); //testing cube maps
-    glEnable(GL_TEXTURE_2D);
-    glTranslatef(0,0,-1);
-    glBegin(GL_QUADS);
-
-    glTexCoord2d(0,0);glVertex3f(0,0,0);
-    glTexCoord2d(1,0);glVertex3f(viewport.w/2,0,0);
-    glTexCoord2d(1,1);glVertex3f(viewport.w/2,viewport.h/2,0);
-    glTexCoord2d(0,1);glVertex3f(0,viewport.h/2,0);
-	 
-    glEnd();
-    glDisable(GL_TEXTURE_2D);
-}
-
-void drawTestBuffer() {
-    glUseProgramObjectARB(NULL);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(-viewport.w/2,viewport.w/2,-viewport.h/2,viewport.h/2,1,20);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glColor4f(1,1,1,1);
-    glActiveTextureARB(GL_TEXTURE0);
-    //glBindTexture(GL_TEXTURE_2D,depthTextureId);
-    glBindTexture(GL_TEXTURE_2D,skyTextCube); //testing cube maps
-    glEnable(GL_TEXTURE_2D);
-    glTranslatef(0,0,-1);
-    glBegin(GL_QUADS);
-
-    glTexCoord2d(0,0);glVertex3f(0,0,0);
-    glTexCoord2d(1,0);glVertex3f(viewport.w/2,0,0);
-    glTexCoord2d(1,1);glVertex3f(viewport.w/2,viewport.h/2,0);
-    glTexCoord2d(0,1);glVertex3f(0,viewport.h/2,0);
-	 
-    glEnd();
-    glDisable(GL_TEXTURE_2D);
-}
-
-void drawConsole() {
-
-  //enable the console
-
-  staticConsole.config(-viewport.w/2+10,-viewport.w/2+15*12+10,15,12);
-  //staticConsole.config(-viewport.w/2 + 1,0,9,10);
-
-  std::ostringstream buff;
-
-  glUseProgramObjectARB(NULL);
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  glOrtho(-viewport.w/2,viewport.w/2,-viewport.h/2,viewport.h/2,1,20);
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-    glActiveTextureARB(GL_TEXTURE0);
-
-  glTranslatef(0,0,-1); // put console in view
-
-  //static console
-  buff.str("");
-  if(dispFps) {
-    buff << "FPS: ";
-    buff << curFps;
-  } else {
-    buff << "Display FPS";
-  }
-  buff << " [ r ]";
-  staticConsole.output(buff.str());
-
-  buff.str("");
-  buff << "Shaders: ";
-  if(shade->isShader())
-    buff << "On";
-  else
-    buff << "Off";
-  buff << " [ z ]";
-  staticConsole.output(buff.str());
-
-  buff.str("");
-  buff << "Shading: ";
-  if(shade->isPhong())
-    buff << "Phong";
-  else
-    buff << "Gourad";
-  buff << " [ p ]";
-  staticConsole.output(buff.str());
-
-  buff.str("");
-  buff << "Texture Map: ";
-  if(shade->isTextureMap())
-    buff << "On";
-  else
-    buff << "Off";
-  buff << " [ t ]";
-  staticConsole.output(buff.str());
-
-  buff.str("");
-  buff << "Bump Map: ";
-  if(shade->isBumpMap())
-    buff << "On";
-  else
-    buff << "Off";
-  buff << " [ b ]";
-  staticConsole.output(buff.str());
-
-  buff.str("");
-  buff << "Displacement Map: ";
-  if(shade->isDisplacement())
-    buff << "On";
-  else
-    buff << "Off";
-  buff << " [ d ]";
-  staticConsole.output(buff.str());
-
-  buff.str("");
-  buff << "Shadows: ";
-  if(shade->isShadows())
-    buff << "On";
-  else
-    buff << "Off";
-  buff << " [ h ]";
-  staticConsole.output(buff.str());
-
-  buff.str("");
-  buff << "Ambient Occlusion: ";
-  if(shade->isAmbientOcclusion())
-    buff << "On";
-  else
-    buff << "Off";
-  buff << " [ a ]";
-  staticConsole.output(buff.str());
-
-  buff.str("");
-  buff << "Percentage Closer Filtering: ";
-  if(shade->isPcf())
-    buff << "On";
-  else
-    buff << "Off";
-  buff << " [ f ]";
-  staticConsole.output(buff.str());
-
-  buff.str("");
-  buff << "Skybox: ";
-  if(dispSkybox)
-    buff << "On";
-  else
-    buff << "Off";
-  buff << " [ y ]";
-  staticConsole.output(buff.str());
-
-  buff.str("");
-  buff << "Display Ground: ";
-  if(dispGround)
-    buff << "On";
-  else
-    buff << "Off";
-  buff << " [ g ]";
-  staticConsole.output(buff.str());
-
-  buff.str("");
-  buff << "Display Depth Buffer: ";
-  if(dispDepthBuffer)
-    buff << "On";
-  else
-    buff << "Off";
-  buff << " [ u ]";
-  staticConsole.output(buff.str());
-
-  buff.str("");
-  buff << "Display Ambient Layer: ";
-  if(shade->isDispAmbientLayer())
-    buff << "On";
-  else
-    buff << "Off";
-  buff << " [ m ]";
-  staticConsole.output(buff.str());
-
-  buff.str("");
-  buff << "[ s:save ], [ q:save 100 frames ], [ c:toggle console ], [ esc: quit ]";
-  staticConsole.output(buff.str());
-  buff.str("");
-  buff << "[ arrow keys+pgup/pgdn:move camera ], [ home:reset camera ], [ end:reset light ], [ numpad:move lights ]";
-  staticConsole.output(buff.str());
-
-  glDisable(GL_LIGHTING);
-  glDisable(GL_TEXTURE_2D);
-  glColor4f(1,1,1,1);
-  staticConsole.draw();
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_LIGHTING);
-  glEnd();
-
-}
-
-//-------------------------------------------------------------------------------
-/// You will be calling all of your drawing-related code from this function.
-/// Nowhere else in your code should you use glBegin(...) and glEnd() except code
-/// called from this method.
-///
-/// To force a redraw of the screen (eg. after mouse events or the like) simply call
-/// glutPostRedisplay();
-void displayold() {
-  //Clear Buffers
-  glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-  glMatrixMode(GL_MODELVIEW);					// indicate we are specifying camera transformations
-  glLoadIdentity();							// make sure transformation is "zero'd"
-
-  drawStuff();
-  // feel free to remove the mesh; it's mainly there as a demo
-  //mesh->draw(*shade);
-
-  if(framesToSave > 0) {
-    imgSaver->saveFrame();
-    framesToSave--;
-  }
-
-  //Now that we've drawn on the buffer, swap the drawing buffer and the displaying buffer.
-  glutSwapBuffers();
-
-}
-
-
-void display() 
+void renderScene() 
 {
   //First step: Render from the light POV to a FBO, store depth and square depth in a 32F frameBuffer
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,fboId);	//Rendering offscreen
@@ -624,40 +366,12 @@ void display()
   glLightfv(GL_LIGHT0, GL_POSITION, tempLight);
 
   glCullFace(GL_BACK);
-  vec3 location = vehicle->getPerspectiveLocation();
-  vec3 center = vehicle->getPerspectiveCenter();
-  vec4 uVec = vehicle->uVec();
-  //gluLookAt(location[VX], location[VY], location[VZ], center[VX], center[VY], center[VZ], uVec[VX], uVec[VY], uVec[VZ]);
-  drawStuff();
-  if(dispSkybox)
-    drawSkyBox2();
+  //draw objects using our shadow shader
+  drawObjects(shade);
+  
+  if(renderOpt.isDepthBuffer())
+     drawDebugBuffer(renderOpt.getDepthBufferOption());
 
-
-  if(dispConsole)
-    drawConsole();
-
-  //display depth buffer
-  if(dispDepthBuffer)
-    drawDepthBuffer();
-  //drawTestBuffer();
-
-	
-  if(framesToSave > 0) {
-    imgSaver->saveFrame();
-    framesToSave--;
-  }
-
-  if(rotationDeg > 0) {
-    vec3 axis;
-    if(rotationDeg > 90) 
-      axis =vec3(-1, 0.5, 0);
-    else
-      axis=vec3(0.5,-1,0);
-    viewport.orientation = viewport.orientation * rotation3D(axis, 4);
-    imgSaver->saveFrame();
-    rotationDeg--;
-  }
-	
   glutSwapBuffers();
 }
 
@@ -773,7 +487,6 @@ int main(int argc,char** argv) {
   if(argc > 2)
     bg = argv[2];
   loadTexture(bg,bgText);
-  vehicle = new Vehicle(sweep, mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(0,0,0,1)), vec3(1,0,0));
 
   //And Go!
   glutMainLoop();
