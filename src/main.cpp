@@ -46,6 +46,7 @@ Sweep *sweep;
 Vehicle *vehicle;
 //for the sake of cleanliness
 RenderOptions renderOpt;
+int frameCount;
 
 /*
  * Shadow stuff. Will probably move somewhere else.
@@ -304,6 +305,9 @@ void drawObjects(GeometryShader * curShade) {
 
   startTranslate(0,0,-5);
   sweep->renderWithDisplayList(*curShade,20,0.3,20);
+  vehicle->setSweepTime(frameCount);
+  frameCount++;
+  cout << frameCount << endl;
   vec3 location = vehicle->getPerspectiveLocation();
   vec3 center = vehicle->getPerspectiveCenter();
   vec4 uVec = vehicle->uVec();
@@ -491,6 +495,7 @@ int main(int argc,char** argv) {
   loadTexture(bg,bgText);
 
   vehicle = new Vehicle(sweep, mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(0,0,0,1)), vec3(1,0,0));
+  vehicle->setAccelerate(true);
 
   //And Go!
   glutMainLoop();

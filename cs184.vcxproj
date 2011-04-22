@@ -112,6 +112,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Console.cpp" />
+    <ClCompile Include="src\functions.cpp" />
     <ClCompile Include="src\LoadImage.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\mesh.cpp" />

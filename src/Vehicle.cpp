@@ -1,6 +1,7 @@
 // vim: ts=2:sw=2:softtabstop=2
 
 #include "algebra3.h"
+#include "functions.h"
 #include "Vehicle.h"
 
 // use the sweep to get F vector
@@ -53,9 +54,11 @@ class Vehicle;
 
 Vehicle::Vehicle(Sweep * sweep, mat4 startLocation, vec3 startDirection) {
   this->sweep = sweep;
-  this->location = location;
-  this->direction = direction;
-
+  this->location = startLocation;
+  this->direction = startDirection;
+  this->velocity = startDirection; // assume velocity starts off that way
+  this->lastTime = 0;
+  this->lastSweepTime = 0;
 }
 
 void Vehicle::setAccelerate(bool isAccelerating) {
@@ -63,11 +66,15 @@ void Vehicle::setAccelerate(bool isAccelerating) {
 }
 
 void Vehicle::draw() {
+  glPushMatrix();
+  applyMat4(this->location);
 
-  //glutSoldiTeapot's faces are backwards
+  //glutSolidTeapot's faces are backwards
   glFrontFace(GL_CW);
   glutSolidTeapot(100);
+
   glFrontFace(GL_CCW);
+  glPopMatrix();
 }
 
 void Vehicle::setLocation(mat4 location) {
