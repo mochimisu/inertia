@@ -194,18 +194,19 @@ void endTranslate() {
 }
 
 void startTeapotMove(mat4 whack) {
+  mat4 whacktranspose = whack.transpose();
   glPushMatrix();
 
   glTranslatef(0,0,-5);
   applyMat4(viewport.orientation);
-  applyMat4(whack.transpose());
+  applyMat4(whacktranspose);
 
   glMatrixMode(GL_TEXTURE);
-  glActiveTextureARB(GL_TEXTURE8);
+  glActiveTextureARB(GL_TEXTURE7);
   glPushMatrix();
   glTranslatef(0,0,-5);
   applyMat4(viewport.orientation);
-  applyMat4(whack.transpose());
+  applyMat4(whacktranspose);
 }
 
 
@@ -332,13 +333,11 @@ void drawObjects(GeometryShader * curShade) {
 
 
   mat4 vehLoc = vehicle->getCurrentLocation();
-  cout << vehLoc[0] << endl;
-  cout << vehLoc[1] << endl;
-  cout << vehLoc[2] << endl;
-  cout << vehLoc[3] << endl;
-  vehicle->setSweepTime(frameCount / 100.0);
-  frameCount = ++frameCount % 100;
-  cout << frameCount << endl;
+  //cout << vehLoc[0] << endl;
+  //cout << vehLoc[1] << endl;
+  //cout << vehLoc[2] << endl;
+  //cout << vehLoc[3] << endl;
+  //cout << frameCount << endl;
   vec3 location = vehicle->getPerspectiveLocation();
   vec3 center = vehicle->getPerspectiveCenter();
   vec4 uVec = vehicle->uVec();
@@ -360,6 +359,9 @@ void drawObjects(GeometryShader * curShade) {
 
 void renderScene() 
 {
+  vehicle->setSweepTime(frameCount / 500.0);
+  frameCount = ++frameCount % 500;
+
   //First step: Render from the light POV to a FBO, store depth and square depth in a 32F frameBuffer
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,fboId);	//Rendering offscreen
   //glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);	//Rendering onscreen
