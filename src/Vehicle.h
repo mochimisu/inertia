@@ -1,6 +1,7 @@
 // vim: ts=2:sw=2:softtabstop=2
 
 #include "sweep.h"
+#include "functions.h"
 
 /* This is a Vehicle class. Operate it by initializing it with a sweep.
  * Then you can set the initial location on the sweep. Lastly from time
@@ -18,6 +19,7 @@ class Vehicle {
     void setLocation(mat4 location);
     void setDirection(mat4 direction);
     void setTime(double newTime);
+    void setSweepTime(double newSweepTime);
     void turnLeft();
     void turnRight();
     vec3 getPerspectiveLocation();

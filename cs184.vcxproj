@@ -91,6 +91,7 @@
   <ItemGroup>
     <ClInclude Include="include\algebra3.h" />
     <ClInclude Include="src\Console.h" />
+    <ClInclude Include="src\functions.h" />
     <ClInclude Include="src\global.h" />
     <ClInclude Include="src\LoadImage.h" />
     <ClInclude Include="src\main.h" />
