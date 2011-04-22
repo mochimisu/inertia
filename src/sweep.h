@@ -14,7 +14,7 @@
 #include <map>
 
 #include "algebra3.h"
-#include "main.h"
+//#include "main.h"
 #include "shaders.h"
 
 #include "LoadImage.h"

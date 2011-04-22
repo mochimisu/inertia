@@ -1,4 +1,5 @@
 #include "main.h"
+#include "functions.h"
 
 // Constants (some issues with aspect ratio; and i think defines will speed some stuff up. keep it?)
 #define RENDER_WIDTH 1024.0
@@ -42,8 +43,10 @@ GeometryShader *depthShade;
 
 //==OBJECTS
 Sweep *sweep;
+Vehicle *vehicle;
 //for the sake of cleanliness
 RenderOptions renderOpt;
+int frameCount;
 
 /*
  * Shadow stuff. Will probably move somewhere else.
@@ -166,29 +169,20 @@ void setTextureMatrix() {
   glMatrixMode(GL_MODELVIEW);
 }
 
-// A simple helper function to load a mat4 into opengl
-void applyMat4(mat4 &mat) {
-  double glmat[16];
-  int k = 0;
-  for (int j = 0; j < 4; j++) {
-    for (int i = 0; i < 4; i++) {
-      glmat[k++] = mat[j][i];
-    }
-  }
-  glMultMatrixd(glmat);
-}
 
 
 // During translation, we also have to maintain the GL_TEXTURE7, used in the shadow shader
 // to determine if a vertex is in the shadow.
 void startTranslate(float x,float y,float z) {
   glPushMatrix();
+
   glTranslatef(x,y,z);
   applyMat4(viewport.orientation);
 	
   glMatrixMode(GL_TEXTURE);
   glActiveTextureARB(GL_TEXTURE7);
   glPushMatrix();
+
   glTranslatef(x,y,z);
   applyMat4(viewport.orientation);
 }
@@ -198,6 +192,22 @@ void endTranslate() {
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
 }
+
+void startTeapotMove(mat4 whack) {
+  glPushMatrix();
+
+  glTranslatef(0,0,-5);
+  applyMat4(viewport.orientation);
+  applyMat4(whack.transpose());
+
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE8);
+  glPushMatrix();
+  glTranslatef(0,0,-5);
+  applyMat4(viewport.orientation);
+  applyMat4(whack.transpose());
+}
+
 
 void blurShadowMap() {
   //glDisable(GL_DEPTH_TEST);
@@ -291,6 +301,7 @@ void drawDebugBuffer(int option) {
 }
 
 void drawObjects(GeometryShader * curShade) {
+  //viewport.orientation = vehicle->getCurrentLocation();
 
   // Ground [double for face culling]
   if(renderOpt.isDispGround()) {
@@ -312,8 +323,39 @@ void drawObjects(GeometryShader * curShade) {
     }
 
   startTranslate(0,0,-5);
+  //cout << "Dumping in main" << endl;
+  //cout << glGetError() << endl;
   sweep->renderWithDisplayList(*curShade,20,0.3,20);
+  //cout << glGetError() << endl;
   endTranslate();
+
+
+
+  mat4 vehLoc = vehicle->getCurrentLocation();
+  cout << vehLoc[0] << endl;
+  cout << vehLoc[1] << endl;
+  cout << vehLoc[2] << endl;
+  cout << vehLoc[3] << endl;
+  vehicle->setSweepTime(frameCount / 100.0);
+  frameCount = ++frameCount % 100;
+  cout << frameCount << endl;
+  vec3 location = vehicle->getPerspectiveLocation();
+  vec3 center = vehicle->getPerspectiveCenter();
+  vec4 uVec = vehicle->uVec();
+
+  //gluLookAt(location[VX], location[VY], location[VZ], center[VX], center[VY], center[VZ], uVec[VX], uVec[VY], uVec[VZ]);
+
+  //startTranslate(vehLoc[0][3], vehLoc[1][3], vehLoc[2][3]-5);
+  startTeapotMove(vehicle->getCurrentLocation());
+  vehicle->draw();
+  endTranslate();
+
+  //Chris: i dont know if you want to store position inside of vehicle, but you would change reference by
+  //p_camera = something
+  //l_camera = something
+
+  //l_camera = location;
+  //p_camera = center;
 }
 
 void renderScene() 
@@ -350,7 +392,7 @@ void renderScene()
 		
   // Clear previous frame values
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+  
   //Using the shadow shader
   glUseProgramObjectARB(shade->getProgram());
   glUniform1iARB(shade->getShadowMapAttrib(),7);
@@ -451,6 +493,7 @@ int main(int argc,char** argv) {
   glEnable(GL_DEPTH_TEST);
   glClearColor(0,0,0,1.0f);
   glEnable(GL_CULL_FACE);
+  glFrontFace(GL_CCW);
   glHint(GL_PERSPECTIVE_CORRECTION_HINT,GL_NICEST);
 	
   glutDisplayFunc(renderScene);
@@ -487,6 +530,10 @@ int main(int argc,char** argv) {
   if(argc > 2)
     bg = argv[2];
   loadTexture(bg,bgText);
+
+  vehicle = new Vehicle(sweep, mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(0,0,0,1)), vec3(1,0,0));
+  vehicle->setAccelerate(true);
+  vehicle->setVelocity(0.1);
 
   //And Go!
   glutMainLoop();

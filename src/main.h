@@ -12,11 +12,12 @@
 
 #include "global.h"
 
-#include "sweep.h"
+//#include "sweep.h"
 #include "mesh.h"
 
 #include "LoadImage.h"
 #include "Console.h"
+#include "Vehicle.h"
 
 #include "Viewport.h"
 #include "RenderOptions.h"
