@@ -197,15 +197,15 @@ void startTeapotMove(mat4 whack) {
   glPushMatrix();
 
   glTranslatef(0,0,-5);
-  applyMat4(whack.transpose());
   applyMat4(viewport.orientation);
+  applyMat4(whack.transpose());
 
   glMatrixMode(GL_TEXTURE);
   glActiveTextureARB(GL_TEXTURE8);
   glPushMatrix();
   glTranslatef(0,0,-5);
-  applyMat4(whack.transpose());
   applyMat4(viewport.orientation);
+  applyMat4(whack.transpose());
 }
 
 
