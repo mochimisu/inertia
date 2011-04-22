@@ -66,15 +66,23 @@ void Vehicle::setAccelerate(bool isAccelerating) {
 }
 
 void Vehicle::draw() {
-  glPushMatrix();
-  applyMat4(this->location);
+
+  //cout << "Begin error dumping" << endl;
+  //cout << glGetError() << endl;
+  //glPushMatrix();
+  //cout << glGetError() << endl;
+  //applyMat4(this->location.transpose());
 
   //glutSolidTeapot's faces are backwards
   glFrontFace(GL_CW);
+  //cout << glGetError() << endl;
+  //glTranslatef(100000,0,0);
+  //cout << glGetError() << endl;
   glutSolidTeapot(100);
 
+
   glFrontFace(GL_CCW);
-  glPopMatrix();
+  //glPopMatrix();
 }
 
 void Vehicle::setLocation(mat4 location) {
@@ -94,7 +102,21 @@ void Vehicle::setSweepTime(double newSweepTime) {
   cerr << "warning: whackness" << endl;
   double delta = newSweepTime - lastSweepTime;
   vec3 velocityScaled = this->velocity * delta;
-  this->location = mat4(vec4(1,0,0,velocityScaled[0]), vec4(0,1,0,velocityScaled[1]), vec4(0,0,1,velocityScaled[2]), vec4(0,0,0,1)) * this->location;
+  vec3 temp = this->sweep->sample(newSweepTime).point;
+  this->location = mat4(vec4(1,0,0,temp[0]), vec4(0,1,0,temp[1]), vec4(0,0,1,temp[2]), vec4(0,0,0,1));
+
+  //double time = getTime(vec3((this->location).transpose()[2], VW), 10, 10, sweep, lastSweepTime);
+  double time = newSweepTime;
+  vec3 fVec = f(this->sweep, time-.05);
+	vec3 rVec = r(this->sweep, time-.05);
+	vec3 uPrimeVec = uPrime(this->sweep, time-.05);
+	PathPoint loc = this->sweep->sample(time-.05);
+	fVec.normalize();
+	uPrimeVec.normalize();
+	rVec.normalize();
+	mat4 R(vec4(fVec, 0), vec4(uPrimeVec, 0), vec4(rVec, 0), vec4(0,0,0,1));
+  //this->location = R;
+  //this->location = mat4(vec4(1,0,0,velocityScaled[0]), vec4(0,1,0,velocityScaled[1]), vec4(0,0,1,velocityScaled[2]), vec4(0,0,0,1)) * this->location;
   this->velocity = delta * this->getAcceleration() + this->velocity;
   this->lastSweepTime = newSweepTime;
 }
@@ -138,4 +160,13 @@ vec3 Vehicle::uVec() {
   double time;
   time = 0;
   return u(this->sweep, time);
+}
+
+
+mat4 Vehicle::getCurrentLocation() {
+  return this->location;
+}
+
+void Vehicle::setVelocity(double velocity) {
+  this->velocity = velocity * this->direction;
 }

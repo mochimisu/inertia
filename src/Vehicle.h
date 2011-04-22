@@ -17,12 +17,14 @@ class Vehicle {
     void draw(); // handles translation on its own
     void setLocation(mat4 location);
     void setDirection(mat4 direction);
+    void setVelocity(double velocity);
     void setTime(double newTime);
     void setSweepTime(double newSweepTime);
     void turnLeft();
     void turnRight();
     vec3 getPerspectiveLocation();
     vec3 getPerspectiveCenter();
+    mat4 getCurrentLocation();
     vec3 uVec();
   private:
     mat4 location; // location based on whackness
