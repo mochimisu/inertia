@@ -59,7 +59,7 @@ class GeometryShader : public Shader {
   void toggleDisplacement() { displacementEnabled = !displacementEnabled; }
 
   //Bools
-  bool isDisplacement() { return displacementEnabled; }
+  bool isDisplacement() { return displacementEnabled != 0; }
 
   //Handles
   GLint getTangentAttrib() { return tangentAttrib; }

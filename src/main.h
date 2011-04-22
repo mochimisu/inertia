@@ -21,7 +21,6 @@
 
 #include "Viewport.h"
 #include "RenderOptions.h"
-#include "functions.h"
 
 #include <stdio.h>
 #include <stdlib.h>

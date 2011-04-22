@@ -1,7 +1,6 @@
 // vim: ts=2:sw=2:softtabstop=2
 
 #include "sweep.h"
-#include "functions.h"
 
 /* This is a Vehicle class. Operate it by initializing it with a sweep.
  * Then you can set the initial location on the sweep. Lastly from time

@@ -1,4 +1,5 @@
 #include "main.h"
+#include "functions.h"
 
 // Constants (some issues with aspect ratio; and i think defines will speed some stuff up. keep it?)
 #define RENDER_WIDTH 1024.0
