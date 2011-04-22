@@ -52,6 +52,7 @@ int frameCount;
  * Shadow stuff. Will probably move somewhere else.
  */
 void generateShadowFBO() {
+  //cout << "sfbostart " << glGetError() << endl;
   int shadowMapWidth = RENDER_WIDTH * SHADOW_MAP_COEF;
   int shadowMapHeight = RENDER_HEIGHT * SHADOW_MAP_COEF;
 	
@@ -77,7 +78,10 @@ void generateShadowFBO() {
   glBindTexture(GL_TEXTURE_2D, colorTextureId);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  //cout << "c " << glGetError() << endl;
+  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  //cout << "d " << glGetError() << endl;
 	
   //glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 	
@@ -123,6 +127,7 @@ void generateShadowFBO() {
     printf("GL_FRAMEBUFFER_COMPLETE_EXT failed for blur FBO, CANNOT use FBO\n");
 
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+  //cout << "sfboend " << glGetError() << endl;
 }
 
 void setupMatrices(float position_x,float position_y,float position_z,float lookAt_x,float lookAt_y,float lookAt_z)
@@ -174,23 +179,31 @@ void setTextureMatrix() {
 // During translation, we also have to maintain the GL_TEXTURE7, used in the shadow shader
 // to determine if a vertex is in the shadow.
 void startTranslate(float x,float y,float z) {
+  cout << "a0: " << glGetError() << endl;
   glPushMatrix();
+  cout << "a1: " << glGetError() << endl;
 
   glTranslatef(x,y,z);
   applyMat4(viewport.orientation);
 	
   glMatrixMode(GL_TEXTURE);
   glActiveTextureARB(GL_TEXTURE7);
+  cout << "a2: " << glGetError() << endl;
   glPushMatrix();
+  cout << "a3: " << glGetError() << endl;
 
   glTranslatef(x,y,z);
   applyMat4(viewport.orientation);
 }
 
 void endTranslate() {
+  cout << "b3: " << glGetError() << endl;
   glPopMatrix();
+  cout << "b2: " << glGetError() << endl;
   glMatrixMode(GL_MODELVIEW);
+  cout << "b1: " << glGetError() << endl;
   glPopMatrix();
+  cout << "b0: " << glGetError() << endl;
 }
 
 void startTeapotMove(mat4 whack) {
@@ -323,12 +336,12 @@ void drawObjects(GeometryShader * curShade) {
       glEnd();
     }
 
-  startTranslate(0,0,-5);
+  //startTranslate(0,0,-5);
   //cout << "Dumping in main" << endl;
   //cout << glGetError() << endl;
   sweep->renderWithDisplayList(*curShade,20,0.3,20);
   //cout << glGetError() << endl;
-  endTranslate();
+  //endTranslate();
 
 
 
@@ -345,9 +358,9 @@ void drawObjects(GeometryShader * curShade) {
   //gluLookAt(location[VX], location[VY], location[VZ], center[VX], center[VY], center[VZ], uVec[VX], uVec[VY], uVec[VZ]);
 
   //startTranslate(vehLoc[0][3], vehLoc[1][3], vehLoc[2][3]-5);
-  startTeapotMove(vehicle->getCurrentLocation());
+  //startTeapotMove(vehicle->getCurrentLocation());
   vehicle->draw();
-  endTranslate();
+  //endTranslate();
 
   //Chris: i dont know if you want to store position inside of vehicle, but you would change reference by
   //p_camera = something
@@ -516,9 +529,13 @@ int main(int argc,char** argv) {
   //generate the shadow FBO 
   generateShadowFBO();
 
+  cout << "s0 " << glGetError() << endl;
   shade = new ShadowShader("shaders/MainVertexShader.c", "shaders/MainFragmentShader.c");
+  cout << "s1 " << glGetError() << endl;
   blurShade = new BlurShader("shaders/GaussianBlurVertexShader.c", "shaders/GaussianBlurFragmentShader.c");
+  cout << "s2 " << glGetError() << endl;
   depthShade = new GeometryShader("shaders/DepthVertexShader.c", "shaders/DepthFragmentShader.c");
+  cout << "s3 " << glGetError() << endl;
 
   sweep = new Sweep(argv[1]);
   
@@ -536,6 +553,7 @@ int main(int argc,char** argv) {
   vehicle = new Vehicle(sweep, mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(0,0,0,1)), vec3(1,0,0));
   vehicle->setAccelerate(true);
   vehicle->setVelocity(0.1);
+
 
   //And Go!
   glutMainLoop();

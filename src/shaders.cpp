@@ -117,8 +117,8 @@ Shader::Shader(string vertProg, string fragProg) {
 GeometryShader::GeometryShader(string vertProg, string fragProg) : Shader(vertProg, fragProg){
   displacementEnabled = true;
 
-  glUniform1iARB(glGetUniformLocationARB(program, "heightMap"), 1);
-  glUniform1iARB(glGetUniformLocationARB(program, "normalMap"), 2);
+  //glUniform1iARB(glGetUniformLocationARB(program, "heightMap"), 1);
+  //glUniform1iARB(glGetUniformLocationARB(program, "normalMap"), 2);
 
   tangentAttrib = glGetAttribLocationARB(program, "tangent");
   bitangentAttrib = glGetAttribLocationARB(program, "bitangent");
@@ -137,7 +137,7 @@ ShadowShader::ShadowShader(string vertProg, string fragProg) : GeometryShader(ve
   xPixelOffset = 0.01;
   yPixelOffset = 0.01;
 
-  glUniform1iARB(glGetUniformLocationARB(program, "textureMap"), 0);
+  //glUniform1iARB(glGetUniformLocationARB(program, "textureMap"), 0);
 
   bumpMapEnabledUniform = glGetUniformLocationARB(program, "bumpMapEnabled");
   textureMapEnabledUniform = glGetUniformLocationARB(program, "textureMapEnabled");
@@ -155,7 +155,7 @@ BlurShader::BlurShader(string vertProg, string fragProg) : Shader(vertProg, frag
 
   scaleUniform = glGetUniformLocationARB(program, "ScaleU");
   //textureSourceUniform = glGetUniformLocationARB(program, "textureSource");
-  glUniform1iARB(glGetUniformLocationARB(program, "textureSource"), 0);
+  //glUniform1iARB(glGetUniformLocationARB(program, "textureSource"), 0);
 }
 
 void Shader::setUniformValues() {
@@ -181,6 +181,7 @@ void ShadowShader::setUniformValues() {
 
 void BlurShader::setUniformValues() {
   Shader::setUniformValues();
+  glUniform1iARB(glGetUniformLocationARB(program, "textureSource"), 0);
   glUniform2fARB(scaleUniform,scaleUa,scaleUb);
   glUniform1iARB(textureSourceUniform, textureSource);
 }
