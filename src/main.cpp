@@ -176,15 +176,15 @@ void setTextureMatrix() {
 void startTranslate(float x,float y,float z) {
   glPushMatrix();
 
-  applyMat4(viewport.orientation);
   glTranslatef(x,y,z);
+  applyMat4(viewport.orientation);
 	
   glMatrixMode(GL_TEXTURE);
   glActiveTextureARB(GL_TEXTURE7);
   glPushMatrix();
 
-  applyMat4(viewport.orientation);
   glTranslatef(x,y,z);
+  applyMat4(viewport.orientation);
 }
 
 void endTranslate() {
@@ -192,6 +192,22 @@ void endTranslate() {
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
 }
+
+void startTeapotMove(mat4 whack) {
+  glPushMatrix();
+
+  glTranslatef(0,0,-5);
+  applyMat4(whack.transpose());
+  applyMat4(viewport.orientation);
+
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE8);
+  glPushMatrix();
+  glTranslatef(0,0,-5);
+  applyMat4(whack.transpose());
+  applyMat4(viewport.orientation);
+}
+
 
 void blurShadowMap() {
   //glDisable(GL_DEPTH_TEST);
@@ -329,7 +345,8 @@ void drawObjects(GeometryShader * curShade) {
 
   //gluLookAt(location[VX], location[VY], location[VZ], center[VX], center[VY], center[VZ], uVec[VX], uVec[VY], uVec[VZ]);
 
-  startTranslate(vehLoc[0][3], vehLoc[1][3], vehLoc[2][3]-5);
+  //startTranslate(vehLoc[0][3], vehLoc[1][3], vehLoc[2][3]-5);
+  startTeapotMove(vehicle->getCurrentLocation());
   vehicle->draw();
   endTranslate();
 
