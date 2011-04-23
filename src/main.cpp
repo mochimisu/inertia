@@ -182,25 +182,13 @@ void pushTranslate(float x,float y,float z) {
 
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
-
   glTranslatef(x,y,z);
   //applyMat4(viewport.orientation);
-  vec3 center = vehicle->getPerspectiveCenter();
-  vec3 uVec = vehicle->getPerspectiveUp();
-  uVec = vec3(0,1,0);
-  if (1) {
-  } else {
-
-		gluLookAt(location[VX], location[VY], location[VZ], center[VX], center[VY], center[VZ], uVec[VX], uVec[VY], uVec[VZ]);
-		applyMat4(mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(-1, -1, 0, 1)).transpose());
-  }
-
 	
   glMatrixMode(GL_TEXTURE);
   glActiveTextureARB(GL_TEXTURE7);
 
   glPushMatrix();
-
   glTranslatef(x,y,z);
 }
 
@@ -214,10 +202,6 @@ void pushViewportOrientation() {
 
   glPushMatrix();
   applyMat4(viewport.orientation);
-  } else {
-  		gluLookAt(location[VX], location[VY], location[VZ], center[VX], center[VY], center[VZ], uVec[VX], uVec[VY], uVec[VZ]);
-		applyMat4(mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(-1, -1, 0, 1)).transpose());
-  }
 }
 
 void pushMat4(mat4 xform) {
@@ -263,37 +247,6 @@ void popTransform() {
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
 }
-
-void startTeapotMove(mat4 whack) {
-  glPushMatrix();
-
-  glTranslatef(0,0,-5);
-vec3 location = vehicle->getPerspectiveLocation();
-  vec3 center = vehicle->getPerspectiveCenter();
-  vec3 uVec = vehicle->getPerspectiveUp();
-  uVec = vec3(0,1,0);
-  if (1) {
-  applyMat4(viewport.orientation);
-  } else {
-		gluLookAt(location[VX], location[VY], location[VZ], center[VX], center[VY], center[VZ], uVec[VX], uVec[VY], uVec[VZ]);
-		applyMat4(mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(-1, -1, 0, 1)).transpose());
-  }
-  mat4 a = whack.transpose();
-  applyMat4(a);
-
-  glMatrixMode(GL_TEXTURE);
-  glActiveTextureARB(GL_TEXTURE7);
-  glPushMatrix();
-  glTranslatef(0,0,-5);
-  if (1) {
-  applyMat4(viewport.orientation);
-  } else {
-		gluLookAt(location[VX], location[VY], location[VZ], center[VX], center[VY], center[VZ], uVec[VX], uVec[VY], uVec[VZ]);
-		applyMat4(mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(-1, -1, 0, 1)).transpose());
-  }
-  applyMat4(a);
-}
-
 
 void blurShadowMap() {
   //cout << "blurstart " << glGetError() << endl;
@@ -415,8 +368,6 @@ void drawObjects(GeometryShader * curShade) {
   pushTranslate(0,4,0);
   pushViewportOrientation();
 
-  //cout << "Dumping in main" << endl;
-  //cout << glGetError() << endl;
   sweep->renderWithDisplayList(*curShade,20,0.3,20);
   popTransform();
   popTransform();
@@ -431,24 +382,6 @@ void drawObjects(GeometryShader * curShade) {
   glutSolidCube(5);
   //p_camera = vec3(vehLoc[0][3], vehLoc[1][3], vehLoc[2][3]);
   popTransform();
-  frameCount = ++frameCount % 100;
-  cout << frameCount << endl;
-  vec3 location = vehicle->getPerspectiveLocation();
-  vec3 center = vehicle->getPerspectiveCenter();
-  vec4 uVec = vehicle->uVec();
-
-  //gluLookAt(location[VX], location[VY], location[VZ], center[VX], center[VY], center[VZ], uVec[VX], uVec[VY], uVec[VZ]);
-
-  //startTranslate(vehLoc[0][3], vehLoc[1][3], vehLoc[2][3]-5);
-  startTeapotMove(vehicle->getCurrentLocation());
-  //vehicle->draw();
-
-  //Chris: i dont know if you want to store position inside of vehicle, but you would change reference by
-  //p_camera = something
-  //l_camera = something
-
-  l_camera = location;
-  p_camera = center;
 }
 
 void renderScene() 
@@ -634,32 +567,6 @@ int main(int argc,char** argv) {
   vehicle->setAccelerate(true);
   vehicle->setVelocity(0.1);
 
-	//set up reference values for PE = mgh
-	double energy = 0;
-	double h = -DBL_MAX;
-	double minh = DBL_MAX;
-  double highestT;
-  vec3 lastPos;
-	cout << "looking for highest point on the coaster..." << endl;
-	for (double i = 0; i < 1; i+=0.00001) {
-		if (h < sweep->sample(i).point[VY]) {
-			h = max(h, sweep->sample(i).point[VY]);
-			highestT = i;
-			lastPos = sweep->sample(i).point;
-		}
-		minh = min(minh, sweep->sample(i).point[VY]);
-
-	}
-	double gravity = 2*9.8/900; // because we recalculate at 30fps
-	double lastVelocity = 0.01;
-	double lastTime = highestT;
-	h += 0.05; // never go to 0
-	cout << h << endl;
-	//double zoom = 10;
-	//saved = true;
-
-  vehicle->setH(h);
-  vehicle->setGravity(gravity);
 
   //And Go!
   glutMainLoop();
