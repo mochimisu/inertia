@@ -7,3 +7,5 @@
 void applyMat4(const mat4 &mat);
 
 #endif
+
+#endif

@@ -427,7 +427,6 @@ void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vec
 
 // the big render function
 void Sweep::render(GeometryShader &shader, int pathSamplesPerPt, double crossSectionScale, int xsectSamplesPerPt) {
-
   shader.set();
 
   // load textures

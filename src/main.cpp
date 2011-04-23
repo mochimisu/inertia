@@ -9,13 +9,13 @@
 
 //===SCENE DESCRIPTORS
 //Camera position
-vec3 p_camera(16,20,0);
+vec3 p_camera(16,10,0);
 //Camera lookAt
-vec3 l_camera(0,0,-5);
+vec3 l_camera(0,0,0);
 //Light position
-vec3 p_light(4,25,0);
+vec3 p_light(4,30,0);
 //Light lookAt
-vec3 l_light(0,0,-5);
+vec3 l_light(0,0,0);
 
 //===WINDOW PROPERTIES
 Viewport viewport;
@@ -52,6 +52,7 @@ int frameCount;
  * Shadow stuff. Will probably move somewhere else.
  */
 void generateShadowFBO() {
+  //cout << "sfbostart " << glGetError() << endl;
   int shadowMapWidth = RENDER_WIDTH * SHADOW_MAP_COEF;
   int shadowMapHeight = RENDER_HEIGHT * SHADOW_MAP_COEF;
 	
@@ -77,7 +78,10 @@ void generateShadowFBO() {
   glBindTexture(GL_TEXTURE_2D, colorTextureId);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  //cout << "c " << glGetError() << endl;
+  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  //cout << "d " << glGetError() << endl;
 	
   //glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 	
@@ -123,6 +127,7 @@ void generateShadowFBO() {
     printf("GL_FRAMEBUFFER_COMPLETE_EXT failed for blur FBO, CANNOT use FBO\n");
 
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+  //cout << "sfboend " << glGetError() << endl;
 }
 
 void setupMatrices(float position_x,float position_y,float position_z,float lookAt_x,float lookAt_y,float lookAt_z)
@@ -173,16 +178,17 @@ void setTextureMatrix() {
 
 // During translation, we also have to maintain the GL_TEXTURE7, used in the shadow shader
 // to determine if a vertex is in the shadow.
-void startTranslate(float x,float y,float z) {
+void pushTranslate(float x,float y,float z) {
+
+  glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
 
   glTranslatef(x,y,z);
-  vec3 location = vehicle->getPerspectiveLocation();
+  //applyMat4(viewport.orientation);
   vec3 center = vehicle->getPerspectiveCenter();
   vec3 uVec = vehicle->getPerspectiveUp();
   uVec = vec3(0,1,0);
   if (1) {
-  applyMat4(viewport.orientation);
   } else {
 
 		gluLookAt(location[VX], location[VY], location[VZ], center[VX], center[VY], center[VZ], uVec[VX], uVec[VY], uVec[VZ]);
@@ -192,10 +198,21 @@ void startTranslate(float x,float y,float z) {
 	
   glMatrixMode(GL_TEXTURE);
   glActiveTextureARB(GL_TEXTURE7);
+
   glPushMatrix();
 
   glTranslatef(x,y,z);
-  if (1) {
+}
+
+void pushViewportOrientation() {
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  applyMat4(viewport.orientation);
+	
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE7);
+
+  glPushMatrix();
   applyMat4(viewport.orientation);
   } else {
   		gluLookAt(location[VX], location[VY], location[VZ], center[VX], center[VY], center[VZ], uVec[VX], uVec[VY], uVec[VZ]);
@@ -203,7 +220,45 @@ void startTranslate(float x,float y,float z) {
   }
 }
 
-void endTranslate() {
+void pushMat4(mat4 xform) {
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  applyMat4(xform);
+	
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE7);
+
+  glPushMatrix();
+  applyMat4(xform);
+}
+
+void pushXformd(const GLdouble* m) {
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glMultMatrixd(m);
+	
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE7);
+
+  glPushMatrix();
+  glMultMatrixd(m);
+}
+
+void pushXformf(const GLfloat* m) {
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glMultMatrixf(m);
+	
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE7);
+
+  glPushMatrix();
+  glMultMatrixf(m);
+}
+
+void popTransform() {
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE7);
   glPopMatrix();
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
@@ -241,6 +296,7 @@ vec3 location = vehicle->getPerspectiveLocation();
 
 
 void blurShadowMap() {
+  //cout << "blurstart " << glGetError() << endl;
   //glDisable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE);
   
@@ -251,9 +307,12 @@ void blurShadowMap() {
   glUseProgramObjectARB(blurShade->getProgram());
   //glUniform2fARB( blurShade->getScaleAttrib(),1.0/ (RENDER_WIDTH * SHADOW_MAP_COEF * BLUR_COEF),0.0);
   glUniform2fARB( blurShade->getScaleAttrib(),1.0/512.0,0.0);		// horiz
-  glUniform1iARB(blurShade->getTextureSourceAttrib(),0);
+  //cout << "c " << glGetError() << endl;
+  //glUniform1iARB(blurShade->getTextureSourceAttrib(),0);
+  //cout << "d " << glGetError() << endl;
   glActiveTextureARB(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D,colorTextureId);
+
 
   //Preparing to draw quad
   glMatrixMode(GL_PROJECTION);
@@ -290,6 +349,7 @@ void blurShadowMap() {
 		 
 		
   glEnable(GL_CULL_FACE);
+  //cout << "blurend " << glGetError() << endl;
 		
 }
 
@@ -352,24 +412,25 @@ void drawObjects(GeometryShader * curShade) {
       glTexCoord2d(0,1);glVertex3f( 50,-10,-50);
       glEnd();
     }
+  pushTranslate(0,4,0);
+  pushViewportOrientation();
 
-  startTranslate(0,0,-5);
   //cout << "Dumping in main" << endl;
   //cout << glGetError() << endl;
   sweep->renderWithDisplayList(*curShade,20,0.3,20);
-  //cout << glGetError() << endl;
-  endTranslate();
-
-
+  popTransform();
+  popTransform();
 
   mat4 vehLoc = vehicle->getCurrentLocation();
-  /*
-  cout << vehLoc[0] << endl;
-  cout << vehLoc[1] << endl;
-  cout << vehLoc[2] << endl;
-  cout << vehLoc[3] << endl;
-  */
-  vehicle->setSweepTime(frameCount / 100.0);
+  vec3 location = vehicle->getPerspectiveLocation();
+  vec3 center = vehicle->getPerspectiveCenter();
+  vec4 uVec = vehicle->uVec();
+
+  pushTranslate(0,0,2);
+  //vehicle->draw();
+  glutSolidCube(5);
+  //p_camera = vec3(vehLoc[0][3], vehLoc[1][3], vehLoc[2][3]);
+  popTransform();
   frameCount = ++frameCount % 100;
   cout << frameCount << endl;
   vec3 location = vehicle->getPerspectiveLocation();
@@ -381,7 +442,6 @@ void drawObjects(GeometryShader * curShade) {
   //startTranslate(vehLoc[0][3], vehLoc[1][3], vehLoc[2][3]-5);
   startTeapotMove(vehicle->getCurrentLocation());
   //vehicle->draw();
-  endTranslate();
 
   //Chris: i dont know if you want to store position inside of vehicle, but you would change reference by
   //p_camera = something
@@ -393,6 +453,13 @@ void drawObjects(GeometryShader * curShade) {
 
 void renderScene() 
 {
+
+
+  vehicle->setSweepTime(frameCount / 500.0);
+  frameCount = ++frameCount % 500;
+
+  vehicle->setSweepTime(20.0);
+
   //First step: Render from the light POV to a FBO, store depth and square depth in a 32F frameBuffer
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,fboId);	//Rendering offscreen
   //glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);	//Rendering onscreen
@@ -411,10 +478,11 @@ void renderScene()
   //draw objects using the depth shader
   drawObjects(depthShade);
 	
+  //cout << "0 " << glGetError() << endl;
   glGenerateMipmapEXT(GL_TEXTURE_2D);
   //Save modelview/projection matrice into texture7, also add a biais
   setTextureMatrix();
-	
+
   //BLURRRRRR
   blurShadowMap();
      
@@ -429,8 +497,6 @@ void renderScene()
   //Using the shadow shader
   glUseProgramObjectARB(shade->getProgram());
   glUniform1iARB(shade->getShadowMapAttrib(),7);
-  glUniform1fARB(shade->getXPixelOffsetAttrib(),1.0/ (RENDER_WIDTH * SHADOW_MAP_COEF));
-  glUniform1fARB(shade->getYPixelOffsetAttrib(),1.0/ (RENDER_HEIGHT * SHADOW_MAP_COEF));
   glActiveTextureARB(GL_TEXTURE7);
   glBindTexture(GL_TEXTURE_2D,colorTextureId);
 	
