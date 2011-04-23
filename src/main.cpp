@@ -345,7 +345,6 @@ void drawDebugBuffer(int option) {
 }
 
 void drawObjects(GeometryShader * curShade) {
-  //viewport.orientation = vehicle->getCurrentLocation();
 
   // Ground [double for face culling]
   if(renderOpt.isDispGround()) {
@@ -373,25 +372,40 @@ void drawObjects(GeometryShader * curShade) {
   popTransform();
 
   mat4 vehLoc = vehicle->getCurrentLocation();
-  vec3 location = vehicle->getPerspectiveLocation();
-  vec3 center = vehicle->getPerspectiveCenter();
-  vec4 uVec = vehicle->uVec();
+  //vec3 location = vehicle->getPerspectiveLocation();
+  //vec3 center = vehicle->getPerspectiveCenter();
+  //vec4 uVec = vehicle->uVec();
 
-  pushTranslate(0,0,2);
-  //vehicle->draw();
-  glutSolidCube(5);
+  pushTranslate(0,4,0);
+
+  pushViewportOrientation();
+  pushMat4(vehLoc.transpose());
+
+  //double m[16];
+
+  //vehLoc = vehLoc.transpose();
+
+  //makeFromMat4(m, vehLoc);
+
+  //pushXformd(m);
+  vehicle->draw();
+  popTransform(); //pushMat4
+  popTransform(); //viewport
+  //popTransform(); //pushXformd(m)
+  //glutSolidCube(5);
   //p_camera = vec3(vehLoc[0][3], vehLoc[1][3], vehLoc[2][3]);
-  popTransform();
+
+  popTransform(); //pushtranslate 0, 0, 2
 }
 
 void renderScene() 
 {
 
 
-  vehicle->setSweepTime(frameCount / 500.0);
-  frameCount = ++frameCount % 500;
+  vehicle->setSweepTime(frameCount / 20.0);
+  frameCount = ++frameCount % 20;
 
-  vehicle->setSweepTime(20.0);
+  //vehicle->setSweepTime(20.0);
 
   //First step: Render from the light POV to a FBO, store depth and square depth in a 32F frameBuffer
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,fboId);	//Rendering offscreen
@@ -432,6 +446,10 @@ void renderScene()
   glUniform1iARB(shade->getShadowMapAttrib(),7);
   glActiveTextureARB(GL_TEXTURE7);
   glBindTexture(GL_TEXTURE_2D,colorTextureId);
+
+
+  //p_camera = vehicle->getPerspectiveLocation();
+  //l_camera = vehicle->getPerspectiveCenter();
 	
   setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2]);
   
@@ -566,6 +584,8 @@ int main(int argc,char** argv) {
   vehicle = new Vehicle(sweep, mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(0,0,0,1)), vec3(1,0,0));
   vehicle->setAccelerate(true);
   vehicle->setVelocity(0.1);
+
+
 
 
   //And Go!

@@ -6,4 +6,6 @@
 
 void applyMat4(const mat4 &mat);
 
+void makeFromMat4(double * glmat, const mat4 &mat);
+
 #endif

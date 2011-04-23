@@ -145,14 +145,14 @@ vec3 Vehicle::getPerspectiveLocation() {
   // need 6 values: location.xyz and center.xyz.
   double time; // TODO: set time
   time = 0;
-  //time = this->getTime();
+  time = this->getTime();
   return this->sweep->sample(time).point;
 }
 
 vec3 Vehicle::getPerspectiveCenter() {
   double time; // TODO: set time
   time = 0;
-  //time = this->getTime();
+  time = this->getTime();
   vec3 location = this->getPerspectiveLocation();
   vec3 fVec = f(this->sweep, time);
   fVec = this->sweep->sampleForward(time, 0.05);
