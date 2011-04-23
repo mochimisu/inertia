@@ -29,6 +29,4 @@
 #include <string.h>
 #include <float.h>
 
-
-
 #endif /* MAIN_H_ */
