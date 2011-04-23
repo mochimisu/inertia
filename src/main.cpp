@@ -372,6 +372,7 @@ void drawObjects(GeometryShader * curShade) {
   popTransform();
 
   mat4 vehLoc = vehicle->getCurrentLocation();
+  mat4 R = vehicle->getR();
   //vec3 location = vehicle->getPerspectiveLocation();
   //vec3 center = vehicle->getPerspectiveCenter();
   //vec4 uVec = vehicle->uVec();
@@ -380,6 +381,7 @@ void drawObjects(GeometryShader * curShade) {
 
   pushViewportOrientation();
   pushMat4(vehLoc.transpose());
+  pushMat4(R.transpose());
 
   //double m[16];
 
@@ -389,6 +391,7 @@ void drawObjects(GeometryShader * curShade) {
 
   //pushXformd(m);
   vehicle->draw();
+  popTransform();
   popTransform(); //pushMat4
   popTransform(); //viewport
   //popTransform(); //pushXformd(m)

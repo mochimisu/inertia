@@ -117,7 +117,6 @@ void Vehicle::setTime(double newTime) {
 
 void Vehicle::setSweepTime(double newSweepTime) {
   //cerr << "warning: whackness" << endl;
-  double delta = newSweepTime - lastSweepTime;
   vec3 temp = this->sweep->sample(newSweepTime).point;
   this->location = mat4(vec4(1,0,0,temp[0]), vec4(0,1,0,temp[1]), vec4(0,0,1,temp[2]), vec4(0,0,0,1));
 
@@ -136,9 +135,9 @@ void Vehicle::setSweepTime(double newSweepTime) {
   return;
   //this->location = R;
   //this->location = mat4(vec4(1,0,0,velocityScaled[0]), vec4(0,1,0,velocityScaled[1]), vec4(0,0,1,velocityScaled[2]), vec4(0,0,0,1)) * this->location;
-  this->velocity = delta * this->getAcceleration() + this->velocity;
+  //this->velocity = delta * this->getAcceleration() + this->velocity;
   //this->lastSweepTime = newSweepTime;
-  this->lastSweepTime = time;
+  //this->lastSweepTime = time;
 }
 
 
