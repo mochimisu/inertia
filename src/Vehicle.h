@@ -25,6 +25,8 @@ class Vehicle {
     vec3 getPerspectiveLocation();
     vec3 getPerspectiveCenter();
     mat4 getCurrentLocation();
+    inline void setGravity(double gravity) { this->gravity = gravity; }
+    inline void setH(double h) { this->h = h; }
     vec3 uVec();
   private:
     mat4 location; // location based on whackness
@@ -35,6 +37,9 @@ class Vehicle {
     double lastTime; // the last real time, for velocity calculations
     double lastSweepTime; // the last time on the parametrized sweep
     vec3 getAcceleration();
+    double getTime();
+    double h;
+    double gravity;
 };
 
 #endif

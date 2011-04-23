@@ -198,14 +198,15 @@ void startTeapotMove(mat4 whack) {
 
   glTranslatef(0,0,-5);
   applyMat4(viewport.orientation);
-  applyMat4(whack.transpose());
+  mat4 a = whack.transpose();
+  applyMat4(a);
 
   glMatrixMode(GL_TEXTURE);
-  glActiveTextureARB(GL_TEXTURE8);
+  glActiveTextureARB(GL_TEXTURE7);
   glPushMatrix();
   glTranslatef(0,0,-5);
   applyMat4(viewport.orientation);
-  applyMat4(whack.transpose());
+  applyMat4(a);
 }
 
 
@@ -336,8 +337,8 @@ void drawObjects(GeometryShader * curShade) {
   cout << vehLoc[1] << endl;
   cout << vehLoc[2] << endl;
   cout << vehLoc[3] << endl;
-  vehicle->setSweepTime(frameCount / 100.0);
-  frameCount = ++frameCount % 100;
+  vehicle->setSweepTime(frameCount / 1000.0);
+  frameCount = ++frameCount % 1000;
   cout << frameCount << endl;
   vec3 location = vehicle->getPerspectiveLocation();
   vec3 center = vehicle->getPerspectiveCenter();
@@ -534,6 +535,33 @@ int main(int argc,char** argv) {
   vehicle = new Vehicle(sweep, mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(0,0,0,1)), vec3(1,0,0));
   vehicle->setAccelerate(true);
   vehicle->setVelocity(0.1);
+
+	//set up reference values for PE = mgh
+	double energy = 0;
+	double h = -DBL_MAX;
+	double minh = DBL_MAX;
+  double highestT;
+  vec3 lastPos;
+	cout << "looking for highest point on the coaster..." << endl;
+	for (double i = 0; i < 1; i+=0.00001) {
+		if (h < sweep->sample(i).point[VY]) {
+			h = max(h, sweep->sample(i).point[VY]);
+			highestT = i;
+			lastPos = sweep->sample(i).point;
+		}
+		minh = min(minh, sweep->sample(i).point[VY]);
+
+	}
+	double gravity = 2*9.8/900; // because we recalculate at 30fps
+	double lastVelocity = 0.01;
+	double lastTime = highestT;
+	h += 0.05; // never go to 0
+	cout << h << endl;
+	//double zoom = 10;
+	//saved = true;
+
+  vehicle->setH(h);
+  vehicle->setGravity(gravity);
 
   //And Go!
   glutMainLoop();

@@ -28,9 +28,13 @@ vec3 uPrime(Sweep * sweep, double time) {
 	return r(sweep, time) ^ f(sweep, time);
 }
 
-// gets the next sweep time based on the current sweep time
-double getTime(vec3 lastPos, double h, double gravity, Sweep * sweep, double lastTime) {
-	double time = lastTime;
+// gets the next SWEEP time based on the current SWEEP time
+// unlike the one form my as7, does NOT update sweep time on its own.
+double Vehicle::getTime() {
+  vec3 lastPos = vec3((location.transpose())[3], VW);
+  vec3 lastPos = this->sweep->sample(lastSweepTime).point;
+  double time = lastSweepTime;
+	//double time = lastTime;
 	double curVelocity = sqrt(gravity*(h - lastPos[VY]));
 	double tempDist = 0;
 	vec3 tempPos = lastPos;
@@ -78,7 +82,7 @@ void Vehicle::draw() {
   //cout << glGetError() << endl;
   //glTranslatef(100000,0,0);
   //cout << glGetError() << endl;
-  glutSolidTeapot(100);
+  glutSolidTeapot(5);
 
 
   glFrontFace(GL_CCW);

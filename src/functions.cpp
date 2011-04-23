@@ -1,7 +1,7 @@
 #include "functions.h"
   
   // A simple helper function to load a mat4 into opengl
-void applyMat4(mat4 &mat) {
+void applyMat4(const mat4 &mat) {
   double glmat[16];
   int k = 0;
   for (int j = 0; j < 4; j++) {

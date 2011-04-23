@@ -4,7 +4,7 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
 
-void applyMat4(mat4 &mat);
+void applyMat4(const mat4 &mat);
 
 
 
