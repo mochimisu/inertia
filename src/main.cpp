@@ -405,7 +405,7 @@ void renderScene()
   //vehicle->setSweepTime(frameCount / 20.0);
   //frameCount = ++frameCount % 20;
   frameCount++;
-  vehicle->setTime(frameCount/500.0);
+  vehicle->setTime(frameCount/30.0);
   //cout << vehicle->getVelocity() << endl;
   //cout << vehicle->getAcceleration2() << endl;
 
