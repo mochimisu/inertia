@@ -28,9 +28,13 @@ class Vehicle {
     mat4 getCurrentLocation();
     inline void setGravity(double gravity) { this->gravity = gravity; }
     inline void setH(double h) { this->h = h; }
+    inline double getVelocity() { return this->velocity.length(); }
+    inline double getAcceleration2() { return this->getAcceleration().length(); }
+    inline mat4 getR() { return this->r; }
     vec3 uVec();
   private:
     mat4 location; // location based on whackness
+    mat4 R; // stores FUR matrix for faster retrieval?
     vec3 direction; // just in case?
     vec3 velocity;
     bool isAccelerating;
@@ -38,7 +42,7 @@ class Vehicle {
     double lastTime; // the last real time, for velocity calculations
     double lastSweepTime; // the last time on the parametrized sweep
     vec3 getAcceleration();
-    double getTime();
+    double getTime(double distance);
     double h;
     double gravity;
 };

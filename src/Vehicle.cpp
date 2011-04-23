@@ -30,13 +30,13 @@ vec3 uPrime(Sweep * sweep, double time) {
 
 // gets the next SWEEP time based on the current SWEEP time
 // unlike the one form my as7, does NOT update sweep time on its own.
-double Vehicle::getTime() {
+// distance is the distance you would like to move
+double Vehicle::getTime(double distance) {
   //vec3 lastPos = vec3((location.transpose())[3], VW);
-  vec3 lastPos = this->sweep->sample(lastSweepTime).point;
+  vec3 lastPos = this->sweep->sample(this->lastSweepTime).point;
   double time = lastSweepTime;
 	//double time = lastTime;
 	//double curVelocity = sqrt(gravity*(h - lastPos[VY]));
-  double curVelocity = (this->velocity).length(); // TODO: code currently assumes that 
 	double tempDist = 0;
 	vec3 tempPos = lastPos;
 	//cout << endl<< curVelocity << endl;
@@ -47,12 +47,10 @@ double Vehicle::getTime() {
 
 		tempPos = sweep->sample(time).point;
 		//cout << time << endl;
-	} while (tempDist < curVelocity);
+	} while (tempDist < distance);
 	//cout << tempDist << endl;
 	lastPos = sweep->sample(time).point;
-	lastTime = time;
-	//vec3 tempPos = sweep->sample(time).point;
-	return lastTime;
+  return time;
 }
 
 class Vehicle;
@@ -89,13 +87,32 @@ void Vehicle::setLocation(mat4 location) {
 }
 
 void Vehicle::setTime(double newTime) {
+
+  //first find the new distance
+  double deltaT = newTime - lastTime;
+  double distance = (this->velocity * deltaT).length();
+
+  //update velocity
+  this->velocity = deltaT * this->getAcceleration() + this->velocity;
+
+
+  //ok, now get the new sweep time and update that shit
+  this->setSweepTime(this->getTime(distance));
+
+
+
+  //finally, update the lastTime with the new time
+  this->lastTime = newTime;
+
+  return;
+  /*
+  //strategy is to use this to translate the real time into a sweep time, then use this->setSweepTime to actually set location etc.
   cerr << "warning: whackness" << endl;
   cerr << "ERROR: don't use setTime right now please." << endl;
-  double delta = newTime - lastTime;
-  vec3 velocityScaled = this->velocity * delta;
   this->location = mat4(vec4(1,0,0,velocityScaled[0]), vec4(0,1,0,velocityScaled[1]), vec4(0,0,1,velocityScaled[2]), vec4(0,0,0,1)) * this->location;
   this->velocity = delta * this->getAcceleration() + this->velocity;
   this->lastTime = newTime;
+  */
 }
 
 void Vehicle::setSweepTime(double newSweepTime) {
@@ -105,8 +122,7 @@ void Vehicle::setSweepTime(double newSweepTime) {
   this->location = mat4(vec4(1,0,0,temp[0]), vec4(0,1,0,temp[1]), vec4(0,0,1,temp[2]), vec4(0,0,0,1));
 
   //double time = getTime(vec3((this->location).transpose()[2], VW), 10, 10, sweep, lastSweepTime);
-  double time; // = newSweepTime;
-  time = this->getTime();
+  double time = newSweepTime;
   vec3 fVec = f(this->sweep, time-.05);
 	vec3 rVec = r(this->sweep, time-.05);
 	vec3 uPrimeVec = uPrime(this->sweep, time-.05);
@@ -115,6 +131,9 @@ void Vehicle::setSweepTime(double newSweepTime) {
 	uPrimeVec.normalize();
 	rVec.normalize();
 	mat4 R(vec4(fVec, 0), vec4(uPrimeVec, 0), vec4(rVec, 0), vec4(0,0,0,1));
+  this->R = R;
+  this->lastSweepTime = time;
+  return;
   //this->location = R;
   //this->location = mat4(vec4(1,0,0,velocityScaled[0]), vec4(0,1,0,velocityScaled[1]), vec4(0,0,1,velocityScaled[2]), vec4(0,0,0,1)) * this->location;
   this->velocity = delta * this->getAcceleration() + this->velocity;
@@ -134,25 +153,27 @@ void Vehicle::turnRight() {
 vec3 Vehicle::getAcceleration() {
   vec3 withoutFriction;
   if (this->isAccelerating) {
-    withoutFriction = vec3(1,0,0) * exp(-velocity.length());
+    withoutFriction = vec3(1,0,0); // * exp(-velocity.length());
   } else {
     withoutFriction = vec3(0,0,0);
   }
-  return withoutFriction; // TODO: add some resistance here, or some other friction
+  return 100*withoutFriction; // TODO: add some resistance here, or some other friction
 }
 
 vec3 Vehicle::getPerspectiveLocation() {
   // need 6 values: location.xyz and center.xyz.
   double time; // TODO: set time
   time = 0;
-  time = this->getTime();
+  //time = this->getTime();
+  time = this->lastSweepTime;
   return this->sweep->sample(time).point;
 }
 
 vec3 Vehicle::getPerspectiveCenter() {
   double time; // TODO: set time
   time = 0;
-  time = this->getTime();
+  //time = this->getTime();
+  time = this->lastSweepTime;
   vec3 location = this->getPerspectiveLocation();
   vec3 fVec = f(this->sweep, time);
   fVec = this->sweep->sampleForward(time, 0.05);
@@ -169,7 +190,8 @@ vec3 Vehicle::getPerspectiveUp() {
 vec3 Vehicle::uVec() {
   double time;
   time = 0;
-  time = this->getTime();
+  //time = this->getTime();
+  time = this->lastSweepTime;
   return u(this->sweep, time);
 }
 
