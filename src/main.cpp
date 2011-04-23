@@ -382,7 +382,7 @@ void drawObjects(GeometryShader * curShade) {
 
   pushViewportOrientation();
   pushMat4(vehLoc.transpose());
-  pushMat4(R.transpose());
+  pushMat4(R);
   
 
   //pushMat4(R.transpose());
