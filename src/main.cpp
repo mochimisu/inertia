@@ -179,31 +179,31 @@ void setTextureMatrix() {
 // During translation, we also have to maintain the GL_TEXTURE7, used in the shadow shader
 // to determine if a vertex is in the shadow.
 void startTranslate(float x,float y,float z) {
-  cout << "a0: " << glGetError() << endl;
+  //cout << "a0: " << glGetError() << endl;
   glPushMatrix();
-  cout << "a1: " << glGetError() << endl;
+  //cout << "a1: " << glGetError() << endl;
 
   glTranslatef(x,y,z);
   applyMat4(viewport.orientation);
 	
   glMatrixMode(GL_TEXTURE);
   glActiveTextureARB(GL_TEXTURE7);
-  cout << "a2: " << glGetError() << endl;
+  //cout << "a2: " << glGetError() << endl;
   glPushMatrix();
-  cout << "a3: " << glGetError() << endl;
+  //cout << "a3: " << glGetError() << endl;
 
   glTranslatef(x,y,z);
   applyMat4(viewport.orientation);
 }
 
 void endTranslate() {
-  cout << "b3: " << glGetError() << endl;
+  //cout << "b3: " << glGetError() << endl;
   glPopMatrix();
-  cout << "b2: " << glGetError() << endl;
+  //cout << "b2: " << glGetError() << endl;
   glMatrixMode(GL_MODELVIEW);
-  cout << "b1: " << glGetError() << endl;
+  //cout << "b1: " << glGetError() << endl;
   glPopMatrix();
-  cout << "b0: " << glGetError() << endl;
+  //cout << "b0: " << glGetError() << endl;
 }
 
 void startTeapotMove(mat4 whack) {
@@ -224,6 +224,7 @@ void startTeapotMove(mat4 whack) {
 
 
 void blurShadowMap() {
+  //cout << "blurstart " << glGetError() << endl;
   //glDisable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE);
   
@@ -234,9 +235,12 @@ void blurShadowMap() {
   glUseProgramObjectARB(blurShade->getProgram());
   //glUniform2fARB( blurShade->getScaleAttrib(),1.0/ (RENDER_WIDTH * SHADOW_MAP_COEF * BLUR_COEF),0.0);
   glUniform2fARB( blurShade->getScaleAttrib(),1.0/512.0,0.0);		// horiz
-  glUniform1iARB(blurShade->getTextureSourceAttrib(),0);
+  //cout << "c " << glGetError() << endl;
+  //glUniform1iARB(blurShade->getTextureSourceAttrib(),0);
+  //cout << "d " << glGetError() << endl;
   glActiveTextureARB(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D,colorTextureId);
+
 
   //Preparing to draw quad
   glMatrixMode(GL_PROJECTION);
@@ -273,6 +277,7 @@ void blurShadowMap() {
 		 
 		
   glEnable(GL_CULL_FACE);
+  //cout << "blurend " << glGetError() << endl;
 		
 }
 
@@ -336,12 +341,14 @@ void drawObjects(GeometryShader * curShade) {
       glEnd();
     }
 
-  //startTranslate(0,0,-5);
+  startTranslate(0,0,-5);
   //cout << "Dumping in main" << endl;
   //cout << glGetError() << endl;
   sweep->renderWithDisplayList(*curShade,20,0.3,20);
-  //cout << glGetError() << endl;
-  //endTranslate();
+  glutSolidTeapot(2);
+
+//cout << glGetError() << endl;
+  endTranslate();
 
 
 
@@ -393,10 +400,12 @@ void renderScene()
   //draw objects using the depth shader
   drawObjects(depthShade);
 	
+  //cout << "reset " << glGetError() << endl;
+  //cout << "0 " << glGetError() << endl;
   glGenerateMipmapEXT(GL_TEXTURE_2D);
   //Save modelview/projection matrice into texture7, also add a biais
   setTextureMatrix();
-	
+
   //BLURRRRRR
   blurShadowMap();
      
@@ -411,8 +420,6 @@ void renderScene()
   //Using the shadow shader
   glUseProgramObjectARB(shade->getProgram());
   glUniform1iARB(shade->getShadowMapAttrib(),7);
-  glUniform1fARB(shade->getXPixelOffsetAttrib(),1.0/ (RENDER_WIDTH * SHADOW_MAP_COEF));
-  glUniform1fARB(shade->getYPixelOffsetAttrib(),1.0/ (RENDER_HEIGHT * SHADOW_MAP_COEF));
   glActiveTextureARB(GL_TEXTURE7);
   glBindTexture(GL_TEXTURE_2D,colorTextureId);
 	
@@ -529,13 +536,9 @@ int main(int argc,char** argv) {
   //generate the shadow FBO 
   generateShadowFBO();
 
-  cout << "s0 " << glGetError() << endl;
   shade = new ShadowShader("shaders/MainVertexShader.c", "shaders/MainFragmentShader.c");
-  cout << "s1 " << glGetError() << endl;
   blurShade = new BlurShader("shaders/GaussianBlurVertexShader.c", "shaders/GaussianBlurFragmentShader.c");
-  cout << "s2 " << glGetError() << endl;
   depthShade = new GeometryShader("shaders/DepthVertexShader.c", "shaders/DepthFragmentShader.c");
-  cout << "s3 " << glGetError() << endl;
 
   sweep = new Sweep(argv[1]);
   
