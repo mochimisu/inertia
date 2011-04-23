@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <float.h>
 
 
 #endif /* MAIN_H_ */

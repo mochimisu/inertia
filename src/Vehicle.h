@@ -30,7 +30,7 @@ class Vehicle {
     inline void setH(double h) { this->h = h; }
     inline double getVelocity() { return this->velocity.length(); }
     inline double getAcceleration2() { return this->getAcceleration().length(); }
-    inline mat4 getR() { return this->r; }
+    inline mat4 getR() { return this->R; }
     vec3 uVec();
   private:
     mat4 location; // location based on whackness
