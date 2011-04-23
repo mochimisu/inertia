@@ -9,7 +9,7 @@
 
 //===SCENE DESCRIPTORS
 //Camera position
-vec3 p_camera(16,20,0);
+vec3 p_camera(16,10,0);
 //Camera lookAt
 vec3 l_camera(0,0,0);
 //Light position
@@ -178,50 +178,75 @@ void setTextureMatrix() {
 
 // During translation, we also have to maintain the GL_TEXTURE7, used in the shadow shader
 // to determine if a vertex is in the shadow.
-void startTranslate(float x,float y,float z) {
-  //cout << "a0: " << glGetError() << endl;
-  glPushMatrix();
-  //cout << "a1: " << glGetError() << endl;
+void pushTranslate(float x,float y,float z) {
 
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
   glTranslatef(x,y,z);
+  //applyMat4(viewport.orientation);
+	
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE7);
+
+  glPushMatrix();
+  glTranslatef(x,y,z);
+}
+
+void pushViewportOrientation() {
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
   applyMat4(viewport.orientation);
 	
   glMatrixMode(GL_TEXTURE);
   glActiveTextureARB(GL_TEXTURE7);
-  //cout << "a2: " << glGetError() << endl;
-  glPushMatrix();
-  //cout << "a3: " << glGetError() << endl;
 
-  glTranslatef(x,y,z);
+  glPushMatrix();
   applyMat4(viewport.orientation);
 }
 
-void endTranslate() {
-  //cout << "b3: " << glGetError() << endl;
-  glPopMatrix();
-  //cout << "b2: " << glGetError() << endl;
+void pushMat4(mat4 xform) {
   glMatrixMode(GL_MODELVIEW);
-  //cout << "b1: " << glGetError() << endl;
-  glPopMatrix();
-  //cout << "b0: " << glGetError() << endl;
-}
-
-void startTeapotMove(mat4 whack) {
-  mat4 whacktranspose = whack.transpose();
   glPushMatrix();
-
-  glTranslatef(0,0,-5);
-  applyMat4(viewport.orientation);
-  applyMat4(whacktranspose);
-
+  applyMat4(xform);
+	
   glMatrixMode(GL_TEXTURE);
   glActiveTextureARB(GL_TEXTURE7);
+
   glPushMatrix();
-  glTranslatef(0,0,-5);
-  applyMat4(viewport.orientation);
-  applyMat4(whacktranspose);
+  applyMat4(xform);
 }
 
+void pushXformd(const GLdouble* m) {
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glMultMatrixd(m);
+	
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE7);
+
+  glPushMatrix();
+  glMultMatrixd(m);
+}
+
+void pushXformf(const GLfloat* m) {
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glMultMatrixf(m);
+	
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE7);
+
+  glPushMatrix();
+  glMultMatrixf(m);
+}
+
+void popTransform() {
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE7);
+  glPopMatrix();
+  glMatrixMode(GL_MODELVIEW);
+  glPopMatrix();
+}
 
 void blurShadowMap() {
   //cout << "blurstart " << glGetError() << endl;
@@ -340,48 +365,33 @@ void drawObjects(GeometryShader * curShade) {
       glTexCoord2d(0,1);glVertex3f( 50,-10,-50);
       glEnd();
     }
+  pushTranslate(0,4,0);
+  pushViewportOrientation();
 
-  startTranslate(0,4,0);
-  //cout << "Dumping in main" << endl;
-  //cout << glGetError() << endl;
   sweep->renderWithDisplayList(*curShade,20,0.3,20);
-
-  //glutSolidTeapot(4);
-//cout << glGetError() << endl;
-  endTranslate();
-  //glutSolidTeapot(2);
-
-
+  popTransform();
+  popTransform();
 
   mat4 vehLoc = vehicle->getCurrentLocation();
-  //cout << vehLoc[0] << endl;
-  //cout << vehLoc[1] << endl;
-  //cout << vehLoc[2] << endl;
-  //cout << vehLoc[3] << endl;
-  //cout << frameCount << endl;
   vec3 location = vehicle->getPerspectiveLocation();
   vec3 center = vehicle->getPerspectiveCenter();
   vec4 uVec = vehicle->uVec();
 
-  //gluLookAt(location[VX], location[VY], location[VZ], center[VX], center[VY], center[VZ], uVec[VX], uVec[VY], uVec[VZ]);
-
-  //startTranslate(vehLoc[0][3], vehLoc[1][3], vehLoc[2][3]-5);
-  //startTeapotMove(vehicle->getCurrentLocation());
-  vehicle->draw();
-  //endTranslate();
-
-  //Chris: i dont know if you want to store position inside of vehicle, but you would change reference by
-  //p_camera = something
-  //l_camera = something
-
-  //l_camera = location;
-  //p_camera = center;
+  pushTranslate(0,0,2);
+  //vehicle->draw();
+  glutSolidCube(5);
+  //p_camera = vec3(vehLoc[0][3], vehLoc[1][3], vehLoc[2][3]);
+  popTransform();
 }
 
 void renderScene() 
 {
+
+
   vehicle->setSweepTime(frameCount / 500.0);
   frameCount = ++frameCount % 500;
+
+  vehicle->setSweepTime(20.0);
 
   //First step: Render from the light POV to a FBO, store depth and square depth in a 32F frameBuffer
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,fboId);	//Rendering offscreen
@@ -401,7 +411,6 @@ void renderScene()
   //draw objects using the depth shader
   drawObjects(depthShade);
 	
-  //cout << "reset " << glGetError() << endl;
   //cout << "0 " << glGetError() << endl;
   glGenerateMipmapEXT(GL_TEXTURE_2D);
   //Save modelview/projection matrice into texture7, also add a biais
