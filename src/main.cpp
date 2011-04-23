@@ -585,6 +585,32 @@ int main(int argc,char** argv) {
   vehicle->setAccelerate(true);
   vehicle->setVelocity(0.1);
 
+  //set up reference values for PE = mgh
+  double energy = 0;
+  double h = -DBL_MAX;
+  double minh = DBL_MAX;
+  double highestT;
+  vec3 lastPos;
+  cout << "looking for highest point on the coaster..." << endl;
+  for (double i = 0; i < 1; i+=0.00001) {
+    if (h < sweep->sample(i).point[VY]) {
+      h = max(h, sweep->sample(i).point[VY]);
+      highestT = i;
+      lastPos = sweep->sample(i).point;
+    }
+    minh = min(minh, sweep->sample(i).point[VY]);
+
+  }
+  double gravity = 2*9.8/900; // because we recalculate at 30fps
+  double lastVelocity = 0.01;
+  double lastTime = highestT;
+  h += 0.05; // never go to 0
+  cout << h << endl;
+  //double zoom = 10;
+  //saved = true;
+
+  vehicle->setH(h);
+  vehicle->setGravity(gravity);
 
 
 
