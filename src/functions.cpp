@@ -1,6 +1,7 @@
 #include "functions.h"
   
-  // A simple helper function to load a mat4 into opengl
+// A simple helper function to load a mat4 into opengl
+// changed to const because 1. we shouldn't be modifying it, and 2. if it changes we want an error.
 void applyMat4(const mat4 &mat) {
   double glmat[16];
   int k = 0;

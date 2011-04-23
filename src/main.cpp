@@ -177,14 +177,30 @@ void startTranslate(float x,float y,float z) {
   glPushMatrix();
 
   glTranslatef(x,y,z);
+  vec3 location = vehicle->getPerspectiveLocation();
+  vec3 center = vehicle->getPerspectiveCenter();
+  vec3 uVec = vehicle->getPerspectiveUp();
+  uVec = vec3(0,1,0);
+  if (1) {
   applyMat4(viewport.orientation);
+  } else {
+
+		gluLookAt(location[VX], location[VY], location[VZ], center[VX], center[VY], center[VZ], uVec[VX], uVec[VY], uVec[VZ]);
+		applyMat4(mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(-1, -1, 0, 1)).transpose());
+  }
+
 	
   glMatrixMode(GL_TEXTURE);
   glActiveTextureARB(GL_TEXTURE7);
   glPushMatrix();
 
   glTranslatef(x,y,z);
+  if (1) {
   applyMat4(viewport.orientation);
+  } else {
+  		gluLookAt(location[VX], location[VY], location[VZ], center[VX], center[VY], center[VZ], uVec[VX], uVec[VY], uVec[VZ]);
+		applyMat4(mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(-1, -1, 0, 1)).transpose());
+  }
 }
 
 void endTranslate() {
@@ -197,7 +213,16 @@ void startTeapotMove(mat4 whack) {
   glPushMatrix();
 
   glTranslatef(0,0,-5);
+vec3 location = vehicle->getPerspectiveLocation();
+  vec3 center = vehicle->getPerspectiveCenter();
+  vec3 uVec = vehicle->getPerspectiveUp();
+  uVec = vec3(0,1,0);
+  if (1) {
   applyMat4(viewport.orientation);
+  } else {
+		gluLookAt(location[VX], location[VY], location[VZ], center[VX], center[VY], center[VZ], uVec[VX], uVec[VY], uVec[VZ]);
+		applyMat4(mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(-1, -1, 0, 1)).transpose());
+  }
   mat4 a = whack.transpose();
   applyMat4(a);
 
@@ -205,7 +230,12 @@ void startTeapotMove(mat4 whack) {
   glActiveTextureARB(GL_TEXTURE7);
   glPushMatrix();
   glTranslatef(0,0,-5);
+  if (1) {
   applyMat4(viewport.orientation);
+  } else {
+		gluLookAt(location[VX], location[VY], location[VZ], center[VX], center[VY], center[VZ], uVec[VX], uVec[VY], uVec[VZ]);
+		applyMat4(mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(-1, -1, 0, 1)).transpose());
+  }
   applyMat4(a);
 }
 
@@ -333,12 +363,14 @@ void drawObjects(GeometryShader * curShade) {
 
 
   mat4 vehLoc = vehicle->getCurrentLocation();
+  /*
   cout << vehLoc[0] << endl;
   cout << vehLoc[1] << endl;
   cout << vehLoc[2] << endl;
   cout << vehLoc[3] << endl;
-  vehicle->setSweepTime(frameCount / 1000.0);
-  frameCount = ++frameCount % 1000;
+  */
+  vehicle->setSweepTime(frameCount / 100.0);
+  frameCount = ++frameCount % 100;
   cout << frameCount << endl;
   vec3 location = vehicle->getPerspectiveLocation();
   vec3 center = vehicle->getPerspectiveCenter();
@@ -348,15 +380,15 @@ void drawObjects(GeometryShader * curShade) {
 
   //startTranslate(vehLoc[0][3], vehLoc[1][3], vehLoc[2][3]-5);
   startTeapotMove(vehicle->getCurrentLocation());
-  vehicle->draw();
+  //vehicle->draw();
   endTranslate();
 
   //Chris: i dont know if you want to store position inside of vehicle, but you would change reference by
   //p_camera = something
   //l_camera = something
 
-  //l_camera = location;
-  //p_camera = center;
+  l_camera = location;
+  p_camera = center;
 }
 
 void renderScene() 

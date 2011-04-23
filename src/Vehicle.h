@@ -24,6 +24,7 @@ class Vehicle {
     void turnRight();
     vec3 getPerspectiveLocation();
     vec3 getPerspectiveCenter();
+    vec3 getPerspectiveUp();
     mat4 getCurrentLocation();
     inline void setGravity(double gravity) { this->gravity = gravity; }
     inline void setH(double h) { this->h = h; }
