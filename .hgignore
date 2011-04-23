@@ -1,2 +1,9 @@
 Debug
 Release
+cscope.out
+sweep
+
+syntax: glob
+*.o
+*.orig
+*.swp
