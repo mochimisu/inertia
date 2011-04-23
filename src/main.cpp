@@ -11,11 +11,11 @@
 //Camera position
 vec3 p_camera(16,20,0);
 //Camera lookAt
-vec3 l_camera(0,0,-5);
+vec3 l_camera(0,0,0);
 //Light position
-vec3 p_light(4,25,0);
+vec3 p_light(4,30,0);
 //Light lookAt
-vec3 l_light(0,0,-5);
+vec3 l_light(0,0,0);
 
 //===WINDOW PROPERTIES
 Viewport viewport;
@@ -341,14 +341,15 @@ void drawObjects(GeometryShader * curShade) {
       glEnd();
     }
 
-  startTranslate(0,0,-5);
+  startTranslate(0,4,0);
   //cout << "Dumping in main" << endl;
   //cout << glGetError() << endl;
   sweep->renderWithDisplayList(*curShade,20,0.3,20);
-  glutSolidTeapot(2);
 
+  //glutSolidTeapot(4);
 //cout << glGetError() << endl;
   endTranslate();
+  //glutSolidTeapot(2);
 
 
 
