@@ -69,16 +69,26 @@ void Vehicle::setAccelerate(bool isAccelerating) {
 }
 
 void Vehicle::draw() {
-
+  cout << "Testing errors in draw" << endl;
+  cout << glGetError() << endl;
   //glutSolidTeapot's faces are backwards
   glFrontFace(GL_CW);
-  //cout << glGetError() << endl;
+  cout << glGetError() << endl;
   //glTranslatef(100000,0,0);
   //cout << glGetError() << endl;
-  glutSolidTeapot(5);
+  //glutSolidTeapot(5);
+  cout << "after solid teapot" << endl;
+  cout << glGetError () << endl;
+
 
 
   glFrontFace(GL_CCW);
+
+  glutSolidCube(4);
+
+  cout << "after solid cube" << endl;
+  cout << glGetError() << endl;
+  //glutSolidTeapot(4);
   //glPopMatrix();
 }
 
@@ -156,7 +166,7 @@ vec3 Vehicle::getAcceleration() {
   } else {
     withoutFriction = vec3(0,0,0);
   }
-  return 100*withoutFriction; // TODO: add some resistance here, or some other friction
+  return 0.1*withoutFriction; // TODO: add some resistance here, or some other friction
 }
 
 vec3 Vehicle::getPerspectiveLocation() {

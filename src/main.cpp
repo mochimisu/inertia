@@ -379,20 +379,26 @@ void drawObjects(GeometryShader * curShade) {
 
   pushTranslate(0,4,0);
 
+
   pushViewportOrientation();
   pushMat4(vehLoc.transpose());
   pushMat4(R.transpose());
+  
+
+  //pushMat4(R.transpose());
 
   //double m[16];
 
   //vehLoc = vehLoc.transpose();
 
   //makeFromMat4(m, vehLoc);
-
   //pushXformd(m);
   vehicle->draw();
-  popTransform();
-  popTransform(); //pushMat4
+  //glutSolidCube(10);
+  //glutSolidTeapot(1);
+
+  popTransform(); //pushMat4 R
+  popTransform(); //pushMat4 vehLoc
   popTransform(); //viewport
   //popTransform(); //pushXformd(m)
   //glutSolidCube(5);
@@ -408,7 +414,7 @@ void renderScene()
   //vehicle->setSweepTime(frameCount / 20.0);
   //frameCount = ++frameCount % 20;
   frameCount++;
-  vehicle->setTime(frameCount/30.0);
+  vehicle->setTime(frameCount/30.0); // TODO: convert this to an actual real time, not something based on framecount
   //cout << vehicle->getVelocity() << endl;
   //cout << vehicle->getAcceleration2() << endl;
 
@@ -463,7 +469,7 @@ void renderScene()
   //okay seriously, why do we have vec and float[] is required by openGL -_-
   float tempLight[4] = {p_light[0], p_light[1], p_light[2], 1};
   glLightfv(GL_LIGHT0, GL_POSITION, tempLight);
-
+  
   glCullFace(GL_BACK);
   //draw objects using our shadow shader
   drawObjects(shade);
@@ -471,6 +477,9 @@ void renderScene()
   if(renderOpt.isDepthBuffer())
      drawDebugBuffer(renderOpt.getDepthBufferOption());
 
+  cout << "Error at end of renderScene:" << endl;
+  cout << glGetError() << endl;
+  cout << endl;
   glutSwapBuffers();
 }
 
