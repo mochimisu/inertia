@@ -69,16 +69,11 @@ void Vehicle::setAccelerate(bool isAccelerating) {
 }
 
 void Vehicle::draw() {
-  cout << "Testing errors in draw" << endl;
-  cout << glGetError() << endl;
   //glutSolidTeapot's faces are backwards
   glFrontFace(GL_CW);
-  cout << glGetError() << endl;
   //glTranslatef(100000,0,0);
   //cout << glGetError() << endl;
   //glutSolidTeapot(5);
-  cout << "after solid teapot" << endl;
-  cout << glGetError () << endl;
 
 
 
@@ -86,8 +81,6 @@ void Vehicle::draw() {
 
   glutSolidCube(4);
 
-  cout << "after solid cube" << endl;
-  cout << glGetError() << endl;
   //glutSolidTeapot(4);
   //glPopMatrix();
 }

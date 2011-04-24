@@ -482,9 +482,6 @@ void renderScene()
   if(renderOpt.isDepthBuffer())
      drawDebugBuffer(renderOpt.getDepthBufferOption());
 
-  cout << "Error at end of renderScene:" << endl;
-  cout << glGetError() << endl;
-  cout << endl;
   glutSwapBuffers();
 }
 
