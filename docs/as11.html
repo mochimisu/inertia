@@ -1,0 +1,44 @@
+<h1>AS11</h1> 
+<p>Revised Final Project Proposal.</p> 
+<h1>Group</h1>
+<ul> 
+  <li><a href="http://inst.eecs.berkeley.edu/~cs184-di/"
+  target="_blank">Brandon Wang (cs184-di)</a></li> 
+  <li><a href="http://inst.eecs.berkeley.edu/~cs184-ei/"
+  target="_blank">Andrew Lee (cs184-ei)</a></li> 
+  <li><a href="http://inst.eecs.berkeley.edu/~cs184-ew/"
+  target="_blank">Chris Tandiono (cs184-ew)</a></li>
+</ul>
+ 
+<h1>Inertia</h1> 
+<p>We propose to create a futuristic racing game reminiscent of <a href="http://www.youtube.com/watch?v=2T5u9nD_I0I" target="_blank">F-Zero
+for SNES</a>. We plan to utilize the concepts learned in CS184 to
+create a modern game with similar gameplay, akin to <a href="http://www.youtube.com/watch?v=UeJpDQKFOSI" target="_blank">WipEout HD for PS3</a> (but with less features). 
+
+<h1>Technical Challenges</h1>
+<ol>
+  <li><b>Allow the user to turn the ship, maintaining a consistent velocity direction</b><br>
+    We will address this by allowing the user to control movement only in the tangent plane of the b-sline (essentially "magnetizing" the ship to the track) using their mouse or keyboard, and keeping a velocity vector in world space that will be projected onto tangent space. This allows for a consistent velocity direction while the tangent space basis may change and rotate around the normal axis.</li>
+  <li><b>Procedurally generate the surrounding environment</b><br>
+    We will automatically <a href="http://en.wikipedia.org/wiki/Greeble" target="_blank">greeble</a> a solid ground to make a city-like surrounding landscape. If time permits, we will generate the environment and track on the fly.</li>
+  <li><b>Implement advanced renderer functions</b><br>
+    We will implement a <a href="http://www.punkuser.net/vsm/" target="_blank">variance shadow map</a>, along with a two-pass <a href="http://en.wikipedia.org/wiki/Gaussian_blur" target="_blank">Gaussian Blur</a> to achieve soft shadows. If time permits, we will implement <a href="http://en.wikipedia.org/wiki/Crepuscular_rays" target="_blank">crepuscular rays</a> through a <a href="http://http.developer.nvidia.com/GPUGems3/gpugems3_ch13.html" target="_blank">post-process render</a>.</li>
+</ol>
+
+ <h1>Current Progress</h1>
+
+<h2>AS7 Rollercoaster in AS8</h2>
+<a href="./images/as11/trackpart1.png" target="_blank"><img src="./images/as11/trackpart1thumb.png"></a>
+<p>We are currently modifying our AS8 renderer to allow for AS7-like rollercoaster behavior.</p>
+
+<h2>Greebling</h2>
+<a href="./images/as11/greeblingpart1.png" target="_blank"><img src="./images/as11/greeblingpart1thumb.png"></a>
+<p>We are exploring greebled surfaces to procedurally generate an environment.</p>
+
+<h2>Ship Model</h2>
+<a href="./images/as11/shippart1.jpg" target="_blank"><img src="./images/as11/shippart1thumb.jpg"></a>
+<p>We made a model of a WipEout-like ship in Blender.</p>
+
+<h2>Variance Shadow Mapping</h2>
+<a href="./images/as11/vsmpart1.png" target="_blank"><img src="./images/as11/vsmpart1thumb.png"></a>
+<p>We are currently working on an efficient variance shadow map shader. (This b-spline is highly sampled)</p>
