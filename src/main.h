@@ -28,5 +28,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <float.h>
+#include <ctime>
 
 #endif /* MAIN_H_ */

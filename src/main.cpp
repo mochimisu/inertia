@@ -49,6 +49,7 @@ Vehicle *vehicle;
 //for the sake of cleanliness
 RenderOptions renderOpt;
 int frameCount;
+clock_t startTime;
 
 /*
  * Shadow stuff. Will probably move somewhere else.
@@ -416,7 +417,10 @@ void renderScene()
   //vehicle->setSweepTime(frameCount / 20.0);
   //frameCount = ++frameCount % 20;
   frameCount++;
-  vehicle->setTime(frameCount/30.0); // TODO: convert this to an actual real time, not something based on framecount
+  //vehicle->setTime(frameCount/30.0); // TODO: convert this to an actual real time, not something based on framecount
+  clock_t now = clock();
+  double time = (now - startTime) / (double)(CLOCKS_PER_SEC);
+  vehicle->setTime(time);
   p_camera = vehicle->getPerspectiveLocation();
   l_camera = vehicle->getPerspectiveCenter();
   u_camera = vehicle->uVec();
@@ -650,6 +654,7 @@ int main(int argc,char** argv) {
   vehicle->setH(h);
   vehicle->setGravity(gravity);
 
+  startTime = clock();
 
 
   //And Go!
