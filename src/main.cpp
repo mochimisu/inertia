@@ -357,8 +357,9 @@ void drawObjects(GeometryShader * curShade) {
     }
   pushTranslate(0,4,0);
   pushViewportOrientation();
-
   sweep->renderWithDisplayList(*curShade,20,0.3,20);
+
+  vehicle->draw(curShade);
   popTransform();
   popTransform();
 
@@ -608,7 +609,7 @@ int main(int argc,char** argv) {
   vehicle->setGravity(gravity);
   startTime = clock();
 
-  vehicle->mesh->loadFile("wipeout2.obj");
+  vehicle->mesh->loadFile("wipeout3.obj");
   vehicle->mesh->centerAndScale(4);
   Mesh temp; vehicle->mesh->subdivide(temp); temp.subdivide(*(vehicle->mesh));
   vehicle->mesh->computeVertexNormals();
