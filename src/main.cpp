@@ -136,7 +136,7 @@ void setupMatrices(float position_x,float position_y,float position_z,float look
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(45,RENDER_WIDTH/RENDER_HEIGHT,10,120);
+  gluPerspective(45,RENDER_WIDTH/RENDER_HEIGHT,1,120);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   gluLookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,up_x,up_y,up_z);
@@ -416,7 +416,7 @@ void renderScene()
   //vehicle->setSweepTime(frameCount / 20.0);
   //frameCount = ++frameCount % 20;
   frameCount++;
-  vehicle->setTime(frameCount/30.0); // TODO: convert this to an actual real time, not something based on framecount
+  vehicle->setTime(frameCount/500.0); // TODO: convert this to an actual real time, not something based on framecount
   p_camera = vehicle->getPerspectiveLocation();
   l_camera = vehicle->getPerspectiveCenter();
   u_camera = vehicle->uVec();
@@ -465,9 +465,6 @@ void renderScene()
   glActiveTextureARB(GL_TEXTURE7);
   glBindTexture(GL_TEXTURE_2D,colorTextureId);
 
-
-  //p_camera = vehicle->getPerspectiveLocation();
-  //l_camera = vehicle->getPerspectiveCenter();
 	
   setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2],u_camera[0],u_camera[1],u_camera[2]);
   
@@ -481,10 +478,6 @@ void renderScene()
   
   if(renderOpt.isDepthBuffer())
      drawDebugBuffer(renderOpt.getDepthBufferOption());
-
-  cout << "Error at end of renderScene:" << endl;
-  cout << glGetError() << endl;
-  cout << endl;
   glutSwapBuffers();
 }
 
