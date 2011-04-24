@@ -12,6 +12,8 @@
 vec3 p_camera(16,10,0);
 //Camera lookAt
 vec3 l_camera(0,0,0);
+//Camera up
+vec3 u_camera(0,1,0);
 //Light position
 vec3 p_light(4,30,0);
 //Light lookAt
@@ -130,14 +132,14 @@ void generateShadowFBO() {
   //cout << "sfboend " << glGetError() << endl;
 }
 
-void setupMatrices(float position_x,float position_y,float position_z,float lookAt_x,float lookAt_y,float lookAt_z)
+void setupMatrices(float position_x,float position_y,float position_z,float lookAt_x,float lookAt_y,float lookAt_z,float up_x,float up_y,float up_z)
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   gluPerspective(45,RENDER_WIDTH/RENDER_HEIGHT,10,120);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  gluLookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,0,1,0);
+  gluLookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,up_x,up_y,up_z);
 }
 
 void setTextureMatrix() {
@@ -415,6 +417,9 @@ void renderScene()
   //frameCount = ++frameCount % 20;
   frameCount++;
   vehicle->setTime(frameCount/30.0); // TODO: convert this to an actual real time, not something based on framecount
+  p_camera = vehicle->getPerspectiveLocation();
+  l_camera = vehicle->getPerspectiveCenter();
+  u_camera = vehicle->uVec();
   //cout << vehicle->getVelocity() << endl;
   //cout << vehicle->getAcceleration2() << endl;
 
@@ -431,7 +436,7 @@ void renderScene()
 
   // Clear previous frame values
   glClear( GL_COLOR_BUFFER_BIT |  GL_DEPTH_BUFFER_BIT);
-  setupMatrices(p_light[0],p_light[1],p_light[2],l_light[0],l_light[1],l_light[2]);
+  setupMatrices(p_light[0],p_light[1],p_light[2],l_light[0],l_light[1],l_light[2],0,1,0);
 	
   // Culling switching, rendering only backface, this is done to avoid self-shadowing and improve efficiency
   glCullFace(GL_FRONT);
@@ -464,7 +469,7 @@ void renderScene()
   //p_camera = vehicle->getPerspectiveLocation();
   //l_camera = vehicle->getPerspectiveCenter();
 	
-  setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2]);
+  setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2],u_camera[0],u_camera[1],u_camera[2]);
   
   //okay seriously, why do we have vec and float[] is required by openGL -_-
   float tempLight[4] = {p_light[0], p_light[1], p_light[2], 1};
@@ -528,6 +533,24 @@ void myPassiveMotionFunc(int x, int y) {
   glutPostRedisplay();
 }
 
+void processAbnormalKeys(int key, int x, int y) {
+	switch (key) {
+	case GLUT_KEY_UP:
+		vehicle->setAccelerate(true);
+		break;
+	}
+	return;
+}
+
+void processAbnormalUpKeys(int key, int x, int y) {
+	switch (key) {
+	case GLUT_KEY_UP:
+		vehicle->setAccelerate(false);
+		break;
+	}
+	return;
+}
+
 
 /*
  * Main
@@ -565,6 +588,8 @@ int main(int argc,char** argv) {
   glutDisplayFunc(renderScene);
   glutIdleFunc(renderScene);
   glutKeyboardFunc(processNormalKeys);
+  glutSpecialFunc(processAbnormalKeys);
+  glutSpecialUpFunc(processAbnormalUpKeys);
   glutMotionFunc(myActiveMotionFunc);
   glutPassiveMotionFunc(myPassiveMotionFunc);
 
@@ -590,7 +615,7 @@ int main(int argc,char** argv) {
   renderOpt = RenderOptions();
   //but for the sake of coolness we'll display the blurred color depth buffer by default
   renderOpt.setDepthBufferOption(DISPLAY_DEPTH_SQUARED_COMPLETE_BUFFER);
-
+  
   //hacky quicky way to load a background texture
   string bg = "lantern1.png";
   if(argc > 2)
@@ -599,7 +624,7 @@ int main(int argc,char** argv) {
 
   vehicle = new Vehicle(sweep, mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(0,0,0,1)), vec3(1,0,0));
   vehicle->setAccelerate(true);
-  vehicle->setVelocity(0.1);
+  vehicle->setVelocity(0.0);
 
   //set up reference values for PE = mgh
   double energy = 0;
