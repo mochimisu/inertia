@@ -60,7 +60,6 @@ Vehicle::Vehicle(Sweep * sweep, mat4 startLocation, vec3 startDirection) {
   this->location = startLocation;
   this->direction = startDirection;
   this->velocity = startDirection; // assume velocity starts off that way
-  this->lastTime = 0;
   this->lastSweepTime = 0;
 }
 
@@ -69,20 +68,7 @@ void Vehicle::setAccelerate(bool isAccelerating) {
 }
 
 void Vehicle::draw() {
-  //glutSolidTeapot's faces are backwards
-  glFrontFace(GL_CW);
-  //glTranslatef(100000,0,0);
-  //cout << glGetError() << endl;
-  //glutSolidTeapot(5);
-
-
-
-  glFrontFace(GL_CCW);
-
-  glutSolidCube(4);
-
-  //glutSolidTeapot(4);
-  //glPopMatrix();
+  glutSolidCube(1);
 }
 
 void Vehicle::setLocation(mat4 location) {
@@ -93,16 +79,17 @@ void Vehicle::setTime(double newTime) {
 
   //first find the new distance
   double deltaT = newTime - lastTime;
+
+  if(deltaT < 0.01)
+    return;
+
   double distance = (this->velocity * deltaT).length();
 
   //update velocity
   this->velocity = deltaT * this->getAcceleration() + this->velocity;
 
-
   //ok, now get the new sweep time and update that shit
   this->setSweepTime(this->getTime(distance));
-
-
 
   //finally, update the lastTime with the new time
   this->lastTime = newTime;

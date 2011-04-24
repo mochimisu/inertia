@@ -32,6 +32,9 @@ class Vehicle {
     inline double getAcceleration2() { return this->getAcceleration().length(); }
     inline mat4 getR() { return this->R; }
     vec3 uVec();
+    
+    void update(double time);
+    
   private:
     mat4 location; // location based on whackness
     mat4 R; // stores FUR matrix for faster retrieval?

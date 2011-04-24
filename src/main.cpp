@@ -48,6 +48,8 @@ Sweep *sweep;
 Vehicle *vehicle;
 //for the sake of cleanliness
 RenderOptions renderOpt;
+
+//Framecount and time
 int frameCount;
 clock_t startTime;
 
@@ -55,11 +57,8 @@ clock_t startTime;
  * Shadow stuff. Will probably move somewhere else.
  */
 void generateShadowFBO() {
-  //cout << "sfbostart " << glGetError() << endl;
   int shadowMapWidth = RENDER_WIDTH * SHADOW_MAP_COEF;
   int shadowMapHeight = RENDER_HEIGHT * SHADOW_MAP_COEF;
-	
-  //GLfloat borderColor[4] = {0,0,0,0};
 	
   GLenum FBOstatus;
 	
@@ -81,14 +80,12 @@ void generateShadowFBO() {
   glBindTexture(GL_TEXTURE_2D, colorTextureId);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  //cout << "c " << glGetError() << endl;
   //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  //cout << "d " << glGetError() << endl;
 	
   //glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 	
-  // Remove artefact on the edges of the shadowmap
+  // Remove artifact on the edges of the shadowmap
   glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
   glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
 
@@ -130,7 +127,6 @@ void generateShadowFBO() {
     printf("GL_FRAMEBUFFER_COMPLETE_EXT failed for blur FBO, CANNOT use FBO\n");
 
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-  //cout << "sfboend " << glGetError() << endl;
 }
 
 void setupMatrices(float position_x,float position_y,float position_z,float lookAt_x,float lookAt_y,float lookAt_z,float up_x,float up_y,float up_z, float zNear, float zFar)
@@ -186,7 +182,6 @@ void pushTranslate(float x,float y,float z) {
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
   glTranslatef(x,y,z);
-  //applyMat4(viewport.orientation);
 	
   glMatrixMode(GL_TEXTURE);
   glActiveTextureARB(GL_TEXTURE7);
@@ -252,20 +247,16 @@ void popTransform() {
 }
 
 void blurShadowMap() {
-  //cout << "blurstart " << glGetError() << endl;
   //glDisable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE);
   
-  // Bluring the shadow map  horinzontaly
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,blurFboId);
-  //	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);	
+  // Bluring the shadow map  horizontaly
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,blurFboId);	
   glViewport(0,0,RENDER_WIDTH * SHADOW_MAP_COEF *BLUR_COEF ,RENDER_HEIGHT* SHADOW_MAP_COEF*BLUR_COEF);
   glUseProgramObjectARB(blurShade->getProgram());
   //glUniform2fARB( blurShade->getScaleAttrib(),1.0/ (RENDER_WIDTH * SHADOW_MAP_COEF * BLUR_COEF),0.0);
   glUniform2fARB( blurShade->getScaleAttrib(),1.0/512.0,0.0);		// horiz
-  //cout << "c " << glGetError() << endl;
   //glUniform1iARB(blurShade->getTextureSourceAttrib(),0);
-  //cout << "d " << glGetError() << endl;
   glActiveTextureARB(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D,colorTextureId);
 
@@ -303,10 +294,7 @@ void blurShadowMap() {
   glTexCoord2d(0,1);glVertex3f(-RENDER_WIDTH/2,RENDER_HEIGHT/2,0);
   glEnd();
 		 
-		
   glEnable(GL_CULL_FACE);
-  //cout << "blurend " << glGetError() << endl;
-		
 }
 
 /*
@@ -376,58 +364,28 @@ void drawObjects(GeometryShader * curShade) {
 
   mat4 vehLoc = vehicle->getCurrentLocation();
   mat4 R = vehicle->getR();
-  //vec3 location = vehicle->getPerspectiveLocation();
-  //vec3 center = vehicle->getPerspectiveCenter();
-  //vec4 uVec = vehicle->uVec();
-
   pushTranslate(0,4,0);
-
-
   pushViewportOrientation();
   pushMat4(vehLoc.transpose());
   pushMat4(R);
-  
 
-  //pushMat4(R.transpose());
-
-  //double m[16];
-
-  //vehLoc = vehLoc.transpose();
-
-  //makeFromMat4(m, vehLoc);
-  //pushXformd(m);
   vehicle->draw();
-  //glutSolidCube(10);
-  //glutSolidTeapot(1);
 
   popTransform(); //pushMat4 R
   popTransform(); //pushMat4 vehLoc
   popTransform(); //viewport
-  //popTransform(); //pushXformd(m)
-  //glutSolidCube(5);
-  //p_camera = vec3(vehLoc[0][3], vehLoc[1][3], vehLoc[2][3]);
-
   popTransform(); //pushtranslate 0, 0, 2
 }
 
-void renderScene() 
-{
+void renderScene() {
 
-
-  //vehicle->setSweepTime(frameCount / 20.0);
-  //frameCount = ++frameCount % 20;
   frameCount++;
-  //vehicle->setTime(frameCount/30.0); // TODO: convert this to an actual real time, not something based on framecount
   clock_t now = clock();
   double time = (now - startTime) / (double)(CLOCKS_PER_SEC);
   vehicle->setTime(time);
-  p_camera = vehicle->getPerspectiveLocation();
-  l_camera = vehicle->getPerspectiveCenter();
-  u_camera = vehicle->uVec();
-  //cout << vehicle->getVelocity() << endl;
-  //cout << vehicle->getAcceleration2() << endl;
-
-  //vehicle->setSweepTime(20.0);
+  //p_camera = vehicle->getPerspectiveLocation();
+  //l_camera = vehicle->getPerspectiveCenter();
+  //u_camera = vehicle->uVec();
 
   //First step: Render from the light POV to a FBO, store depth and square depth in a 32F frameBuffer
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,fboId);	//Rendering offscreen
@@ -643,15 +601,12 @@ int main(int argc,char** argv) {
   double lastVelocity = 0.01;
   double lastTime = highestT;
   h += 0.05; // never go to 0
-  cout << h << endl;
   //double zoom = 10;
   //saved = true;
 
   vehicle->setH(h);
   vehicle->setGravity(gravity);
-
   startTime = clock();
-
 
   //And Go!
   glutMainLoop();
