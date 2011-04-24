@@ -61,14 +61,17 @@ Vehicle::Vehicle(Sweep * sweep, mat4 startLocation, vec3 startDirection) {
   this->direction = startDirection;
   this->velocity = startDirection; // assume velocity starts off that way
   this->lastSweepTime = 0;
+
+  this->mesh = new Mesh();
 }
 
 void Vehicle::setAccelerate(bool isAccelerating) {
   this->isAccelerating = isAccelerating?1:0;
 }
 
-void Vehicle::draw() {
-  glutSolidCube(1);
+void Vehicle::draw(GeometryShader *shade) {
+  //glutSolidCube(1);
+  mesh->draw(*shade);
 }
 
 void Vehicle::setLocation(mat4 location) {

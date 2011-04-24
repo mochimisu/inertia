@@ -369,7 +369,7 @@ void drawObjects(GeometryShader * curShade) {
   pushMat4(vehLoc.transpose());
   pushMat4(R);
 
-  vehicle->draw();
+  vehicle->draw(curShade);
 
   popTransform(); //pushMat4 R
   popTransform(); //pushMat4 vehLoc
@@ -607,6 +607,11 @@ int main(int argc,char** argv) {
   vehicle->setH(h);
   vehicle->setGravity(gravity);
   startTime = clock();
+
+  vehicle->mesh->loadFile("wipeout2.obj");
+  vehicle->mesh->centerAndScale(4);
+  Mesh temp; vehicle->mesh->subdivide(temp); temp.subdivide(*(vehicle->mesh));
+  vehicle->mesh->computeVertexNormals();
 
   //And Go!
   glutMainLoop();

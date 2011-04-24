@@ -1,6 +1,5 @@
 // vim: ts=2:sw=2:softtabstop=2
 
-#include "sweep.h"
 
 /* This is a Vehicle class. Operate it by initializing it with a sweep.
  * Then you can set the initial location on the sweep. Lastly from time
@@ -10,11 +9,18 @@
  */
 #ifndef VEHICLE_H
 #define VEHICLE_H
+
+#include "sweep.h"
+#include "mesh.h"
+#include "shaders.h"
+
+class Mesh; //some issue with circular includes
+
 class Vehicle {
   public:
     Vehicle(Sweep * sweep, mat4 startLocation, vec3 startDirection);
     void setAccelerate(bool isAccelerating);
-    void draw(); // handles translation on its own
+    void draw(GeometryShader * shade); // handles translation on its own
     void setLocation(mat4 location);
     void setDirection(mat4 direction);
     void setVelocity(double velocity);
@@ -32,8 +38,8 @@ class Vehicle {
     inline double getAcceleration2() { return this->getAcceleration().length(); }
     inline mat4 getR() { return this->R; }
     vec3 uVec();
-    
-    void update(double time);
+
+    Mesh * mesh;
     
   private:
     mat4 location; // location based on whackness
