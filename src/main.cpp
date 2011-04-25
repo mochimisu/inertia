@@ -58,6 +58,8 @@ int frameCount;
 clock_t startTime;
 
 //==LIGHT SCATTERING STUFF
+GLuint scatterTextureId;
+GLuint scatterFboId;
 
   /* 
    * light scattering stuff. testingg!!!!!
@@ -167,6 +169,28 @@ vec2 getLightScreenCoor() {
 
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
   }
+
+void generateLightFBO() {
+    GLenum FBOstatus;
+  glGenFramebuffersEXT(1, &scatterFboId);
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, scatterFboId);
+  
+  glGenTextures(1, &scatterTextureId);
+  glBindTexture(GL_TEXTURE_2D, scatterTextureId);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F_ARB, RENDER_WIDTH, RENDER_HEIGHT, 0 , GL_RGB, GL_FLOAT, 0);
+
+    glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, scatterTextureId, 0);
+
+    FBOstatus = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+    if(FBOstatus != GL_FRAMEBUFFER_COMPLETE_EXT)
+      printf("GL_FRAMEBUFFER_COMPLETE_EXT failed for scatter FBO, CANNOT use FBO\n");
+
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+}
 
   void setupMatrices(float position_x,float position_y,float position_z,float lookAt_x,float lookAt_y,float lookAt_z,float up_x,float up_y,float up_z, float zNear, float zFar)
   {
@@ -336,6 +360,8 @@ vec2 getLightScreenCoor() {
     glEnable(GL_CULL_FACE);
   }
 
+
+
   /*
    * Actual render stuff
    */
@@ -452,12 +478,13 @@ vec2 getLightScreenCoor() {
 
     //BLURRRRRR
     blurShadowMap();
-     
+    
+    
     // Now rendering from the camera POV, using the FBO to generate shadows
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,scatterFboId);
 	
     glViewport(0,0,RENDER_WIDTH,RENDER_HEIGHT);
-    /*	
+    
     // Clear previous frame values
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
@@ -468,7 +495,7 @@ vec2 getLightScreenCoor() {
     glBindTexture(GL_TEXTURE_2D,colorTextureId);
 
 	
-    setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2],u_camera[0],u_camera[1],u_camera[2],1,120);
+     setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2],u_camera[0],u_camera[1],u_camera[2],1,120);
   
     //okay seriously, why do we have vec and float[] is required by openGL -_-
     float tempLight[4] = {p_light[0], p_light[1], p_light[2], 1};
@@ -476,12 +503,14 @@ vec2 getLightScreenCoor() {
   
     glCullFace(GL_BACK);
     //draw objects using our shadow shader
-    drawObjects(depthShade);
-    */
+    drawObjects(shade);
 
-    //setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2],u_camera[0],u_camera[1],u_camera[2],1,120);
-
+    
+    
     //light scattering testing
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);
+    glViewport(0,0,RENDER_WIDTH,RENDER_HEIGHT);
+	
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgramObjectARB(scatterShade->getProgram());
     //default values
@@ -495,38 +524,42 @@ vec2 getLightScreenCoor() {
     glUniform1iARB(scatterShade->getTextureAttrib(),0);
 
     glActiveTextureARB(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D,colorTextureId);
+    glBindTexture(GL_TEXTURE_2D,scatterTextureId);
 
     glCullFace(GL_BACK);
     //pretend light
-    glutSolidSphere(45,40,40);
 
     //drawObjects(shade);
 
 
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(-RENDER_WIDTH/2,RENDER_WIDTH/2,-RENDER_HEIGHT/2,RENDER_HEIGHT/2,1,20);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 
-      glColor4f(1.0f,1.0f,1.0f,1);
-      glPushMatrix();
+    glColor4f(1.0f,1.0f,1.0f,1);
+    glPushMatrix();
     glTranslated(0,0,-5);
-      glActiveTextureARB(GL_TEXTURE1);
-      glBindTexture(GL_TEXTURE_2D,bgText);
-      glBegin(GL_QUADS);
+    glBegin(GL_QUADS);
     glTexCoord2d(0,0);glVertex3f(-RENDER_WIDTH/2,-RENDER_HEIGHT/2,0);
     glTexCoord2d(1,0);glVertex3f(RENDER_WIDTH/2,-RENDER_HEIGHT/2,0);
     glTexCoord2d(1,1);glVertex3f(RENDER_WIDTH/2,RENDER_HEIGHT/2,0);
     glTexCoord2d(0,1);glVertex3f(-RENDER_WIDTH/2,RENDER_HEIGHT/2,0);
-      glEnd();
-      glPopMatrix();
+    glEnd();
+    glPopMatrix();
     
     glPushMatrix();
     glTranslatef(p_light[0],p_light[1],p_light[2]);
     glColor4f(1.0,1.0,1.0,1.0);
     glutSolidSphere(2,40,40);
     glPopMatrix();
+    
 
     //cout << glGetError() << endl;
     if(renderOpt.isDepthBuffer())
       drawDebugBuffer(renderOpt.getDepthBufferOption());
+
     glutSwapBuffers();
     
   }
@@ -647,6 +680,9 @@ vec2 getLightScreenCoor() {
 
     //generate the shadow FBO 
     generateShadowFBO();
+    generateLightFBO();
+
+    //light stuff
 
     shade = new ShadowShader("shaders/MainVertexShader.c", "shaders/MainFragmentShader.c");
     blurShade = new BlurShader("shaders/GaussianBlurVertexShader.c", "shaders/GaussianBlurFragmentShader.c");
