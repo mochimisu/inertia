@@ -168,7 +168,7 @@ class ScatterShader : public GeometryShader {
   GLint getDensityAttrib() { return densityUniform; }
   GLint getWeightAttrib() { return weightUniform; }
   GLint getLightPositionOnScreenAttrib() { return lightPositionOnScreenUniform; }
-  GLint getTexture() { return textureUniform; }
+  GLint getTextureAttrib() { return textureUniform; }
 
  protected:
   GLint exposureUniform, decayUniform, densityUniform;

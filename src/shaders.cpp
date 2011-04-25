@@ -159,11 +159,11 @@ BlurShader::BlurShader(string vertProg, string fragProg) : Shader(vertProg, frag
 }
 
 ScatterShader::ScatterShader(string vertProg, string fragProg) : GeometryShader(vertProg, fragProg) {
-  exposure = 0;
-  decay = 0;
-  density = 0;
-  weight = 0;
-  lightPositionOnScreen = vec2(0,0);
+  exposure = 0.5;
+  decay = 0.5;
+  density = 0.5;
+  weight = 0.5;
+  lightPositionOnScreen = vec2(0.5,0.5);
   texture = 0;
 
   exposureUniform = glGetUniformLocationARB(program, "exposure");

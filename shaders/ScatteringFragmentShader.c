@@ -28,4 +28,6 @@ void main()
 	
 	
   gl_FragColor *= exposure;
+
+  //gl_FragColor =  texture2D(myTexture, gl_TexCoord[0].st );
 }
