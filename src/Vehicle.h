@@ -13,6 +13,8 @@
 #include "sweep.h"
 #include "mesh.h"
 #include "shaders.h"
+#include "algebra3.h"
+#include "functions.h"
 
 class Mesh; //some issue with circular includes
 

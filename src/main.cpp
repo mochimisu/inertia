@@ -39,9 +39,10 @@ GLuint blurFboId;
 GLuint blurFboIdColorTextureId;
 
 //===SHADERS
-ShadowShader* shade;
+ShadowShader *shade;
 BlurShader *blurShade;
 GeometryShader *depthShade;
+ScatterShader *scatterShade;
 
 //==OBJECTS
 Sweep *sweep;
@@ -564,6 +565,7 @@ int main(int argc,char** argv) {
   shade = new ShadowShader("shaders/MainVertexShader.c", "shaders/MainFragmentShader.c");
   blurShade = new BlurShader("shaders/GaussianBlurVertexShader.c", "shaders/GaussianBlurFragmentShader.c");
   depthShade = new GeometryShader("shaders/DepthVertexShader.c", "shaders/DepthFragmentShader.c");
+  scatterShade = new ScatterShader("shaders/ScatteringVertexShader.c", "shaders/ScatteringFragmentShader.c");
 
   sweep = new Sweep(argv[1]);
   

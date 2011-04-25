@@ -1,7 +1,5 @@
 // vim: ts=2:sw=2:softtabstop=2
 
-#include "algebra3.h"
-#include "functions.h"
 #include "Vehicle.h"
 
 // use the sweep to get F vector

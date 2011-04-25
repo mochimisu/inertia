@@ -152,5 +152,34 @@ class BlurShader : public Shader {
   int textureSource;
 };
 
+class ScatterShader : public GeometryShader {
+ public:
+  ScatterShader(string vertShader, string fragmentShader);
+  //toggles
+  //booleans
+  //shader options
+
+  //etc
+  virtual void setUniformValues();
+
+  //temp
+  GLint getExposureAttrib() { return exposureUniform; }
+  GLint getDecayAttrib() { return decayUniform; }
+  GLint getDensityAttrib() { return densityUniform; }
+  GLint getWeightAttrib() { return weightUniform; }
+  GLint getLightPositionOnScreenAttrib() { return lightPositionOnScreenUniform; }
+  GLint getTexture() { return textureUniform; }
+
+ protected:
+  GLint exposureUniform, decayUniform, densityUniform;
+  GLint weightUniform, lightPositionOnScreenUniform, textureUniform;
+
+  //not yet used (get rid of temp attrib returns later)
+  float exposure, decay, density;
+  float weight;
+  vec2 lightPositionOnScreen;
+  GLint texture;
+};
+
 #endif 
 
