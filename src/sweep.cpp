@@ -353,7 +353,7 @@ void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vec
 	vec3 tan0 = oldSlice[(vn+1)%csize]-oldSlice[vn]; tan0.normalize();
 	vec3 tan1 = newSlice[(vn+1)%csize]-newSlice[vn]; tan1.normalize();
 
-	glColor3f(v%4!=0,v%4!=1,v%4!=2);
+	//glColor3f(v%4!=0,v%4!=1,v%4!=2);
 	double percentAround = v / double(csize); // the percent around the cross section
 
 	//vec3 n = (tan0^oldDir);
@@ -461,6 +461,7 @@ void Sweep::render(GeometryShader &shader, int pathSamplesPerPt, double crossSec
 void Sweep::renderWithDisplayList(GeometryShader &shader, int pathSamplesPerPt, double crossSectionScale, int xsectSamplesPerPt) {
   
   int shadeId = shader.getId();
+
   if (shaderDL.count(shadeId) == 0) {
     GLuint DLid = glGenLists(1);
     glNewList(DLid, GL_COMPILE);

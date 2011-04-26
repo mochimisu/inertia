@@ -7,19 +7,20 @@
 #define SHADOW_MAP_COEF 0.5
 #define BLUR_COEF 1
 #define OFF_SCREEN_RENDER_RATIO 1
+#define LIGHT_SCATTERING_COEF 1
 
 //===SCENE DESCRIPTORS
 //Camera position
-vec3 p_camera(16,10,0);
+vec3 p_camera(10,7,0);
 //Camera lookAt
-vec3 l_camera(0,0,0);
+vec3 l_camera(0,5,0);
 //Camera up
 vec3 u_camera(0,1,0);
 //Light position
 //vec3 p_light(4,30,0);
-vec3 p_light(-20,2,3);
+vec3 p_light(-40,-5,0);
 //Light lookAt
-vec3 l_light(0,2,0);
+vec3 l_light(0,-5,0);
 
 //===WINDOW PROPERTIES
 Viewport viewport;
@@ -41,11 +42,11 @@ GLuint blurFboId;
 GLuint blurFboIdColorTextureId;
 
 //===SHADERS
-//ShadowShader *shade; 
 ShadowShader *shade;
 BlurShader *blurShade;
 GeometryShader *depthShade;
 ScatterShader *scatterShade;
+GeometryShader *darkShade;
 
 //==OBJECTS
 Sweep *sweep;
@@ -60,6 +61,10 @@ clock_t startTime;
 //==LIGHT SCATTERING STUFF
 GLuint scatterTextureId;
 GLuint scatterFboId;
+
+//==SAVE FRAMES
+UCB::ImageSaver * imgSaver;
+int framesToSave = 0;
 
   /* 
    * light scattering stuff. testingg!!!!!
@@ -181,7 +186,7 @@ void generateLightFBO() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F_ARB, RENDER_WIDTH, RENDER_HEIGHT, 0 , GL_RGB, GL_FLOAT, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F_ARB, RENDER_WIDTH*LIGHT_SCATTERING_COEF, RENDER_HEIGHT*LIGHT_SCATTERING_COEF, 0 , GL_RGB, GL_FLOAT, 0);
 
     glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, scatterTextureId, 0);
 
@@ -400,13 +405,12 @@ void generateLightFBO() {
     glDisable(GL_TEXTURE_2D);
   }
 
-  void drawObjects(GeometryShader * curShade) {
+void drawObjects(GeometryShader * curShade) {
 
     // Ground [double for face culling]
     if(renderOpt.isDispGround()) {
-      glColor4f(1.0f,1.0f,1.0f,1);
-      glActiveTextureARB(GL_TEXTURE0);
-      glBindTexture(GL_TEXTURE_2D,bgText);
+	glActiveTextureARB(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D,bgText);
       glBegin(GL_QUADS);
       glTexCoord2d(0,1);glVertex3f( 50,-10,-50);
       glTexCoord2d(1,1);glVertex3f( 50,-10, 50);
@@ -421,10 +425,12 @@ void generateLightFBO() {
       glEnd();
     }
     pushTranslate(0,4,0);
+    pushMat4(scaling3D(vec3(0.5,0.5,0.5)));
     pushViewportOrientation();
     sweep->renderWithDisplayList(*curShade,20,0.3,20);
 
     vehicle->draw(curShade);
+    popTransform();
     popTransform();
     popTransform();
 
@@ -445,17 +451,15 @@ void generateLightFBO() {
 
   void renderScene() {
 
+    //==UPDATE VEHICLE POSITION
     frameCount++;
     clock_t now = clock();
     double time = (now - startTime) / (double)(CLOCKS_PER_SEC);
     vehicle->setTime(time);
-    //p_camera = vehicle->getPerspectiveLocation();
-    //l_camera = vehicle->getPerspectiveCenter();
-    //u_camera = vehicle->uVec();
 
-    //First step: Render from the light POV to a FBO, store depth and square depth in a 32F frameBuffer
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,fboId);	//Rendering offscreen
-    //glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);	//Rendering onscreen
+    //==FIRST RENDER: DEPTH BUFFER
+    //Render from the light POV to a FBO, store depth and square depth in a 32F frameBuffer
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,fboId);
 	
     //Using the depth shader to do so
     glUseProgramObjectARB(depthShade->getProgram());
@@ -476,12 +480,40 @@ void generateLightFBO() {
     //Save modelview/projection matrice into texture7, also add a biais
     setTextureMatrix();
 
-    //BLURRRRRR
+    //==SECOND (and a half) RENDER: DOUBLE PASS GAUSSIAN BLUR
     blurShadowMap();
     
-    
-    // Now rendering from the camera POV, using the FBO to generate shadows
+
+    //==THIRD RENDER: PATH TRACED LIGHT SCATTERING EFFECT (CREPUSCULAR RAYS)
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,scatterFboId);
+	
+    glViewport(0,0,RENDER_WIDTH*LIGHT_SCATTERING_COEF,RENDER_HEIGHT*LIGHT_SCATTERING_COEF);
+    
+    // Clear previous frame values
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  
+    //Using the shadow shader
+    glUseProgramObjectARB(darkShade->getProgram());
+    glBindTexture(GL_TEXTURE_2D,colorTextureId);
+	
+     setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2],u_camera[0],u_camera[1],u_camera[2],1,120);
+  
+    glCullFace(GL_BACK);
+   
+    //Draw light
+    glPushMatrix();
+    glTranslatef(p_light[0],p_light[1],p_light[2]);
+    glColor4f(1.0,1.0,1.0,1.0);
+    glutSolidSphere(7,40,40);
+    glPopMatrix();
+
+    //Draw objects in black
+    glColor4f(0.0f,0.0f,0.0f,1);
+    drawObjects(darkShade);
+    
+    //==FOURTH RENDER: MAIN RENDER (without light scattering)
+    // Now rendering from the camera POV, using the FBO to generate shadows
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);
 	
     glViewport(0,0,RENDER_WIDTH,RENDER_HEIGHT);
     
@@ -494,8 +526,8 @@ void generateLightFBO() {
     glActiveTextureARB(GL_TEXTURE7);
     glBindTexture(GL_TEXTURE_2D,colorTextureId);
 
-	
-     setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2],u_camera[0],u_camera[1],u_camera[2],1,120);
+    //declared in third pass
+    //setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2],u_camera[0],u_camera[1],u_camera[2],1,120);
   
     //okay seriously, why do we have vec and float[] is required by openGL -_-
     float tempLight[4] = {p_light[0], p_light[1], p_light[2], 1};
@@ -504,14 +536,15 @@ void generateLightFBO() {
     glCullFace(GL_BACK);
     //draw objects using our shadow shader
     drawObjects(shade);
-
     
     
-    //light scattering testing
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);
-    glViewport(0,0,RENDER_WIDTH,RENDER_HEIGHT);
+    //==FIFTH PASS: LIGHT SCATTERING OVERLAY
+    //uses main screen
+    //glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);
+    //glViewport(0,0,RENDER_WIDTH,RENDER_HEIGHT);
+    glClear (GL_DEPTH_BUFFER_BIT );
 	
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgramObjectARB(scatterShade->getProgram());
     //default values
 
@@ -525,20 +558,15 @@ void generateLightFBO() {
 
     glActiveTextureARB(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,scatterTextureId);
-
-    glCullFace(GL_BACK);
-    //pretend light
-
-    //drawObjects(shade);
-
-
+    glEnable(GL_BLEND); //blend the resulting render
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(-RENDER_WIDTH/2,RENDER_WIDTH/2,-RENDER_HEIGHT/2,RENDER_HEIGHT/2,1,20);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    glColor4f(1.0f,1.0f,1.0f,1);
+    glColor4f(1.0f,1.0f,1.0f,1); //rectangle to display texture
     glPushMatrix();
     glTranslated(0,0,-5);
     glBegin(GL_QUADS);
@@ -548,17 +576,18 @@ void generateLightFBO() {
     glTexCoord2d(0,1);glVertex3f(-RENDER_WIDTH/2,RENDER_HEIGHT/2,0);
     glEnd();
     glPopMatrix();
+    glDisable(GL_BLEND);
     
-    glPushMatrix();
-    glTranslatef(p_light[0],p_light[1],p_light[2]);
-    glColor4f(1.0,1.0,1.0,1.0);
-    glutSolidSphere(2,40,40);
-    glPopMatrix();
     
-
-    //cout << glGetError() << endl;
     if(renderOpt.isDepthBuffer())
       drawDebugBuffer(renderOpt.getDepthBufferOption());
+
+
+    //save frames
+  if(framesToSave > 0) {
+    imgSaver->saveFrame();
+    framesToSave--;
+  }
 
     glutSwapBuffers();
     
@@ -581,6 +610,10 @@ void generateLightFBO() {
     case 'G':
     case 'g':
       renderOpt.toggleDispGround();
+      break;
+    case 'S':
+    case 's':
+      framesToSave=100;
       break;
     }
   }
@@ -688,6 +721,7 @@ void generateLightFBO() {
     blurShade = new BlurShader("shaders/GaussianBlurVertexShader.c", "shaders/GaussianBlurFragmentShader.c");
     depthShade = new GeometryShader("shaders/DepthVertexShader.c", "shaders/DepthFragmentShader.c");
     scatterShade = new ScatterShader("shaders/ScatteringVertexShader.c", "shaders/ScatteringFragmentShader.c");
+    darkShade = new GeometryShader("shaders/SimpleDarkVertexShader.c", "shaders/SimpleDarkFragmentShader.c");
 
     sweep = new Sweep(argv[1]);
   
@@ -736,8 +770,9 @@ void generateLightFBO() {
     vehicle->mesh->loadFile("wipeout3.obj");
     vehicle->mesh->loadTextures("thread2.png","thread1_bump.png");
     vehicle->mesh->centerAndScale(4);
-    Mesh temp; vehicle->mesh->subdivide(temp); temp.subdivide(*(vehicle->mesh));
-    vehicle->mesh->computeVertexNormals();
+
+    //setup saver thing
+    imgSaver = new UCB::ImageSaver("./screenshots/", "inertia");
 
     //And Go!
     glutMainLoop();
