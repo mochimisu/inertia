@@ -4,7 +4,7 @@
 // Constants (some issues with aspect ratio; and i think defines will speed some stuff up. keep it?)
 #define RENDER_WIDTH 1024.0
 #define RENDER_HEIGHT 768.0
-#define SHADOW_MAP_COEF 2
+#define SHADOW_MAP_COEF 1
 #define BLUR_COEF 1
 #define OFF_SCREEN_RENDER_RATIO 1
 #define LIGHT_SCATTERING_COEF 1
