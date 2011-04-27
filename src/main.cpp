@@ -4,23 +4,23 @@
 // Constants (some issues with aspect ratio; and i think defines will speed some stuff up. keep it?)
 #define RENDER_WIDTH 1024.0
 #define RENDER_HEIGHT 768.0
-#define SHADOW_MAP_COEF 0.5
+#define SHADOW_MAP_COEF 2
 #define BLUR_COEF 1
 #define OFF_SCREEN_RENDER_RATIO 1
 #define LIGHT_SCATTERING_COEF 1
 
 //===SCENE DESCRIPTORS
 //Camera position
-vec3 p_camera(10,7,0);
+vec3 p_camera(-5,10,30);
 //Camera lookAt
-vec3 l_camera(0,5,0);
+vec3 l_camera(0,0,0);
 //Camera up
 vec3 u_camera(0,1,0);
 //Light position
 //vec3 p_light(4,30,0);
-vec3 p_light(-40,-5,0);
+vec3 p_light(3,4,-7);
 //Light lookAt
-vec3 l_light(0,-5,0);
+vec3 l_light(0,0,0);
 
 //===WINDOW PROPERTIES
 Viewport viewport;
@@ -193,11 +193,12 @@ void generateLightFBO() {
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 }
 
-void setupMatrices(float position_x,float position_y,float position_z,float lookAt_x,float lookAt_y,float lookAt_z,float up_x,float up_y,float up_z, float zNear, float zFar)
+void setupMatrices(float position_x,float position_y,float position_z,float lookAt_x,float lookAt_y,float lookAt_z,float up_x,float up_y,float up_z, float zNear, float zFar, float fovy)
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(45,RENDER_WIDTH/RENDER_HEIGHT,zNear,zFar);
+  //gluPerspective(45,RENDER_WIDTH/RENDER_HEIGHT,zNear,zFar);
+  gluPerspective(fovy,RENDER_WIDTH/RENDER_HEIGHT,zNear,zFar);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   gluLookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,up_x,up_y,up_z);
@@ -318,8 +319,8 @@ void blurShadowMap() {
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,blurFboId);	
   glViewport(0,0,RENDER_WIDTH * SHADOW_MAP_COEF *BLUR_COEF ,RENDER_HEIGHT* SHADOW_MAP_COEF*BLUR_COEF);
   glUseProgramObjectARB(blurShade->getProgram());
-  //glUniform2fARB( blurShade->getScaleAttrib(),1.0/ (RENDER_WIDTH * SHADOW_MAP_COEF * BLUR_COEF),0.0);
-  glUniform2fARB( blurShade->getScaleAttrib(),1.0/512.0,0.0);		// horiz
+  glUniform2fARB( blurShade->getScaleAttrib(),1.0/ (RENDER_WIDTH * SHADOW_MAP_COEF * BLUR_COEF),0.0);
+  //glUniform2fARB( blurShade->getScaleAttrib(),1.0/512.0,0.0);		// horiz
   //glUniform1iARB(blurShade->getTextureSourceAttrib(),0);
   glActiveTextureARB(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D,colorTextureId);
@@ -347,8 +348,8 @@ void blurShadowMap() {
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,fboId);	
   //glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);	
   glViewport(0,0,RENDER_WIDTH * SHADOW_MAP_COEF ,RENDER_HEIGHT* SHADOW_MAP_COEF);
-  //glUniform2fARB( blurShade->getScaleAttrib(),0.0, 1.0/ (RENDER_HEIGHT * SHADOW_MAP_COEF ) );	
-  glUniform2fARB( blurShade->getScaleAttrib(),0.0, 1.0/ (512.0 ) );
+  glUniform2fARB( blurShade->getScaleAttrib(),0.0, 1.0/ (RENDER_HEIGHT * SHADOW_MAP_COEF ) );	
+  //glUniform2fARB( blurShade->getScaleAttrib(),0.0, 1.0/ (512.0 ) );
   glBindTexture(GL_TEXTURE_2D,blurFboIdColorTextureId);
   //glBindTexture(GL_TEXTURE_2D,colorTextureId);
   glBegin(GL_QUADS);
@@ -402,7 +403,7 @@ void drawDebugBuffer(int option) {
 }
 
 void drawObjects(GeometryShader * curShade) {
-
+  
   // Ground [double for face culling]
   if(renderOpt.isDispGround()) {
     glActiveTextureARB(GL_TEXTURE0);
@@ -420,13 +421,13 @@ void drawObjects(GeometryShader * curShade) {
     glTexCoord2d(0,1);glVertex3f( 50,-10,-50);
     glEnd();
   }
-  pushTranslate(0,4,0);
-  pushMat4(scaling3D(vec3(0.5,0.5,0.5)));
+
+
+  pushTranslate(0,0,0);
   pushViewportOrientation();
   sweep->renderWithDisplayList(*curShade,20,0.3,20);
 
   vehicle->draw(curShade);
-  popTransform();
   popTransform();
   popTransform();
 
@@ -461,10 +462,11 @@ void renderScene() {
   glUseProgramObjectARB(depthShade->getProgram());
   // In the case we render the shadowmap to a higher resolution, the viewport must be modified accordingly.
   glViewport(0,0,RENDER_WIDTH * SHADOW_MAP_COEF,RENDER_HEIGHT* SHADOW_MAP_COEF);
+  //try to make shadow view "bigger" than normal view
 
   // Clear previous frame values
   glClear( GL_COLOR_BUFFER_BIT |  GL_DEPTH_BUFFER_BIT);
-  setupMatrices(p_light[0],p_light[1],p_light[2],l_light[0],l_light[1],l_light[2],0,1,0,10,120);
+  setupMatrices(p_light[0],p_light[1],p_light[2],l_light[0],l_light[1],l_light[2],0,1,0,1,120,90);
 	
   // Culling switching, rendering only backface, this is done to avoid self-shadowing and improve efficiency
   glCullFace(GL_FRONT);
@@ -492,7 +494,7 @@ void renderScene() {
   glUseProgramObjectARB(darkShade->getProgram());
   glBindTexture(GL_TEXTURE_2D,colorTextureId);
 	
-  setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2],u_camera[0],u_camera[1],u_camera[2],1,120);
+  setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2],u_camera[0],u_camera[1],u_camera[2],1,120,70);
   
   glCullFace(GL_BACK);
    
@@ -500,7 +502,7 @@ void renderScene() {
   glPushMatrix();
   glTranslatef(p_light[0],p_light[1],p_light[2]);
   glColor4f(1.0,1.0,1.0,1.0);
-  glutSolidSphere(7,40,40);
+  glutSolidSphere(2,40,40);
   glPopMatrix();
 
   //Draw objects in black
@@ -573,7 +575,8 @@ void renderScene() {
   glEnd();
   glPopMatrix();
   glDisable(GL_BLEND);
-    
+  
+  
   if(renderOpt.isDepthBuffer())
     drawDebugBuffer(renderOpt.getDepthBufferOption());
 

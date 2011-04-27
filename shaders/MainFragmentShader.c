@@ -34,7 +34,7 @@ float chebyshevUpperBound( vec4 shadowCoordPostW)
 	float d = shadowCoordPostW.z - moments.x;
 	float p_max = variance / (variance + d*d);
 
-	return p_max;
+	return max(p_max, 0.0);
 }
 
 
