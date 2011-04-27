@@ -438,7 +438,7 @@ void drawObjects(GeometryShader * curShade) {
 
 
   pushTranslate(0,0,0);
-  pushViewportOrientation();
+  //pushViewportOrientation();
   sweep->renderWithDisplayList(*curShade,20,0.3,20);
 
   vec3 vehLoc = veh2->worldSpacePos();
@@ -461,7 +461,7 @@ void drawObjects(GeometryShader * curShade) {
 
 popTransform();
 
-  popTransform();
+//popTransform();
   popTransform();
 
 
@@ -487,10 +487,12 @@ popTransform();
 void renderScene() {
 
   //==UPDATE VEHICLE POSITION
+  /*
   frameCount++;
   clock_t now = clock();
   double time = (now - startTime) / (double)(CLOCKS_PER_SEC);
   vehicle->setTime(time);
+  */
 
   //==CAMERA
 
@@ -708,6 +710,7 @@ void stepVehicle(int x) {
     veh2->step(0.01);
     p_camera = veh2->cameraPos();
     l_camera = veh2->worldSpacePos();
+    u_camera = veh2->getUp();
   glutTimerFunc(1,stepVehicle,0);
 
 }

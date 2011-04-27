@@ -11,6 +11,7 @@ Vehicle2::Vehicle2(Sweep * sw) {
   this->velocity.normalize();
   this->pos = vec3(0,0,0);
   this->acceleration = this->sweep->sampleForward(0,0.01);
+  this->up = this->sweep->sampleUp(0);
 
   this->velocityScalar = 0;
   this->accelerationScalar = 0;
@@ -44,20 +45,22 @@ void Vehicle2::step(double amount) {
   //bring velocity (world coord) into tangent space
   //cout << "v " << this->velocity << endl;
   //vec3 tbnVelocity = tbn.inverse() * ((velocityScalar * velocity) + getWindResistance());
-  vec3 tbnVelocity = tbn.inverse() * ((velocityScalar * velocity) + getWindResistance() + (accelerationScalar * accelNorm()));
+
+
+  //configure accelVec for testing
+  vec3 accelVec = sweep->sampleForward(pos[0]);
+  accelVec.normalize();
+  //vec3 accelVec = accelnormDirection();
+  vec3 tbnVelocity = tbn.inverse() * ((velocityScalar * velocity) + getWindResistance() + (accelerationScalar * accelVec));
   if(velocityScalar > 0) {
-    velocity = ((velocityScalar * velocity) + getWindResistance() + (accelerationScalar * accelNorm()));
+    velocity = ((velocityScalar * velocity) + getWindResistance() + (accelerationScalar * accelVec));
     velocity.normalize();
   }
 
-  velocityScalar =  ((velocityScalar * velocity) + getWindResistance() + (accelerationScalar * accelNorm())).length();
-
+  velocityScalar = ((velocityScalar * velocity) + getWindResistance() + (accelerationScalar * accelVec)).length();
+  //cout << "v: " << velocityScalar << endl;
   //quick test for accel. need to move acceleration vector to world pos and transform from camera
 
-  if(velocityScalar > 0.01) {
-  velocity = tbn * tbnVelocity;
-  velocity.normalize();
-  }
 
   //cout << "tbnv " << tbnVelocity << endl;
   //t coordinate of transformed velocity is what we we step using
@@ -112,6 +115,8 @@ void Vehicle2::step(double amount) {
   //now reconstruct the worldPos
   worldPos = sweepLocNew + lateralDispWorld + verticalDispWorld;
 
+  up = this->sweep->sampleUp(pos[0]);
+
   //temp velocity
   //velocity = sweep->sampleForward(pos[0],0.01);
   //velocity.normalize();
@@ -127,22 +132,33 @@ vec3 Vehicle2::worldSpacePos() {
   return worldPos;
 }
 
+vec3 Vehicle2::getUp() {
+  return up;
+}
+
 vec3 Vehicle2::resistanceAccel() {
   return this->acceleration - this->getWindResistance();
 }
 
 void Vehicle2::toggleAcceleration() {
-  if(accelerationScalar > 0.9)
+  if(accelerationScalar > 0.0001)
     accelerationScalar = 0.0;
   else
-    accelerationScalar = 1.0;
+    accelerationScalar = 0.01;
 }
 
 void Vehicle2::turnLeft() {
-  acceleration[1] -= 0.25;
+  mat3 tbn = this->sweep->tbnBasis(this->pos[0]);
+  vec3 accelerationTbnDelta = vec3(0,-0.25,0);
+  vec3 worldAccelDelta = tbn * accelerationTbnDelta;
+  acceleration += worldAccelDelta;
 }
 void Vehicle2::turnRight() {
-  acceleration[1] += 0.25;
+  mat3 tbn = this->sweep->tbnBasis(this->pos[0]);
+  vec3 accelerationTbnDelta = vec3(0,0.25,0);
+  vec3 worldAccelDelta = tbn * accelerationTbnDelta;
+  acceleration += worldAccelDelta;
+
 }
 void Vehicle2::turnStraight() {
   acceleration = vec3(1,0,0);
@@ -156,7 +172,9 @@ vec3 Vehicle2::getWindResistance() {
   //drag coeff of car ~0.25->0.45 [2010 impreza WRX: 0.36]
   //frontal area of car 0.717 m^2 [1993 impreza]
 
-  return -(0.15538824) * velocityScalar * velocityScalar * velocity;
+
+  //and just dividing by a few thousand to get a higher terminal velocity
+  return -(0.00015538824) * velocityScalar * velocityScalar * velocity;
 }
 
  void Vehicle2::updateWorldPos() {
@@ -170,4 +188,12 @@ vec3 Vehicle2::getVelocity() {
 
 vec3 Vehicle2::getAcceleration() {
   return accelNorm();
+}
+
+vec3 Vehicle2::accelNormDirection() {
+ vec3 normAccel = acceleration; 
+ float ydiff = sweep->sampleForward(pos[0])[1] - acceleration[1];
+ normAccel[1] += 100*(ydiff*ydiff);
+ normAccel.normalize();
+ return normAccel;
 }

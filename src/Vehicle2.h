@@ -26,6 +26,7 @@ class Vehicle2 {
   vec3 worldSpacePos();
   vec3 getVelocity();
   vec3 getAcceleration();
+  vec3 getUp();
 
   Mesh * mesh;
 
@@ -43,6 +44,7 @@ class Vehicle2 {
   void updateWorldPos();
 
   vec3 accelNorm() { vec3 normAccel = acceleration; normAccel.normalize(); return normAccel; }; //need because accel is not normalized automatically
+  vec3 accelNormDirection(); //accel's Y should follow tangent's Y world space
 
   vec3 worldPos;
   vec3 pos; //TBN coordinates: T is time along sweep, B is lateral, N is distance on normal from sweep
@@ -52,6 +54,7 @@ class Vehicle2 {
   float velocityScalar;
   float accelerationScalar;
 
+  vec3 up; //"cached" up value
   
   Sweep * sweep;
 
