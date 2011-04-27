@@ -454,6 +454,8 @@ void renderScene() {
   double time = (now - startTime) / (double)(CLOCKS_PER_SEC);
   vehicle->setTime(time);
 
+  //==CAMERA
+
   //==FIRST RENDER: DEPTH BUFFER
   //Render from the light POV to a FBO, store depth and square depth in a 32F frameBuffer
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,fboId);

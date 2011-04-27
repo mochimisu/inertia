@@ -64,6 +64,8 @@ class Sweep {
   // get the up direction
   vec3 sampleUp(double t, double step = .01);
 
+  mat4 tbnBasis(double t, double step = 0.01);
+
   // use this to check for an invalid (empty) coaster
   bool bad() {
     return (pathPts.size() == 0);
