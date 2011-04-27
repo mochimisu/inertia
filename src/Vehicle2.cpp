@@ -10,6 +10,10 @@ Vehicle2::Vehicle2(Sweep * sw) {
   this->velocity = this->sweep->sampleForward(0,0.01);
   this->velocity.normalize();
   this->pos = vec3(0,0,0);
+  this->acceleration = this->sweep->sampleForward(0,0.01);
+
+  this->velocityScalar = 0;
+  this->accelerationScalar = 0;
 }
 
 void Vehicle2::draw(GeometryShader * shade) {
@@ -38,19 +42,34 @@ void Vehicle2::step(double amount) {
   //mat4 tbn = this->sweep->tbnBasis(this->pos[0], worldPos);
   mat3 tbn = this->sweep->tbnBasis(this->pos[0]);
   //bring velocity (world coord) into tangent space
-  cout << "v " << this->velocity << endl;
-  vec3 tbnVelocity = tbn.transpose().inverse() * velocity;
-  cout << "tbnv " << tbnVelocity << endl;
+  //cout << "v " << this->velocity << endl;
+  //vec3 tbnVelocity = tbn.inverse() * ((velocityScalar * velocity) + getWindResistance());
+  vec3 tbnVelocity = tbn.inverse() * ((velocityScalar * velocity) + getWindResistance() + (accelerationScalar * accelNorm()));
+  if(velocityScalar > 0) {
+    velocity = ((velocityScalar * velocity) + getWindResistance() + (accelerationScalar * accelNorm()));
+    velocity.normalize();
+  }
+
+  velocityScalar =  ((velocityScalar * velocity) + getWindResistance() + (accelerationScalar * accelNorm())).length();
+
+  //quick test for accel. need to move acceleration vector to world pos and transform from camera
+
+  if(velocityScalar > 0.01) {
+  velocity = tbn * tbnVelocity;
+  velocity.normalize();
+  }
+
+  //cout << "tbnv " << tbnVelocity << endl;
   //t coordinate of transformed velocity is what we we step using
   double distance = amount * tbnVelocity[0];
 
-  cout << "dist: " << distance << endl;
+  //cout << "dist: " << distance << endl;
 
   double tempDist = 0;
   vec3 tempPos = sweep->sample(pos[0]).point;
   //step [todo: better method]
   float tempTime = pos[0];
-  if(distance > 0) {
+  if(distance > 0.00001) {
     do {
       tempTime += 0.0000025;
       tempTime = tempTime > 1 ? tempTime-1:tempTime;
@@ -58,7 +77,7 @@ void Vehicle2::step(double amount) {
 
       tempPos = sweep->sample(tempTime).point;
     } while (tempDist < distance);
-  } else {
+  } else if(distance < -0.00001) {
     do {
       tempTime -= 0.0000025;
       tempTime = tempTime <0  ? tempTime+1:tempTime;
@@ -68,9 +87,9 @@ void Vehicle2::step(double amount) {
     } while (tempDist > distance);
   }
   
-  cout << "time: " << this->pos[0];
+  //cout << "time: " << this->pos[0];
   this->pos[0] = tempTime;
-  cout << " -> " << this->pos[0] << endl;
+  //cout << " -> " << this->pos[0] << endl;
 
   //find sweep location @ new time
   vec3 sweepLocNew = this->sweep->sample(this->pos[0]).point;
@@ -81,21 +100,21 @@ void Vehicle2::step(double amount) {
   vec3 lateralPos = vec3(0,this->pos[1],0);
   //transform tbn space lateral displacement into world space
   vec3 lateralDispWorld = tbn * lateralPos;
-  cout << "ldispworld " << lateralDispWorld << endl;
+  //cout << "ldispworld " << lateralDispWorld << endl;
 
   //apply vertical movement
   //calcualte tbn space of vertical displacement
   //ACTUALLy lets keep it at z=1 for right now
   vec3 verticalPos = vec3(0,0,1);
   vec3 verticalDispWorld = tbn * verticalPos;
-  cout << "vdispworld " << verticalDispWorld << endl;
+  //cout << "vdispworld " << verticalDispWorld << endl;
 
   //now reconstruct the worldPos
   worldPos = sweepLocNew + lateralDispWorld + verticalDispWorld;
 
   //temp velocity
-  velocity = sweep->sampleForward(pos[0],0.01);
-  velocity.normalize();
+  //velocity = sweep->sampleForward(pos[0],0.01);
+  //velocity.normalize();
 
 
 }
@@ -112,15 +131,32 @@ vec3 Vehicle2::resistanceAccel() {
   return this->acceleration - this->getWindResistance();
 }
 
+void Vehicle2::toggleAcceleration() {
+  if(accelerationScalar > 0.9)
+    accelerationScalar = 0.0;
+  else
+    accelerationScalar = 1.0;
+}
+
+void Vehicle2::turnLeft() {
+  acceleration[1] -= 0.25;
+}
+void Vehicle2::turnRight() {
+  acceleration[1] += 0.25;
+}
+void Vehicle2::turnStraight() {
+  acceleration = vec3(1,0,0);
+}
+
 vec3 Vehicle2::getWindResistance() {
   //Drag Force = -1/2 * density * Area * Drag Coeff ~[0.25-0.45] * (velocity dot velocity) * velocity/magvelocity
-  //simplified: F =  - SOME COEFF * velocity
+  //simplified: F =  - SOME COEFF * velocity^2
 
   //density of air @ 20C = 1.204 kg/m^3
   //drag coeff of car ~0.25->0.45 [2010 impreza WRX: 0.36]
   //frontal area of car 0.717 m^2 [1993 impreza]
 
-  return -(0.15538824) * this->velocity;
+  return -(0.15538824) * velocityScalar * velocityScalar * velocity;
 }
 
  void Vehicle2::updateWorldPos() {
@@ -130,4 +166,8 @@ vec3 Vehicle2::getWindResistance() {
 //temp for debug
 vec3 Vehicle2::getVelocity() {
   return velocity;
+}
+
+vec3 Vehicle2::getAcceleration() {
+  return accelNorm();
 }

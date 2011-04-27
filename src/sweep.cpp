@@ -277,7 +277,7 @@ mat3 Sweep::tbnBasis(double t, double step) {
 
   mat3 basis = mat3(forward,
 		    up,
-		    up ^ forward);
+		    up ^ forward).transpose();
   return basis;
 }
 

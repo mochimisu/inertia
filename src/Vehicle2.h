@@ -25,9 +25,16 @@ class Vehicle2 {
 
   vec3 worldSpacePos();
   vec3 getVelocity();
+  vec3 getAcceleration();
+
   Mesh * mesh;
 
   vec3 cameraPos();
+
+  void turnLeft();
+  void turnRight();
+  void turnStraight();
+  void toggleAcceleration();
 
  private:
 
@@ -35,10 +42,16 @@ class Vehicle2 {
   vec3 getWindResistance();
   void updateWorldPos();
 
+  vec3 accelNorm() { vec3 normAccel = acceleration; normAccel.normalize(); return normAccel; }; //need because accel is not normalized automatically
+
   vec3 worldPos;
   vec3 pos; //TBN coordinates: T is time along sweep, B is lateral, N is distance on normal from sweep
-  vec3 velocity;
-  vec3 acceleration; //WITHOUT wind resistance
+  vec3 velocity; // Velocity and accel are normalized vectors maintaining direction
+  vec3 acceleration; // for when either are zero in magnitude
+  //(maybe use a quaternion just for kicks?)
+  float velocityScalar;
+  float accelerationScalar;
+
   
   Sweep * sweep;
 

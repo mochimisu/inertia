@@ -453,6 +453,12 @@ void drawObjects(GeometryShader * curShade) {
   glutSolidCube(0.5);
   popTransform();
 
+  pushTranslate(veh2->getAcceleration()[0],-veh2->getAcceleration()[2],veh2->getAcceleration()[1]);
+  
+
+  glutSolidCube(0.5);
+  popTransform();
+
 popTransform();
 
   popTransform();
@@ -628,19 +634,29 @@ void processNormalKeys(unsigned char key, int x, int y) {
   case 27:	
     exit(0);
     break;
-  case 'D':
-  case 'd':
+  case 'B':
+  case 'b':
     renderOpt.toggleDispDepthBuffer();
     break;
   case 'G':
   case 'g':
     renderOpt.toggleDispGround();
     break;
+  case 'W':
+  case 'w':
+    veh2->toggleAcceleration();
+    break;
   case 'A':
   case 'a':
-    veh2->step(1);
-    p_camera = veh2->cameraPos();
-    l_camera = veh2->worldSpacePos();
+    veh2->turnLeft();
+    break;
+  case 'S':
+  case 's':
+    veh2->turnStraight();
+    break;
+  case 'D':
+  case 'd':
+    veh2->turnRight();
     break;
   }
 }
@@ -687,6 +703,14 @@ void processAbnormalUpKeys(int key, int x, int y) {
   return;
 }
 
+void stepVehicle(int x) {
+
+    veh2->step(0.01);
+    p_camera = veh2->cameraPos();
+    l_camera = veh2->worldSpacePos();
+  glutTimerFunc(1,stepVehicle,0);
+
+}
 
 /*
  * Main
@@ -728,6 +752,8 @@ int main(int argc,char** argv) {
   glutSpecialUpFunc(processAbnormalUpKeys);
   glutMotionFunc(myActiveMotionFunc);
   glutPassiveMotionFunc(myPassiveMotionFunc);
+
+  glutTimerFunc(1,stepVehicle,0);
 
   glewInit();
 
