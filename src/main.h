@@ -21,6 +21,7 @@
 
 #include "Viewport.h"
 #include "RenderOptions.h"
+#include "Vehicle2.h"
 
 //#include "GL/gl.h"
 

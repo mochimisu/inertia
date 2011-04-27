@@ -255,17 +255,31 @@ vec3 Sweep::sampleUp(double t, double step) {
 }
 
 //TODO: efficient-ize this
-mat4 Sweep::tbnBasis(double t, vec3 worldLoc, double step) {
+//gives mat from TBN location of worldLoc to world pos
+mat4 Sweep::tbnHomogenizedBasis(double t, vec3 worldLoc, double step) {
   vec3 up = this->sampleUp(t,step);
   vec3 forward = this->sampleForward(t,step);
+  up.normalize();
+  forward.normalize();
 
-  mat4 basis = mat4(vec4(up ^ forward, 0),
+  mat4 basis = mat4(vec4(forward, 0),
 		    vec4(up, 0),
-		    vec4(-forward,0),
-		    vec4(worldLoc,1)).transpose().inverse();
+		    vec4(up ^ forward,0),
+		    vec4(worldLoc,1)).transpose();
   return basis;
 }
 
+mat3 Sweep::tbnBasis(double t, double step) {
+  vec3 up = this->sampleUp(t,step);
+  vec3 forward = this->sampleForward(t,step);
+  up.normalize();
+  forward.normalize();
+
+  mat3 basis = mat3(forward,
+		    up,
+		    up ^ forward);
+  return basis;
+}
 
 // rotates a vector according to the global azimuth, local azimuth, twist, direction, and location on curve
 void Sweep::orientVectorInFrame(const vec3 &dir, double percent, double localAz, vec3 &inFrame) {

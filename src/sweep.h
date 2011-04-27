@@ -64,7 +64,8 @@ class Sweep {
   // get the up direction
   vec3 sampleUp(double t, double step = .01);
 
-  mat4 tbnBasis(double t, double step = 0.01);
+  mat4 tbnHomogenizedBasis(double t, vec3 worldLoc = vec3(0), double step = 0.01);
+  mat3 tbnBasis(double t, double step = 0.01);
 
   // use this to check for an invalid (empty) coaster
   bool bad() {

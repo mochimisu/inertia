@@ -11,6 +11,18 @@
 
 //===SCENE DESCRIPTORS
 //Camera position
+vec3 p_camera(16,10,0);
+//Camera lookAt
+vec3 l_camera(0,0,0);
+//Camera up
+vec3 u_camera(0,1,0);
+//Light position
+vec3 p_light(4,12,0);
+//Light lookAt
+vec3 l_light(0,0,0);
+
+/* scattering + shadow demo
+//Camera position
 vec3 p_camera(-5,10,30);
 //Camera lookAt
 vec3 l_camera(0,0,0);
@@ -21,6 +33,7 @@ vec3 u_camera(0,1,0);
 vec3 p_light(3,4,-7);
 //Light lookAt
 vec3 l_light(0,0,0);
+*/
 
 //===WINDOW PROPERTIES
 Viewport viewport;
@@ -51,6 +64,7 @@ GeometryShader *darkShade;
 //==OBJECTS
 Sweep *sweep;
 Vehicle *vehicle;
+Vehicle2 *veh2;
 //for the sake of cleanliness
 RenderOptions renderOpt;
 
@@ -427,9 +441,26 @@ void drawObjects(GeometryShader * curShade) {
   pushViewportOrientation();
   sweep->renderWithDisplayList(*curShade,20,0.3,20);
 
-  vehicle->draw(curShade);
+  vec3 vehLoc = veh2->worldSpacePos();
+  pushMat4(translation3D(vehLoc).transpose());
+  
+  //veh2->draw(curShade);
+  glutSolidCube(1);
+
+  pushTranslate(veh2->getVelocity()[0],veh2->getVelocity()[1],veh2->getVelocity()[2]);
+  
+
+  glutSolidCube(0.5);
+  popTransform();
+
+popTransform();
+
   popTransform();
   popTransform();
+
+
+
+  /*
 
   mat4 vehLoc = vehicle->getCurrentLocation();
   mat4 R = vehicle->getR();
@@ -444,6 +475,7 @@ void drawObjects(GeometryShader * curShade) {
   popTransform(); //pushMat4 vehLoc
   popTransform(); //viewport
   popTransform(); //pushtranslate 0, 0, 2
+  */
 }
 
 void renderScene() {
@@ -604,6 +636,12 @@ void processNormalKeys(unsigned char key, int x, int y) {
   case 'g':
     renderOpt.toggleDispGround();
     break;
+  case 'A':
+  case 'a':
+    veh2->step(1);
+    p_camera = veh2->cameraPos();
+    l_camera = veh2->worldSpacePos();
+    break;
   }
 }
 void myActiveMotionFunc(int x, int y) {
@@ -758,6 +796,12 @@ int main(int argc,char** argv) {
   vehicle->mesh->loadFile("wipeout3.obj");
   vehicle->mesh->loadTextures("thread2.png","thread1_bump.png");
   vehicle->mesh->centerAndScale(4);
+
+  veh2 = new Vehicle2(sweep);
+
+  veh2->mesh->loadFile("wipeout3.obj");
+  veh2->mesh->loadTextures("thread2.png","thread1_bump.png");
+  veh2->mesh->centerAndScale(4);
 
   //And Go!
   glutMainLoop();
