@@ -172,7 +172,6 @@ vec3 Vehicle2::getWindResistance() {
   //drag coeff of car ~0.25->0.45 [2010 impreza WRX: 0.36]
   //frontal area of car 0.717 m^2 [1993 impreza]
 
-
   //and just dividing by a few thousand to get a higher terminal velocity
   return -(0.00015538824) * velocityScalar * velocityScalar * velocity;
 }
