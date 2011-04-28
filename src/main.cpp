@@ -793,7 +793,7 @@ int main(int argc,char** argv) {
 
   vehicle = new Vehicle(sweep, mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(0,0,0,1)), vec3(1,0,0));
   vehicle->setAccelerate(true);
-  vehicle->setVelocity(0.0);
+  vehicle->setVelocity(1.0);
 
   //set up reference values for PE = mgh
   double energy = 0;
