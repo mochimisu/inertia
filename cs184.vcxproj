@@ -103,6 +103,7 @@
     <ClInclude Include="src\ucb\ImageSaver.h" />
     <ClInclude Include="src\UCB\UCBglobal.h" />
     <ClInclude Include="src\Vehicle.h" />
+    <ClInclude Include="src\Vehicle2.h" />
     <ClInclude Include="src\Viewport.h" />
   </ItemGroup>
   <ItemGroup>
@@ -121,6 +122,7 @@
     <ClCompile Include="src\ucb\Image.cpp" />
     <ClCompile Include="src\ucb\ImageSaver.cpp" />
     <ClCompile Include="src\Vehicle.cpp" />
+    <ClCompile Include="src\Vehicle2.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

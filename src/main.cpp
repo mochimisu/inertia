@@ -757,8 +757,6 @@ int main(int argc,char** argv) {
     bg = argv[2];
   loadTexture(bg,bgText);
 
-  vehicle = new Vehicle(sweep);
-
   vehicle->mesh->loadFile("wipeout3.obj");
   vehicle->mesh->loadTextures("thread2.png","thread1_bump.png");
   vehicle->mesh->centerAndScale(4);
