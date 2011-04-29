@@ -48,7 +48,7 @@ class Vehicle {
 
   vec3 worldPos;
   vec3 pos; //TBN coordinates: T is time along sweep, B is lateral, N is distance on normal from sweep
-  vec3 cameraPos;
+  //vec3 cameraPos;
 
   vec3 velocity; // Velocity and accel are normalized vectors maintaining direction
   vec3 acceleration; // for when either are zero in magnitude
