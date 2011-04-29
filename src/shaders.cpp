@@ -126,10 +126,10 @@ GeometryShader::GeometryShader(string vertProg, string fragProg) : Shader(vertPr
 }
 
 ShadowShader::ShadowShader(string vertProg, string fragProg) : GeometryShader(vertProg, fragProg) {
-  bumpMapEnabled = false;
+  bumpMapEnabled = true;
   textureMapEnabled = true;
   phongEnabled = true;
-  displacementEnabled = false;
+  displacementEnabled = true;
   shadowMapEnabled = true;
   ambientOcclusionEnabled = true;
   dispAmbientLayer = false;

@@ -17,11 +17,10 @@
 
 #include "LoadImage.h"
 #include "Console.h"
-#include "Vehicle.h"
 
 #include "Viewport.h"
 #include "RenderOptions.h"
-#include "Vehicle2.h"
+#include "Vehicle.h"
 
 //#include "GL/gl.h"
 

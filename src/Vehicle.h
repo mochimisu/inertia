@@ -1,12 +1,4 @@
-// vim: ts=2:sw=2:softtabstop=2
 
-
-/* This is a Vehicle class. Operate it by initializing it with a sweep.
- * Then you can set the initial location on the sweep. Lastly from time
- * to time you should setTime on it to inform it of the new time. When 
- * it receives a time, it will automatically compute where it should 
- * have moved to since the last time update.
- */
 #ifndef VEHICLE_H
 #define VEHICLE_H
 
@@ -16,46 +8,57 @@
 #include "algebra3.h"
 #include "functions.h"
 
-class Mesh; //some issue with circular includes
+class Mesh;
 
 class Vehicle {
-  public:
-    Vehicle(Sweep * sweep, mat4 startLocation, vec3 startDirection);
-    void setAccelerate(bool isAccelerating);
-    void draw(GeometryShader * shade); // handles translation on its own
-    void setLocation(mat4 location);
-    void setDirection(mat4 direction);
-    void setVelocity(double velocity);
-    void setTime(double newTime);
-    void setSweepTime(double newSweepTime);
-    void turnLeft();
-    void turnRight();
-    vec3 getPerspectiveLocation();
-    vec3 getPerspectiveCenter();
-    vec3 getPerspectiveUp();
-    mat4 getCurrentLocation();
-    inline void setGravity(double gravity) { this->gravity = gravity; }
-    inline void setH(double h) { this->h = h; }
-    inline double getVelocity() { return this->velocity.length(); }
-    inline double getAcceleration2() { return this->getAcceleration().length(); }
-    inline mat4 getR() { return this->R; }
-    vec3 uVec();
+ public:
+  Vehicle(Sweep * sweep);
+  void draw(GeometryShader * shade);
 
-    Mesh * mesh;
-    
-  private:
-    mat4 location; // location based on whackness
-    mat4 R; // stores FUR matrix for faster retrieval?
-    vec3 direction; // just in case?
-    vec3 velocity;
-    bool isAccelerating;
-    Sweep * sweep;
-    double lastTime; // the last real time, for velocity calculations
-    double lastSweepTime; // the last time on the parametrized sweep
-    vec3 getAcceleration();
-    double getTime(double distance);
-    double h;
-    double gravity;
+  void setAccel(vec3 accel);
+  void setVelocity(vec3 vel);
+
+  void setAccelScalar(double mag);
+  void setVelocityScalar(double mag);
+
+  void step(double amount);
+
+  vec3 worldSpacePos();
+  vec3 getVelocity();
+  vec3 getAcceleration();
+  vec3 getUp();
+
+  Mesh * mesh;
+
+  vec3 cameraPos();
+
+  void turnLeft();
+  void turnRight();
+  void turnStraight();
+  void toggleAcceleration();
+
+ private:
+
+  vec3 resistanceAccel();
+  vec3 getWindResistance();
+  void updateWorldPos();
+
+  vec3 accelNorm() { vec3 normAccel = acceleration; normAccel.normalize(); return normAccel; }; //need because accel is not normalized automatically
+  vec3 accelNormDirection(); //accel's Y should follow tangent's Y world space
+
+  vec3 worldPos;
+  vec3 pos; //TBN coordinates: T is time along sweep, B is lateral, N is distance on normal from sweep
+  vec3 velocity; // Velocity and accel are normalized vectors maintaining direction
+  vec3 acceleration; // for when either are zero in magnitude
+  //(maybe use a quaternion just for kicks?)
+  float velocityScalar;
+  float accelerationScalar;
+
+  vec3 up; //"cached" up value
+  
+  Sweep * sweep;
+
+
 };
 
 #endif

@@ -2,12 +2,18 @@
 #include "functions.h"
 
 // Constants (some issues with aspect ratio; and i think defines will speed some stuff up. keep it?)
-#define RENDER_WIDTH 1024.0
-#define RENDER_HEIGHT 768.0
-#define SHADOW_MAP_COEF 1
-#define BLUR_COEF 1
-#define OFF_SCREEN_RENDER_RATIO 1
-#define LIGHT_SCATTERING_COEF 1
+const float renderWidth = 1024.0;
+const float renderHeight = 768.0;
+const float shadowMapCoef = 1.0;
+const float blurCoef = 1.0;
+const float lightScatteringCoef = 1.0;
+
+const float shadowMapWidth = renderWidth * shadowMapCoef;
+const float shadowMapHeight = renderHeight * shadowMapCoef;
+const float shadowMapBlurWidth = shadowMapWidth * blurCoef;
+const float shadowMapBlurHeight = shadowMapHeight * blurCoef;
+const float lightScatterWidth = renderWidth * lightScatteringCoef;
+const float lightScatterHeight = renderHeight * lightScatteringCoef;
 
 //===SCENE DESCRIPTORS
 //Camera position
@@ -43,9 +49,12 @@ enum { DISPLAY_DEPTH_BUFFER,
        DISPLAY_DEPTH_SQUARED_HALF_BLUR_BUFFER,
        DISPLAY_DEPTH_SQUARED_COMPLETE_BUFFER };
 
-//===SHADOW STUFF
+//==FRAME BUFFER OBJECTS/RELATED TEXTURES
 // Hold id of the framebuffer for light POV rendering
-GLuint fboId;
+GLuint shadowFboId;
+
+
+//===SHADOW STUFF
 // Z values will be rendered to this texture when using fboId framebuffer
 GLuint depthTextureId;
 GLuint colorTextureId;
@@ -64,7 +73,6 @@ GeometryShader *darkShade;
 //==OBJECTS
 Sweep *sweep;
 Vehicle *vehicle;
-Vehicle2 *veh2;
 //for the sake of cleanliness
 RenderOptions renderOpt;
 
@@ -106,15 +114,13 @@ vec2 getLightScreenCoor() {
 		&winZ);
 	
 	
-  return vec2(winX/((float)RENDER_WIDTH/OFF_SCREEN_RENDER_RATIO),  winY/((float)RENDER_HEIGHT/OFF_SCREEN_RENDER_RATIO));
+  return vec2(winX/renderWidth,  winY/renderHeight);
 }
 
 /*
  * Shadow stuff. Will probably move somewhere else.
  */
 void generateShadowFBO() {
-  int shadowMapWidth = RENDER_WIDTH * SHADOW_MAP_COEF;
-  int shadowMapHeight = RENDER_HEIGHT * SHADOW_MAP_COEF;
 	
   GLenum FBOstatus;
 	
@@ -150,8 +156,8 @@ void generateShadowFBO() {
   glBindTexture(GL_TEXTURE_2D, 0);
 
   // create a framebuffer object
-  glGenFramebuffersEXT(1, &fboId);
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboId);
+  glGenFramebuffersEXT(1, &shadowFboId);
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, shadowFboId);
 	
   // attach the texture to FBO depth attachment point
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT ,GL_TEXTURE_2D, depthTextureId, 0);
@@ -164,6 +170,11 @@ void generateShadowFBO() {
 	
   // switch back to window-system-provided framebuffer
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+}
+
+void generateBlurFBO() {
+	
+  GLenum FBOstatus;
 
   // Creating the blur FBO
   glGenFramebuffersEXT(1, &blurFboId);
@@ -175,7 +186,7 @@ void generateShadowFBO() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
   glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
-  glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F_ARB, shadowMapWidth*BLUR_COEF, shadowMapHeight*BLUR_COEF, 0, GL_RGB, GL_FLOAT, 0);
+  glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F_ARB, shadowMapBlurWidth, shadowMapBlurHeight, 0, GL_RGB, GL_FLOAT, 0);
 
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,GL_TEXTURE_2D, blurFboIdColorTextureId, 0);
   FBOstatus = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
@@ -196,13 +207,13 @@ void generateLightFBO() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
   glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F_ARB, RENDER_WIDTH*LIGHT_SCATTERING_COEF, RENDER_HEIGHT*LIGHT_SCATTERING_COEF, 0 , GL_RGB, GL_FLOAT, 0);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F_ARB, lightScatterWidth, lightScatterHeight, 0 , GL_RGB, GL_FLOAT, 0);
 
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, scatterTextureId, 0);
 
   FBOstatus = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
   if(FBOstatus != GL_FRAMEBUFFER_COMPLETE_EXT)
-    printf("GL_FRAMEBUFFER_COMPLETE_EXT failed for scatter FBO, CANNOT use FBO\n");
+    printf("GL_FRAMEBUFFER_COMPLETE_EXT failed for light FBO, CANNOT use FBO\n");
 
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 }
@@ -211,8 +222,8 @@ void setupMatrices(float position_x,float position_y,float position_z,float look
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  //gluPerspective(45,RENDER_WIDTH/RENDER_HEIGHT,zNear,zFar);
-  gluPerspective(fovy,RENDER_WIDTH/RENDER_HEIGHT,zNear,zFar);
+  //gluPerspective(45,renderWidth/renderHeight,zNear,zFar);
+  gluPerspective(fovy,renderWidth/renderHeight,zNear,zFar);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   gluLookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,up_x,up_y,up_z);
@@ -331,9 +342,9 @@ void blurShadowMap() {
   
   // Bluring the shadow map  horizontaly
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,blurFboId);	
-  glViewport(0,0,RENDER_WIDTH * SHADOW_MAP_COEF *BLUR_COEF ,RENDER_HEIGHT* SHADOW_MAP_COEF*BLUR_COEF);
+  glViewport(0,0,renderWidth * shadowMapCoef *blurCoef ,renderHeight* shadowMapCoef*blurCoef);
   glUseProgramObjectARB(blurShade->getProgram());
-  glUniform2fARB( blurShade->getScaleAttrib(),1.0/ (RENDER_WIDTH * SHADOW_MAP_COEF * BLUR_COEF),0.0);
+  glUniform2fARB( blurShade->getScaleAttrib(),1.0/ (renderWidth * shadowMapCoef * blurCoef),0.0);
   //glUniform2fARB( blurShade->getScaleAttrib(),1.0/512.0,0.0);		// horiz
   //glUniform1iARB(blurShade->getTextureSourceAttrib(),0);
   glActiveTextureARB(GL_TEXTURE0);
@@ -343,34 +354,34 @@ void blurShadowMap() {
   //Preparing to draw quad
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glOrtho(-RENDER_WIDTH/2,RENDER_WIDTH/2,-RENDER_HEIGHT/2,RENDER_HEIGHT/2,1,20);
+  glOrtho(-renderWidth/2,renderWidth/2,-renderHeight/2,renderHeight/2,1,20);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
   //Drawing quad 
   glTranslated(0,0,-5);
   glBegin(GL_QUADS);
-  glTexCoord2d(0,0);glVertex3f(-RENDER_WIDTH/2,-RENDER_HEIGHT/2,0);
-  glTexCoord2d(1,0);glVertex3f(RENDER_WIDTH/2,-RENDER_HEIGHT/2,0);
-  glTexCoord2d(1,1);glVertex3f(RENDER_WIDTH/2,RENDER_HEIGHT/2,0);
-  glTexCoord2d(0,1);glVertex3f(-RENDER_WIDTH/2,RENDER_HEIGHT/2,0);
+  glTexCoord2d(0,0);glVertex3f(-renderWidth/2,-renderHeight/2,0);
+  glTexCoord2d(1,0);glVertex3f(renderWidth/2,-renderHeight/2,0);
+  glTexCoord2d(1,1);glVertex3f(renderWidth/2,renderHeight/2,0);
+  glTexCoord2d(0,1);glVertex3f(-renderWidth/2,renderHeight/2,0);
   glEnd();
   //glGenerateMipmapEXT(GL_TEXTURE_2D);
 		
 		 
   // Bluring vertically
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,fboId);	
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,shadowFboId);	
   //glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);	
-  glViewport(0,0,RENDER_WIDTH * SHADOW_MAP_COEF ,RENDER_HEIGHT* SHADOW_MAP_COEF);
-  glUniform2fARB( blurShade->getScaleAttrib(),0.0, 1.0/ (RENDER_HEIGHT * SHADOW_MAP_COEF ) );	
+  glViewport(0,0,renderWidth * shadowMapCoef ,renderHeight* shadowMapCoef);
+  glUniform2fARB( blurShade->getScaleAttrib(),0.0, 1.0/ (renderHeight * shadowMapCoef ) );	
   //glUniform2fARB( blurShade->getScaleAttrib(),0.0, 1.0/ (512.0 ) );
   glBindTexture(GL_TEXTURE_2D,blurFboIdColorTextureId);
   //glBindTexture(GL_TEXTURE_2D,colorTextureId);
   glBegin(GL_QUADS);
-  glTexCoord2d(0,0);glVertex3f(-RENDER_WIDTH/2,-RENDER_HEIGHT/2,0);
-  glTexCoord2d(1,0);glVertex3f(RENDER_WIDTH/2,-RENDER_HEIGHT/2,0);
-  glTexCoord2d(1,1);glVertex3f(RENDER_WIDTH/2,RENDER_HEIGHT/2,0);
-  glTexCoord2d(0,1);glVertex3f(-RENDER_WIDTH/2,RENDER_HEIGHT/2,0);
+  glTexCoord2d(0,0);glVertex3f(-renderWidth/2,-renderHeight/2,0);
+  glTexCoord2d(1,0);glVertex3f(renderWidth/2,-renderHeight/2,0);
+  glTexCoord2d(1,1);glVertex3f(renderWidth/2,renderHeight/2,0);
+  glTexCoord2d(0,1);glVertex3f(-renderWidth/2,renderHeight/2,0);
   glEnd();
 		 
   glEnable(GL_CULL_FACE);
@@ -386,7 +397,7 @@ void drawDebugBuffer(int option) {
   glUseProgramObjectARB(0);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glOrtho(-RENDER_WIDTH/2,RENDER_WIDTH/2,-RENDER_HEIGHT/2,RENDER_HEIGHT/2,1,20);
+  glOrtho(-renderWidth/2,renderWidth/2,-renderHeight/2,renderHeight/2,1,20);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   glColor4f(1,1,1,1);
@@ -409,9 +420,9 @@ void drawDebugBuffer(int option) {
   glTranslated(0,0,-1);
   glBegin(GL_QUADS);
   glTexCoord2d(0,0);glVertex3f(0,0,0);
-  glTexCoord2d(1,0);glVertex3f(RENDER_WIDTH/2,0,0);
-  glTexCoord2d(1,1);glVertex3f(RENDER_WIDTH/2,RENDER_HEIGHT/2,0);
-  glTexCoord2d(0,1);glVertex3f(0,RENDER_HEIGHT/2,0);
+  glTexCoord2d(1,0);glVertex3f(renderWidth/2,0,0);
+  glTexCoord2d(1,1);glVertex3f(renderWidth/2,renderHeight/2,0);
+  glTexCoord2d(0,1);glVertex3f(0,renderHeight/2,0);
   glEnd();
   glDisable(GL_TEXTURE_2D);
 }
@@ -441,19 +452,19 @@ void drawObjects(GeometryShader * curShade) {
   //pushViewportOrientation();
   sweep->renderWithDisplayList(*curShade,20,0.3,20);
 
-  vec3 vehLoc = veh2->worldSpacePos();
+  vec3 vehLoc = vehicle->worldSpacePos();
   pushMat4(translation3D(vehLoc).transpose());
   
-  //veh2->draw(curShade);
+  //vehicle->draw(curShade);
   glutSolidCube(1);
 
-  pushTranslate(veh2->getVelocity()[0],veh2->getVelocity()[1],veh2->getVelocity()[2]);
+  pushTranslate(vehicle->getVelocity()[0],vehicle->getVelocity()[1],vehicle->getVelocity()[2]);
   
 
   glutSolidCube(0.5);
   popTransform();
 
-  pushTranslate(veh2->getAcceleration()[0],-veh2->getAcceleration()[2],veh2->getAcceleration()[1]);
+  pushTranslate(vehicle->getAcceleration()[0],-vehicle->getAcceleration()[2],vehicle->getAcceleration()[1]);
   
 
   glutSolidCube(0.5);
@@ -464,46 +475,20 @@ popTransform();
 //popTransform();
   popTransform();
 
-
-
-  /*
-
-  mat4 vehLoc = vehicle->getCurrentLocation();
-  mat4 R = vehicle->getR();
-  pushTranslate(0,4,0);
-  pushViewportOrientation();
-  pushMat4(vehLoc.transpose());
-  pushMat4(R);
-
-  vehicle->draw(curShade);
-
-  popTransform(); //pushMat4 R
-  popTransform(); //pushMat4 vehLoc
-  popTransform(); //viewport
-  popTransform(); //pushtranslate 0, 0, 2
-  */
 }
 
 void renderScene() {
-
-  //==UPDATE VEHICLE POSITION
-  /*
-  frameCount++;
-  clock_t now = clock();
-  double time = (now - startTime) / (double)(CLOCKS_PER_SEC);
-  vehicle->setTime(time);
-  */
 
   //==CAMERA
 
   //==FIRST RENDER: DEPTH BUFFER
   //Render from the light POV to a FBO, store depth and square depth in a 32F frameBuffer
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,fboId);
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,shadowFboId);
 	
   //Using the depth shader to do so
   glUseProgramObjectARB(depthShade->getProgram());
   // In the case we render the shadowmap to a higher resolution, the viewport must be modified accordingly.
-  glViewport(0,0,RENDER_WIDTH * SHADOW_MAP_COEF,RENDER_HEIGHT* SHADOW_MAP_COEF);
+  glViewport(0,0,renderWidth * shadowMapCoef,renderHeight* shadowMapCoef);
   //try to make shadow view "bigger" than normal view
 
   // Clear previous frame values
@@ -527,7 +512,7 @@ void renderScene() {
   //==THIRD RENDER: PATH TRACED LIGHT SCATTERING EFFECT (CREPUSCULAR RAYS)
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,scatterFboId);
 	
-  glViewport(0,0,RENDER_WIDTH*LIGHT_SCATTERING_COEF,RENDER_HEIGHT*LIGHT_SCATTERING_COEF);
+  glViewport(0,0,lightScatterWidth,lightScatterHeight);
     
   // Clear previous frame values
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -555,7 +540,7 @@ void renderScene() {
   // Now rendering from the camera POV, using the FBO to generate shadows
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);
 	
-  glViewport(0,0,RENDER_WIDTH,RENDER_HEIGHT);
+  glViewport(0,0,renderWidth,renderHeight);
     
   // Clear previous frame values
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -581,7 +566,7 @@ void renderScene() {
   //==FIFTH PASS: LIGHT SCATTERING OVERLAY
   //uses main screen
   //glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);
-  //glViewport(0,0,RENDER_WIDTH,RENDER_HEIGHT);
+  //glViewport(0,0,renderWidth,renderHeight);
   glClear (GL_DEPTH_BUFFER_BIT );
 	
   //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -593,8 +578,8 @@ void renderScene() {
   glUniform1fARB(scatterShade->getDecayAttrib(),1.0);
   glUniform1fARB(scatterShade->getDensityAttrib(),0.84);
   glUniform1fARB(scatterShade->getWeightAttrib(),5.65);
-  glUniform2fARB(scatterShade->getLightPositionOnScreenAttrib(),cameraSpaceLightPos[0],cameraSpaceLightPos[1]);
   glUniform1iARB(scatterShade->getTextureAttrib(),0);
+  glUniform2fARB(scatterShade->getLightPositionOnScreenAttrib(),cameraSpaceLightPos[0],cameraSpaceLightPos[1]);
 
   glActiveTextureARB(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D,scatterTextureId);
@@ -602,7 +587,7 @@ void renderScene() {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glOrtho(-RENDER_WIDTH/2,RENDER_WIDTH/2,-RENDER_HEIGHT/2,RENDER_HEIGHT/2,1,20);
+  glOrtho(-renderWidth/2,renderWidth/2,-renderHeight/2,renderHeight/2,1,20);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
@@ -610,10 +595,10 @@ void renderScene() {
   glPushMatrix();
   glTranslated(0,0,-5);
   glBegin(GL_QUADS);
-  glTexCoord2d(0,0);glVertex3f(-RENDER_WIDTH/2,-RENDER_HEIGHT/2,0);
-  glTexCoord2d(1,0);glVertex3f(RENDER_WIDTH/2,-RENDER_HEIGHT/2,0);
-  glTexCoord2d(1,1);glVertex3f(RENDER_WIDTH/2,RENDER_HEIGHT/2,0);
-  glTexCoord2d(0,1);glVertex3f(-RENDER_WIDTH/2,RENDER_HEIGHT/2,0);
+  glTexCoord2d(0,0);glVertex3f(-renderWidth/2,-renderHeight/2,0);
+  glTexCoord2d(1,0);glVertex3f(renderWidth/2,-renderHeight/2,0);
+  glTexCoord2d(1,1);glVertex3f(renderWidth/2,renderHeight/2,0);
+  glTexCoord2d(0,1);glVertex3f(-renderWidth/2,renderHeight/2,0);
   glEnd();
   glPopMatrix();
   glDisable(GL_BLEND);
@@ -646,19 +631,19 @@ void processNormalKeys(unsigned char key, int x, int y) {
     break;
   case 'W':
   case 'w':
-    veh2->toggleAcceleration();
+    vehicle->toggleAcceleration();
     break;
   case 'A':
   case 'a':
-    veh2->turnLeft();
+    vehicle->turnLeft();
     break;
   case 'S':
   case 's':
-    veh2->turnStraight();
+    vehicle->turnStraight();
     break;
   case 'D':
   case 'd':
-    veh2->turnRight();
+    vehicle->turnRight();
     break;
   }
 }
@@ -687,30 +672,12 @@ void myPassiveMotionFunc(int x, int y) {
   glutPostRedisplay();
 }
 
-void processAbnormalKeys(int key, int x, int y) {
-  switch (key) {
-  case GLUT_KEY_UP:
-    vehicle->setAccelerate(true);
-    break;
-  }
-  return;
-}
-
-void processAbnormalUpKeys(int key, int x, int y) {
-  switch (key) {
-  case GLUT_KEY_UP:
-    vehicle->setAccelerate(false);
-    break;
-  }
-  return;
-}
-
 void stepVehicle(int x) {
 
-    veh2->step(0.01);
-    p_camera = veh2->cameraPos();
-    l_camera = veh2->worldSpacePos();
-    u_camera = veh2->getUp();
+    vehicle->step(0.01);
+    p_camera = vehicle->cameraPos();
+    l_camera = vehicle->worldSpacePos();
+    u_camera = vehicle->getUp();
   glutTimerFunc(1,stepVehicle,0);
 
 }
@@ -751,8 +718,6 @@ int main(int argc,char** argv) {
   glutDisplayFunc(renderScene);
   glutIdleFunc(renderScene);
   glutKeyboardFunc(processNormalKeys);
-  glutSpecialFunc(processAbnormalKeys);
-  glutSpecialUpFunc(processAbnormalUpKeys);
   glutMotionFunc(myActiveMotionFunc);
   glutPassiveMotionFunc(myPassiveMotionFunc);
 
@@ -767,11 +732,12 @@ int main(int argc,char** argv) {
     exit(1);
   }
 
-  //generate the shadow FBO 
+  //Generate FBOs
   generateShadowFBO();
+  generateBlurFBO();
   generateLightFBO();
 
-  //light stuff
+  //Load Shaders
   shade = new ShadowShader("shaders/MainVertexShader.c", "shaders/MainFragmentShader.c");
   blurShade = new BlurShader("shaders/GaussianBlurVertexShader.c", "shaders/GaussianBlurFragmentShader.c");
   depthShade = new GeometryShader("shaders/DepthVertexShader.c", "shaders/DepthFragmentShader.c");
@@ -791,46 +757,11 @@ int main(int argc,char** argv) {
     bg = argv[2];
   loadTexture(bg,bgText);
 
-  vehicle = new Vehicle(sweep, mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(0,0,0,1)), vec3(1,0,0));
-  vehicle->setAccelerate(true);
-  vehicle->setVelocity(0.0);
-
-  //set up reference values for PE = mgh
-  double energy = 0;
-  double h = -DBL_MAX;
-  double minh = DBL_MAX;
-  double highestT;
-  vec3 lastPos;
-  cout << "looking for highest point on the coaster..." << endl;
-  for (double i = 0; i < 1; i+=0.00001) {
-    if (h < sweep->sample(i).point[VY]) {
-      h = max(h, sweep->sample(i).point[VY]);
-      highestT = i;
-      lastPos = sweep->sample(i).point;
-    }
-    minh = min(minh, sweep->sample(i).point[VY]);
-
-  }
-  double gravity = 2*9.8/900; // because we recalculate at 30fps
-  double lastVelocity = 0.01;
-  double lastTime = highestT;
-  h += 0.05; // never go to 0
-  //double zoom = 10;
-  //saved = true;
-
-  vehicle->setH(h);
-  vehicle->setGravity(gravity);
-  startTime = clock();
+  vehicle = new Vehicle(sweep);
 
   vehicle->mesh->loadFile("wipeout3.obj");
   vehicle->mesh->loadTextures("thread2.png","thread1_bump.png");
   vehicle->mesh->centerAndScale(4);
-
-  veh2 = new Vehicle2(sweep);
-
-  veh2->mesh->loadFile("wipeout3.obj");
-  veh2->mesh->loadTextures("thread2.png","thread1_bump.png");
-  veh2->mesh->centerAndScale(4);
 
   //And Go!
   glutMainLoop();

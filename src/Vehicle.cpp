@@ -1,195 +1,199 @@
-// vim: ts=2:sw=2:softtabstop=2
-
 #include "Vehicle.h"
 
-// use the sweep to get F vector
-// time is the sweep time, not real time  
-vec3 f(Sweep * sweep, double time) {
-	return sweep->sampleForward(time);
-}
-
-// use the sweep to get U vector
-// time is sweep time, not real time
-vec3 u(Sweep * sweep, double time) {
-	return sweep->sampleUp(time);
-}
-
-// use the sweep to get R vector
-// time is sweep time, not real time
-vec3 r(Sweep * sweep, double time) {
-	return f(sweep, time) ^ u(sweep, time);
-}
-
-// use F and R to recompute U
-// time is sweep time, not real time
-vec3 uPrime(Sweep * sweep, double time) {
-	return r(sweep, time) ^ f(sweep, time);
-}
-
-// gets the next SWEEP time based on the current SWEEP time
-// unlike the one form my as7, does NOT update sweep time on its own.
-// distance is the distance you would like to move
-double Vehicle::getTime(double distance) {
-  //vec3 lastPos = vec3((location.transpose())[3], VW);
-  vec3 lastPos = this->sweep->sample(this->lastSweepTime).point;
-  double time = lastSweepTime;
-	//double time = lastTime;
-	//double curVelocity = sqrt(gravity*(h - lastPos[VY]));
-	double tempDist = 0;
-	vec3 tempPos = lastPos;
-	//cout << endl<< curVelocity << endl;
-	do {
-		time += 0.0000025;
-		time = time > 1?time-1:time;
-		tempDist += (sweep->sample(time).point - tempPos).length();
-
-		tempPos = sweep->sample(time).point;
-		//cout << time << endl;
-	} while (tempDist < distance);
-	//cout << tempDist << endl;
-	lastPos = sweep->sample(time).point;
-  return time;
-}
-
-class Vehicle;
-
-Vehicle::Vehicle(Sweep * sweep, mat4 startLocation, vec3 startDirection) {
-  this->sweep = sweep;
-  this->location = startLocation;
-  this->direction = startDirection;
-  this->velocity = startDirection; // assume velocity starts off that way
-  this->lastSweepTime = 0;
-
+Vehicle::Vehicle(Sweep * sw) {
+  this->sweep = sw;
   this->mesh = new Mesh();
+
+  //todo: initial velocity and accel
+  //initial pos
+  this->worldPos = this->sweep->sample(0).point;
+  this->velocity = this->sweep->sampleForward(0,0.01);
+  this->velocity.normalize();
+  this->pos = vec3(0,0,0);
+  this->acceleration = this->sweep->sampleForward(0,0.01);
+  this->up = this->sweep->sampleUp(0);
+
+  this->velocityScalar = 0;
+  this->accelerationScalar = 0;
 }
 
-void Vehicle::setAccelerate(bool isAccelerating) {
-  this->isAccelerating = isAccelerating?1:0;
-}
-
-void Vehicle::draw(GeometryShader *shade) {
-  //glutSolidCube(1);
+void Vehicle::draw(GeometryShader * shade) {
   mesh->draw(*shade);
 }
 
-void Vehicle::setLocation(mat4 location) {
-  this->location = location;
+void Vehicle::setAccel(vec3 accel) {
+  this->acceleration = accel;
 }
 
-void Vehicle::setTime(double newTime) {
-
-  //first find the new distance
-  double deltaT = newTime - lastTime;
-
-  if(deltaT < 0.01)
-    return;
-
-  double distance = (this->velocity * deltaT).length();
-
-  //update velocity
-  this->velocity = deltaT * this->getAcceleration() + this->velocity;
-
-  //ok, now get the new sweep time and update that shit
-  this->setSweepTime(this->getTime(distance));
-
-  //finally, update the lastTime with the new time
-  this->lastTime = newTime;
-
-  return;
-  /*
-  //strategy is to use this to translate the real time into a sweep time, then use this->setSweepTime to actually set location etc.
-  cerr << "warning: whackness" << endl;
-  cerr << "ERROR: don't use setTime right now please." << endl;
-  this->location = mat4(vec4(1,0,0,velocityScaled[0]), vec4(0,1,0,velocityScaled[1]), vec4(0,0,1,velocityScaled[2]), vec4(0,0,0,1)) * this->location;
-  this->velocity = delta * this->getAcceleration() + this->velocity;
-  this->lastTime = newTime;
-  */
+void Vehicle::setVelocity(vec3 vel) {
+  this->velocity = vel;
 }
 
-void Vehicle::setSweepTime(double newSweepTime) {
-  //cerr << "warning: whackness" << endl;
-  vec3 temp = this->sweep->sample(newSweepTime).point;
-  this->location = mat4(vec4(1,0,0,temp[0]), vec4(0,1,0,temp[1]), vec4(0,0,1,temp[2]), vec4(0,0,0,1));
-
-  //double time = getTime(vec3((this->location).transpose()[2], VW), 10, 10, sweep, lastSweepTime);
-  double time = newSweepTime;
-  vec3 fVec = f(this->sweep, time-.05);
-	vec3 rVec = r(this->sweep, time-.05);
-	vec3 uPrimeVec = uPrime(this->sweep, time-.05);
-	PathPoint loc = this->sweep->sample(time-.05);
-	fVec.normalize();
-	uPrimeVec.normalize();
-	rVec.normalize();
-	mat4 R(vec4(fVec, 0), vec4(uPrimeVec, 0), vec4(rVec, 0), vec4(0,0,0,1));
-  this->R = R;
-  this->lastSweepTime = time;
-  return;
-  //this->location = R;
-  //this->location = mat4(vec4(1,0,0,velocityScaled[0]), vec4(0,1,0,velocityScaled[1]), vec4(0,0,1,velocityScaled[2]), vec4(0,0,0,1)) * this->location;
-  //this->velocity = delta * this->getAcceleration() + this->velocity;
-  //this->lastSweepTime = newSweepTime;
-  //this->lastSweepTime = time;
+void Vehicle::setAccelScalar(double mag) {
+  this->acceleration.normalize();
+  this->acceleration *= mag;
 }
 
+void Vehicle::setVelocityScalar(double mag) {
+  this->velocity.normalize();
+  this->velocity *= mag;
+}
+
+void Vehicle::step(double amount) {
+  //mat4 tbn = this->sweep->tbnBasis(this->pos[0], worldPos);
+  mat3 tbn = this->sweep->tbnBasis(this->pos[0]);
+  //bring velocity (world coord) into tangent space
+  //cout << "v " << this->velocity << endl;
+  //vec3 tbnVelocity = tbn.inverse() * ((velocityScalar * velocity) + getWindResistance());
+
+
+  //configure accelVec for testing
+  vec3 accelVec = sweep->sampleForward(pos[0]);
+  accelVec.normalize();
+  //vec3 accelVec = accelnormDirection();
+  vec3 tbnVelocity = tbn.inverse() * ((velocityScalar * velocity) + getWindResistance() + (accelerationScalar * accelVec));
+  if(velocityScalar > 0) {
+    velocity = ((velocityScalar * velocity) + getWindResistance() + (accelerationScalar * accelVec));
+    velocity.normalize();
+  }
+
+  velocityScalar = ((velocityScalar * velocity) + getWindResistance() + (accelerationScalar * accelVec)).length();
+  //cout << "v: " << velocityScalar << endl;
+  //quick test for accel. need to move acceleration vector to world pos and transform from camera
+
+
+  //cout << "tbnv " << tbnVelocity << endl;
+  //t coordinate of transformed velocity is what we we step using
+  double distance = amount * tbnVelocity[0];
+
+  //cout << "dist: " << distance << endl;
+
+  double tempDist = 0;
+  vec3 tempPos = sweep->sample(pos[0]).point;
+  //step [todo: better method]
+  float tempTime = pos[0];
+  if(distance > 0.00001) {
+    do {
+      tempTime += 0.0000025;
+      tempTime = tempTime > 1 ? tempTime-1:tempTime;
+      tempDist += (sweep->sample(tempTime).point - tempPos).length();
+
+      tempPos = sweep->sample(tempTime).point;
+    } while (tempDist < distance);
+  } else if(distance < -0.00001) {
+    do {
+      tempTime -= 0.0000025;
+      tempTime = tempTime <0  ? tempTime+1:tempTime;
+      tempDist -= (sweep->sample(tempTime).point - tempPos).length();
+
+      tempPos = sweep->sample(tempTime).point;
+    } while (tempDist > distance);
+  }
+  
+  //cout << "time: " << this->pos[0];
+  this->pos[0] = tempTime;
+  //cout << " -> " << this->pos[0] << endl;
+
+  //find sweep location @ new time
+  vec3 sweepLocNew = this->sweep->sample(this->pos[0]).point;
+
+  //apply lateral movement
+  //calculate tbn space of lateral displacement
+  this->pos[1] = (amount * tbnVelocity)[1];// + this->pos[1];
+  vec3 lateralPos = vec3(0,this->pos[1],0);
+  //transform tbn space lateral displacement into world space
+  vec3 lateralDispWorld = tbn * lateralPos;
+  //cout << "ldispworld " << lateralDispWorld << endl;
+
+  //apply vertical movement
+  //calcualte tbn space of vertical displacement
+  //ACTUALLy lets keep it at z=1 for right now
+  vec3 verticalPos = vec3(0,0,1);
+  vec3 verticalDispWorld = tbn * verticalPos;
+  //cout << "vdispworld " << verticalDispWorld << endl;
+
+  //now reconstruct the worldPos
+  worldPos = sweepLocNew + lateralDispWorld + verticalDispWorld;
+
+  up = this->sweep->sampleUp(pos[0]);
+
+  //temp velocity
+  //velocity = sweep->sampleForward(pos[0],0.01);
+  //velocity.normalize();
+
+
+}
+
+vec3 Vehicle::cameraPos() {
+  return worldPos - (5 * velocity);
+}
+
+vec3 Vehicle::worldSpacePos() {
+  return worldPos;
+}
+
+vec3 Vehicle::getUp() {
+  return up;
+}
+
+vec3 Vehicle::resistanceAccel() {
+  return this->acceleration - this->getWindResistance();
+}
+
+void Vehicle::toggleAcceleration() {
+  if(accelerationScalar > 0.0001)
+    accelerationScalar = 0.0;
+  else
+    accelerationScalar = 0.01;
+}
 
 void Vehicle::turnLeft() {
-  cerr << "Left turns not implemented" << endl;
+  mat3 tbn = this->sweep->tbnBasis(this->pos[0]);
+  vec3 accelerationTbnDelta = vec3(0,-0.25,0);
+  vec3 worldAccelDelta = tbn * accelerationTbnDelta;
+  acceleration += worldAccelDelta;
+}
+void Vehicle::turnRight() {
+  mat3 tbn = this->sweep->tbnBasis(this->pos[0]);
+  vec3 accelerationTbnDelta = vec3(0,0.25,0);
+  vec3 worldAccelDelta = tbn * accelerationTbnDelta;
+  acceleration += worldAccelDelta;
+
+}
+void Vehicle::turnStraight() {
+  acceleration = vec3(1,0,0);
 }
 
-void Vehicle::turnRight() {
-  cerr << "Right turns not implemented" << endl;
+vec3 Vehicle::getWindResistance() {
+  //Drag Force = -1/2 * density * Area * Drag Coeff ~[0.25-0.45] * (velocity dot velocity) * velocity/magvelocity
+  //simplified: F =  - SOME COEFF * velocity^2
+
+  //density of air @ 20C = 1.204 kg/m^3
+  //drag coeff of car ~0.25->0.45 [2010 impreza WRX: 0.36]
+  //frontal area of car 0.717 m^2 [1993 impreza]
+
+
+  //and just dividing by a few thousand to get a higher terminal velocity
+  return -(0.00015538824) * velocityScalar * velocityScalar * velocity;
+}
+
+ void Vehicle::updateWorldPos() {
+
+}
+
+//temp for debug
+vec3 Vehicle::getVelocity() {
+  return velocity;
 }
 
 vec3 Vehicle::getAcceleration() {
-  vec3 withoutFriction;
-  if (this->isAccelerating) {
-    withoutFriction = vec3(1,0,0); // * exp(-velocity.length());
-  } else {
-    withoutFriction = vec3(0,0,0);
-  }
-  return 0.1*withoutFriction; // TODO: add some resistance here, or some other friction
+  return accelNorm();
 }
 
-vec3 Vehicle::getPerspectiveLocation() {
-  // need 6 values: location.xyz and center.xyz.
-  double time; // TODO: set time
-  time = 0;
-  //time = this->getTime();
-  time = this->lastSweepTime;
-  return this->sweep->sample(time).point;
-}
-
-vec3 Vehicle::getPerspectiveCenter() {
-  double time; // TODO: set time
-  time = 0;
-  //time = this->getTime();
-  time = this->lastSweepTime;
-  vec3 location = this->getPerspectiveLocation();
-  vec3 fVec = f(this->sweep, time);
-  fVec = this->sweep->sampleForward(time, 0.05);
-  vec3 uVec = u(this->sweep, time);
-  return location + fVec;
-}
-
-vec3 Vehicle::getPerspectiveUp() {
-  double time = 0;
-  //time = this->getTime();
-  return u(this->sweep, time);
-}
-
-vec3 Vehicle::uVec() {
-  double time;
-  time = 0;
-  //time = this->getTime();
-  time = this->lastSweepTime;
-  return u(this->sweep, time);
-}
-
-
-mat4 Vehicle::getCurrentLocation() {
-  return this->location;
-}
-
-void Vehicle::setVelocity(double velocity) {
-  this->velocity = velocity * this->direction;
+vec3 Vehicle::accelNormDirection() {
+ vec3 normAccel = acceleration; 
+ float ydiff = sweep->sampleForward(pos[0])[1] - acceleration[1];
+ normAccel[1] += 100*(ydiff*ydiff);
+ normAccel.normalize();
+ return normAccel;
 }
