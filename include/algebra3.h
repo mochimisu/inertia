@@ -1497,6 +1497,71 @@ inline vec3 List(double s0, double s1, double s2) { return vec3(s0, s1, s2); }
 inline double Power(double value, double exp) { return pow(value, exp); }
 inline double Sqrt(double value) { return sqrt(value); }
 
+
+/****************************************************************
+ *																*
+ *			    Quaternion										*
+ *																*
+ ****************************************************************/
+class quat {
+protected:
+    double a;
+    vec3 v;
+
+public:
+    quat() : a(1.0), v(0.0) {}
+    quat(vec3 v) : a(0.0), v(v) {}
+    quat(double a, vec3 v) : a(a), v(v) {}
+    static quat axisAngle(vec3 axis, double angle) {
+        double axisLen = axis.length();
+        if (axisLen < .00000000001)
+            return quat(1,vec3(0,0,0));
+        axis.normalize(); 
+        return quat(cos(angle*.5), sin(angle*.5)*axis);
+    }
+    static quat getRotation(vec3 dir1, vec3 dir2) {
+        dir1.normalize(); dir2.normalize();
+        vec3 axis = dir1^dir2;
+        double sina = axis.length();
+        double cosa = dir1*dir2;
+        double angle = atan2(sina,cosa);
+        return axisAngle(axis, angle);
+    }
+    double &operator[](int i) { if (i==0) return a; else return v[i-1]; }
+    quat nlerp(const quat &q, double t) { // normalized lerp
+        quat i((1-t)*a+t*q.a, (1-t)*v+t*q.v);
+        i.normalize();
+        return i;
+    }
+    vec3 rotate(vec3 v) {
+        quat pq(v);
+        quat qinv = conjugate();
+        quat res = (*this)*pq*qinv;
+        return res.v;
+    }
+    quat getNearest(const quat &q) {
+        if (q.a*a+q.v*v < 0)
+            return quat(-a,-v);
+        else
+            return *this;
+    }
+    quat operator*(const quat &q) const {
+        return quat(a*q.a-v*q.v, (a*q.v)+(q.a*v)+(v^q.v));
+    }
+    quat conjugate() { // aka inverse
+        return quat(a, -v);
+    }
+    quat& normalize() { // normalize in-place
+        double invlen = 1.0/sqrt(a*a+v*v);
+        a *= invlen;
+        v *= invlen;
+        return *this;
+    }
+    double angle() const { return 2.0 * atan2(a, v.length()); }
+    vec3 axis() const { return v; }
+};
+
+
 /****************************************************************
  *																*
  *	       2D functions and 3D functions						*

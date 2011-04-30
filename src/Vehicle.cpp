@@ -43,12 +43,13 @@ void Vehicle::step(double amount) {
   mat3 tbn = this->sweep->tbnBasis(this->pos[0]);
 
   //testin accelvec
-  //vec3 accelVec = sweep->sampleForward(pos[0]);
+  vec3 accelVec = sweep->sampleForward(pos[0]);
+  //vec3 accelVec = acceleration;
   //accelVec.normalize();
-  vec3 tbnAccelDir = vec3(1,0,0);
+  //vec3 tbnAccelDir = vec3(1,0,0);
 
   vec3 tbnVelocityDir = tbn.inverse() * velocity;
-  // vec3 tbnAccelDir = tbn.inverse() * accelVec;
+  vec3 tbnAccelDir = tbn.inverse() * accelVec;
   tbnVelocityDir.normalize();
   tbnAccelDir.normalize();
   
@@ -98,8 +99,8 @@ void Vehicle::step(double amount) {
   this->pos[0] = tempTime;
 
   //find sweep location @ new time
-  vec3 sweepLocNew = this->sweep->sample(this->pos[0]).point;
-
+  vec3 sweepLocNew = this->sweep->sample(this->pos[0]).point + tbn*vec3(0,1,0);
+  
   //now reconstruct the worldPos
   worldPos = sweepLocNew;
 
@@ -108,11 +109,11 @@ void Vehicle::step(double amount) {
 }
 
 vec3 Vehicle::cameraPos() {
-  return worldPos - 2*velocity + 1.5*up;
+  return worldPos - 2*velocity + up;
 }
 
 vec3 Vehicle::cameraLookAt() {
-  return worldPos + 3*velocity;
+  return worldPos + 5*velocity;
 }
 
 vec3 Vehicle::worldSpacePos() {
@@ -123,11 +124,16 @@ vec3 Vehicle::getUp() {
   return up;
 }
 
+
 void Vehicle::toggleAcceleration() {
   if(accelerationScalar > 0.0001)
     accelerationScalar = 0.0;
   else
-    accelerationScalar = 1.0;
+    accelerationScalar = 0.1;
+}
+
+void Vehicle::setAccel(float acl) {
+  accelerationScalar = acl;
 }
 
 void Vehicle::turnLeft() {
@@ -173,10 +179,18 @@ vec3 Vehicle::getAcceleration() {
   return accelNorm();
 }
 
-vec3 Vehicle::accelNormDirection() {
- vec3 normAccel = acceleration; 
- float ydiff = sweep->sampleForward(pos[0])[1] - acceleration[1];
- normAccel[1] += 100*(ydiff*ydiff);
- normAccel.normalize();
- return normAccel;
+mat4 Vehicle::orientationBasis() {
+  vec3 forward = sweep->sampleForward(pos[0]);
+  vec3 up = sweep->sampleUp(pos[0]);
+  forward.normalize();
+  up.normalize();
+  vec3 side = up ^ forward;
+  side.normalize();
+  vec3 uprime = forward ^ side;
+  uprime.normalize();
+
+  return mat4(vec4(forward,0),
+	      vec4(uprime,0),
+	      vec4(side,0),
+	      vec4(0,0,0,1));
 }

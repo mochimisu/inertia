@@ -473,32 +473,24 @@ void drawObjects(GeometryShader * curShade) {
   }
 
 
-  pushTranslate(0,0,0);
+  //pushTranslate(0,0,0);
   //pushViewportOrientation();
   sweep->renderWithDisplayList(*curShade,20,0.3,20);
 
   vec3 vehLoc = vehicle->worldSpacePos();
   pushMat4(translation3D(vehLoc).transpose());
   
-  //vehicle->draw(curShade);
-  glutSolidCube(1);
-
-  pushTranslate(vehicle->getVelocity()[0],vehicle->getVelocity()[1],vehicle->getVelocity()[2]);
-  
-
-  glutSolidCube(0.5);
+  pushMat4(vehicle->orientationBasis());
+  pushMat4(scaling3D(vec3(0.2,0.2,0.2)));
+  vehicle->draw(curShade);
+  //glutSolidCube(1);
   popTransform();
 
-  pushTranslate(vehicle->getAcceleration()[0],-vehicle->getAcceleration()[2],vehicle->getAcceleration()[1]);
-  
-
-  glutSolidCube(0.5);
   popTransform();
-
-popTransform();
+  popTransform();
 
 //popTransform();
-  popTransform();
+//popTransform();
 
 }
 
@@ -665,7 +657,8 @@ void processNormalKeys(unsigned char key, int x, int y) {
     break;
   case 'S':
   case 's':
-    vehicle->turnStraight();
+    //vehicle->turnStraight();
+    vehicle->setAccel(-0.1);
     break;
   case 'D':
   case 'd':
