@@ -444,8 +444,8 @@ void drawHud() {
   glTranslated(0,0,-1);
   glBegin(GL_QUADS);
   glVertex3f(renderWidth/8,-renderHeight*3.5/8,0); // bottom left
-  glVertex3f(renderWidth/8 + vehicle->getVelocityScalar() / 20 * maxVelocityWidth,-renderHeight*3.5/8,0); //bottom right
-  glVertex3f(renderWidth/8 + vehicle->getVelocityScalar() / 20 * maxVelocityWidth,-renderHeight*3/8,0); //top right
+  glVertex3f(renderWidth/8 + vehicle->getVelocityScalar() / 100 * maxVelocityWidth,-renderHeight*3.5/8,0); //bottom right
+  glVertex3f(renderWidth/8 + vehicle->getVelocityScalar() / 100 * maxVelocityWidth,-renderHeight*3/8,0); //top right
   glVertex3f(renderWidth/8,-renderHeight*3/8,0); //top left
   glEnd();
   

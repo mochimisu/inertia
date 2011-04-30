@@ -60,7 +60,7 @@ void Vehicle::step(double amount) {
   vec3 tbVelocity = vec3(tbnVelocity[0], tbnVelocity[1], 0);
   vec3 tbAcceleration = accelerationScalar * vec3(tbnAccelDir[0], tbnAccelDir[1], 0);
 
-  vec3 newTbVelocity = tbVelocity + tbAcceleration + (-0.0002 * velocityScalar * velocityScalar * tbVelocity) ;
+  vec3 newTbVelocity = tbVelocity + tbAcceleration + (-0.000002 * velocityScalar * velocityScalar * tbVelocity) ;
 
   velocityScalar = newTbVelocity.length();
   if(velocityScalar > 0) {
@@ -127,7 +127,7 @@ void Vehicle::toggleAcceleration() {
   if(accelerationScalar > 0.0001)
     accelerationScalar = 0.0;
   else
-    accelerationScalar = 0.1;
+    accelerationScalar = 1.0;
 }
 
 void Vehicle::turnLeft() {
