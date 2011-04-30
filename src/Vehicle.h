@@ -37,6 +37,9 @@ class Vehicle {
   void turnStraight();
   void toggleAcceleration();
 
+  float getVelocityScalar() { return velocityScalar; }
+  float getAccelerationScalar() { return accelerationScalar; } 
+
  private:
 
   vec3 resistanceAccel();

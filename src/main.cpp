@@ -427,6 +427,31 @@ void drawDebugBuffer(int option) {
   glDisable(GL_TEXTURE_2D);
 }
 
+void drawHud() {
+  float maxVelocityWidth = renderWidth * 2.5/8;
+
+  glEnable (GL_BLEND);
+  glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  glUseProgramObjectARB(0);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(-renderWidth/2,renderWidth/2,-renderHeight/2,renderHeight/2,1,20);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  glColor4f(.188235294,.474509804,1,0.5);
+
+  glTranslated(0,0,-1);
+  glBegin(GL_QUADS);
+  glVertex3f(renderWidth/8,-renderHeight*3.5/8,0); // bottom left
+  glVertex3f(renderWidth/8 + vehicle->getVelocityScalar() / 20 * maxVelocityWidth,-renderHeight*3.5/8,0); //bottom right
+  glVertex3f(renderWidth/8 + vehicle->getVelocityScalar() / 20 * maxVelocityWidth,-renderHeight*3/8,0); //top right
+  glVertex3f(renderWidth/8,-renderHeight*3/8,0); //top left
+  glEnd();
+  
+  glDisable(GL_BLEND);
+}
+
 void drawObjects(GeometryShader * curShade) {
   
   // Ground [double for face culling]
@@ -603,6 +628,7 @@ void renderScene() {
   glPopMatrix();
   glDisable(GL_BLEND);
   
+  drawHud();
   
   if(renderOpt.isDepthBuffer())
     drawDebugBuffer(renderOpt.getDepthBufferOption());

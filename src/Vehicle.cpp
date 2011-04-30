@@ -40,33 +40,37 @@ void Vehicle::setVelocityScalar(double mag) {
 }
 
 void Vehicle::step(double amount) {
-  //mat4 tbn = this->sweep->tbnBasis(this->pos[0], worldPos);
   mat3 tbn = this->sweep->tbnBasis(this->pos[0]);
-  //bring velocity (world coord) into tangent space
-  //cout << "v " << this->velocity << endl;
-  //vec3 tbnVelocity = tbn.inverse() * ((velocityScalar * velocity) + getWindResistance());
 
+  //testin accelvec
+  //vec3 accelVec = sweep->sampleForward(pos[0]);
+  //accelVec.normalize();
+  vec3 tbnAccelDir = vec3(1,0,0);
 
-  //configure accelVec for testing
-  vec3 accelVec = sweep->sampleForward(pos[0]);
-  accelVec.normalize();
-  //vec3 accelVec = accelnormDirection();
-  vec3 tbnVelocity = tbn.inverse() * ((velocityScalar * velocity) + getWindResistance() + (accelerationScalar * accelVec));
+  vec3 tbnVelocityDir = tbn.inverse() * velocity;
+  // vec3 tbnAccelDir = tbn.inverse() * accelVec;
+  
+  vec3 tbnVelocity = tbnVelocityDir * velocityScalar;
+  vec3 tbnAcceleration = tbnAccelDir * accelerationScalar;
+
+  //approximate normal force by projecting velocity onto tb plane and set that as velocity
+  vec3 tbVelocityDir = vec3(tbnVelocityDir[0], tbnVelocityDir[1], 0);
+  vec3 tbVelocity = vec3(tbnVelocity[0], tbnVelocity[1], 0);
+  vec3 tbAcceleration = accelerationScalar * vec3(tbnAccelDir[0], tbnAccelDir[1], 0);
+
+  vec3 newTbVelocity = tbVelocity + tbAcceleration;
+
+  velocityScalar = newTbVelocity.length();
   if(velocityScalar > 0) {
-    velocity = ((velocityScalar * velocity) + getWindResistance() + (accelerationScalar * accelVec));
-    velocity.normalize();
+
+  vec3 newTbVelocityDir = tbVelocity + tbAcceleration;
+  newTbVelocityDir.normalize();
+
+  velocity = tbn * newTbVelocityDir;
+
   }
 
-  velocityScalar = ((velocityScalar * velocity) + getWindResistance() + (accelerationScalar * accelVec)).length();
-  //cout << "v: " << velocityScalar << endl;
-  //quick test for accel. need to move acceleration vector to world pos and transform from camera
-
-
-  //cout << "tbnv " << tbnVelocity << endl;
-  //t coordinate of transformed velocity is what we we step using
-  double distance = amount * tbnVelocity[0];
-
-  //cout << "dist: " << distance << endl;
+  float distance = amount *  newTbVelocity[0];
 
   double tempDist = 0;
   vec3 tempPos = sweep->sample(pos[0]).point;
@@ -89,37 +93,15 @@ void Vehicle::step(double amount) {
       tempPos = sweep->sample(tempTime).point;
     } while (tempDist > distance);
   }
-  
-  //cout << "time: " << this->pos[0];
   this->pos[0] = tempTime;
-  //cout << " -> " << this->pos[0] << endl;
 
   //find sweep location @ new time
   vec3 sweepLocNew = this->sweep->sample(this->pos[0]).point;
 
-  //apply lateral movement
-  //calculate tbn space of lateral displacement
-  this->pos[1] = (amount * tbnVelocity)[1];// + this->pos[1];
-  vec3 lateralPos = vec3(0,this->pos[1],0);
-  //transform tbn space lateral displacement into world space
-  vec3 lateralDispWorld = tbn * lateralPos;
-  //cout << "ldispworld " << lateralDispWorld << endl;
-
-  //apply vertical movement
-  //calcualte tbn space of vertical displacement
-  //ACTUALLy lets keep it at z=1 for right now
-  vec3 verticalPos = vec3(0,0,1);
-  vec3 verticalDispWorld = tbn * verticalPos;
-  //cout << "vdispworld " << verticalDispWorld << endl;
-
   //now reconstruct the worldPos
-  worldPos = sweepLocNew + lateralDispWorld + verticalDispWorld;
+  worldPos = sweepLocNew;
 
   up = this->sweep->sampleUp(pos[0]);
-
-  //temp velocity
-  //velocity = sweep->sampleForward(pos[0],0.01);
-  //velocity.normalize();
 
 
 }
