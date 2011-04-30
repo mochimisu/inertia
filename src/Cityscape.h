@@ -13,6 +13,11 @@
 
 using namespace std;
 
+/*
+ * BuildingSubdivision is the the data structure that stores
+ * the subdivisions of the cityscape, and once the subdivisions
+ * get small enough, terminate the subdivision process.
+ */
 struct BuildingSubdivision {
 	BuildingSubdivision* one;
 	BuildingSubdivision* two;
@@ -54,6 +59,10 @@ struct BuildingSubdivision {
 	}
 };
 
+/*
+ * The Cityscape class stores the root BuildingSubdivision and
+ * other things for use as the actual cityscape, like rendering.
+ */
 class Cityscape {
 public:
 	Cityscape(int width, int height, int area);

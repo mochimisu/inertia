@@ -12,7 +12,8 @@
 
 #include "global.h"
 
-//#include "sweep.h"
+#include "TrackGenerator.h"
+#include "sweep.h"
 #include "mesh.h"
 
 #include "LoadImage.h"

@@ -66,7 +66,10 @@
     <ClInclude Include="src\functions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Vehicle2.h">
+    <ClInclude Include="src\Cityscape.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TrackGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -112,7 +115,10 @@
     <ClCompile Include="src\functions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Vehicle2.cpp">
+    <ClCompile Include="src\Cityscape.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TrackGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

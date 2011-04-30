@@ -1,5 +1,6 @@
 // vim: ts=2:sw=2:softtabstop=2
 #include "sweep.h"
+#include "TrackGenerator.h"
 
 #include "global.h"
 #include "LoadImage.h"
@@ -178,6 +179,15 @@ Sweep::Sweep(string filename) : globalTwist(0), globalAzimuth(0) {
       string bumpFile = getQuoted(linestream);
       loadHeightAndNormalMaps(bumpFile, heightMap, normalMap, .2);
     }
+  }
+  
+  // Procedurally generated now
+  pathPts.clear();
+  TrackGenerator trkGen;
+  vector<vec3> controlPts = trkGen.getControlPts();
+  for (int i = 0; i < controlPts.size(); i++) {
+	  PathPoint newPt(controlPts[i]);
+	  pathPts.push_back(newPt);
   }
 
   
