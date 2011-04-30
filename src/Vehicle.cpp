@@ -58,12 +58,12 @@ void Vehicle::step(double amount) {
   vec3 tbVelocity = vec3(tbnVelocity[0], tbnVelocity[1], 0);
   vec3 tbAcceleration = accelerationScalar * vec3(tbnAccelDir[0], tbnAccelDir[1], 0);
 
-  vec3 newTbVelocity = tbVelocity + tbAcceleration;
+  vec3 newTbVelocity = tbVelocity + tbAcceleration + (-0.000002 * velocityScalar * velocityScalar * tbVelocity) ;
 
   velocityScalar = newTbVelocity.length();
   if(velocityScalar > 0) {
 
-  vec3 newTbVelocityDir = tbVelocity + tbAcceleration;
+  vec3 newTbVelocityDir = newTbVelocity;
   newTbVelocityDir.normalize();
 
   velocity = tbn * newTbVelocityDir;
@@ -103,11 +103,14 @@ void Vehicle::step(double amount) {
 
   up = this->sweep->sampleUp(pos[0]);
 
-
 }
 
 vec3 Vehicle::cameraPos() {
-  return worldPos - (5 * velocity);
+  return worldPos - 2*velocity + 1.5*up;
+}
+
+vec3 Vehicle::cameraLookAt() {
+  return worldPos + 3*velocity;
 }
 
 vec3 Vehicle::worldSpacePos() {
@@ -116,10 +119,6 @@ vec3 Vehicle::worldSpacePos() {
 
 vec3 Vehicle::getUp() {
   return up;
-}
-
-vec3 Vehicle::resistanceAccel() {
-  return this->acceleration - this->getWindResistance();
 }
 
 void Vehicle::toggleAcceleration() {
@@ -156,7 +155,7 @@ vec3 Vehicle::getWindResistance() {
 
 
   //and just dividing by a few thousand to get a higher terminal velocity
-  return -(0.00015538824) * velocityScalar * velocityScalar * velocity;
+  return -(0.0015538824) * velocityScalar * velocityScalar * velocity;
 }
 
  void Vehicle::updateWorldPos() {

@@ -31,6 +31,7 @@ class Vehicle {
   Mesh * mesh;
 
   vec3 cameraPos();
+  vec3 cameraLookAt();
 
   void turnLeft();
   void turnRight();

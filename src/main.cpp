@@ -702,7 +702,7 @@ void stepVehicle(int x) {
 
     vehicle->step(0.01);
     p_camera = vehicle->cameraPos();
-    l_camera = vehicle->worldSpacePos();
+    l_camera = vehicle->cameraLookAt();
     u_camera = vehicle->getUp();
   glutTimerFunc(1,stepVehicle,0);
 
