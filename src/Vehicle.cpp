@@ -10,8 +10,9 @@ Vehicle::Vehicle(Sweep * sw) {
   this->velocity = this->sweep->sampleForward(0,0.01);
   this->velocity.normalize();
   this->pos = vec3(0,0,0);
-  this->acceleration = vec3(1,0,0);
+  this->acceleration = this->sweep->sampleForward(0,0.1);
   this->up = this->sweep->sampleUp(0);
+  this->up.normalize();
 
   this->velocityScalar = 0;
   this->accelerationScalar = 0;
@@ -45,27 +46,16 @@ void Vehicle::step(double amount) {
   tbnVelocityDir.normalize();
   vec3 tbnVelocity = tbnVelocityDir * velocityScalar;
 
+  vec3 tbnAccelerationDir = tbn.inverse() * acceleration;
+  tbnAccelerationDir.normalize();
+  vec3 tbnAcceleration = tbnAccelerationDir * accelerationScalar;
+
   //approximate normal force by projecting velocity onto tb plane and set that as velocity
   vec3 tbVelocityDir = vec3(tbnVelocityDir[0], tbnVelocityDir[1], 0);
   vec3 tbVelocity = vec3(tbnVelocity[0], tbnVelocity[1], 0);
 
-  //rotate acceleration vector accordingly to normal axis rotation
-  vec3 oldUp = up;
-  up = sweep->sampleUp(pos[0]);
-  up.normalize();
-  quat normRot = quat::getRotation(oldUp, up);
-  //cout << "old up: " << oldUp << ", new up: " << up << endl;
-  //cout << "norm Rot" << normRot[0] << normRot[1] << normRot[2] << normRot[3] << endl;
-  acceleration = normRot.rotate(acceleration);
-  //cout << "accel " << acceleration << endl;
-  
-  vec3 tbnAccelDir = vec3(1,0,0);
-  vec3 tbnAcceleration = accelerationScalar * vec3(1,0,0);
-
-  vec3 tbAcceleration = accelerationScalar * vec3(tbnAccelDir[0], tbnAccelDir[1], 0);
-
-
-
+  vec3 tbAccelerationDir = vec3(tbnAccelerationDir[0], tbnAccelerationDir[1], 0);
+  vec3 tbAcceleration = vec3(tbnAcceleration[0], tbnAcceleration[1], 0);
 
   vec3 newTbVelocity = tbVelocity + tbAcceleration + (-0.000002 * velocityScalar * velocityScalar * tbVelocity) ;
 
@@ -76,6 +66,11 @@ void Vehicle::step(double amount) {
   newTbVelocityDir.normalize();
 
   velocity = tbn * newTbVelocityDir;
+
+  //make sure acceleration's normal component lines up with tangent of track
+  vec3 tbnAlignedAcceleration = tbn.inverse() * acceleration;
+  tbnAlignedAcceleration[2] = 0;
+  //acceleration = tbn * tbnAlignedAcceleration;
 
   }
 
@@ -110,16 +105,19 @@ void Vehicle::step(double amount) {
   //now reconstruct the worldPos
   worldPos = sweepLocNew;
 
-  //up = this->sweep->sampleUp(pos[0]);
+  up = this->sweep->sampleUp(pos[0]);
+  up.normalize();
 
 }
 
 vec3 Vehicle::cameraPos() {
-  return worldPos - 2*velocity + up;
+  return sweep->sample(pos[0]-0.002).point + up;
 }
 
 vec3 Vehicle::cameraLookAt() {
-  return worldPos + 5*velocity;
+  mat3 tbn = this->sweep->tbnBasis(this->pos[0]);
+  vec3 tbnVelocity = tbn * velocity;
+  return sweep->sample(pos[0]+0.02).point;
 }
 
 vec3 Vehicle::worldSpacePos() {
@@ -135,7 +133,7 @@ void Vehicle::toggleAcceleration() {
   if(accelerationScalar > 0.0001)
     accelerationScalar = 0.0;
   else
-    accelerationScalar = 1.0;
+    accelerationScalar = 0.01;
 }
 
 void Vehicle::setAccel(float acl) {
@@ -143,10 +141,14 @@ void Vehicle::setAccel(float acl) {
 }
 
 void Vehicle::turnLeft() {
-  acceleration += vec3(0,0,0.1);
+  //acceleration += vec3(0,0,0.1);
+  quat qRot =  quat::axisAngle(up,0.1);
+  acceleration = qRot.rotate(acceleration);
 }
 void Vehicle::turnRight() {
-  acceleration += vec3(0,0,-0.1);
+  //acceleration += vec3(0,0,-0.1);
+  quat qRot =  quat::axisAngle(up,-0.1);
+  acceleration = qRot.rotate(acceleration);
 }
 void Vehicle::turnStraight() {
   acceleration = vec3(1,0,0);
@@ -179,8 +181,6 @@ vec3 Vehicle::getAcceleration() {
 }
 
 mat4 Vehicle::orientationBasis() {
-  mat3 tbn = this->sweep->tbnBasis(this->pos[0]);
-
   vec3 up = sweep->sampleUp(pos[0]);
   up.normalize();
 
@@ -193,7 +193,7 @@ mat4 Vehicle::orientationBasis() {
   vec3 uprime = forward ^ side;
   uprime.normalize();
 
-  return mat4(vec4(acceleration,0),
+  return mat4(vec4(forward,0),
 	      vec4(uprime,0),
 	      vec4(side,0),
 	      vec4(0,0,0,1));

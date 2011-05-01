@@ -451,20 +451,30 @@ void drawHud() {
   glVertex3f(renderWidth/8,-renderHeight*3/8,0); //top left
   glEnd();
   glPopMatrix();
-
-  glPushMatrix();
-  glTranslated(0,0,-1);
-  glBegin(GL_LINES);
-  glVertex3f(0,0,0);
-  glVertex3f(100,100,0);
-  glEnd();
-  glPopMatrix();
   
   glPushMatrix();
-  mat4 lookAtTransform = mat4(vec4(l_camera-p_camera,0),vec4(u_camera-p_camera,0),vec4((l_camera-p_camera)^(u_camera-p_camera),0),vec4(p_camera,1)).transpose().inverse();
-  applyMat4(lookAtTransform);
+  gluLookAt(l_camera[0], l_camera[1], l_camera[2],
+	    p_camera[0], p_camera[1], p_camera[2],
+	    u_camera[0], u_camera[1], u_camera[2]);
   applyMat4(translation3D(vehicle->worldSpacePos()).transpose());
   glutSolidCube(1);
+  glBegin(GL_LINES);
+  glColor4f(0,0,1,0.5);
+  glVertex3f(0,0,0);
+  vec3 up = vehicle->getUp();
+  glVertex3f(100*up[0],100*up[1],100*up[2]);
+
+  glColor4f(0,1,0,0.5);
+  glVertex3f(0,0,0);
+  vec3 vel = vehicle->getVelocity();
+  glVertex3f(100*vel[0],100*vel[1],100*vel[2]);
+
+  glColor4f(1,0,0,0.5);
+  glVertex3f(0,0,0);
+  vec3 accel = vehicle->getAcceleration();
+  glVertex3f(100*accel[0],100*accel[1],100*accel[2]);
+
+  glEnd();
   glPopMatrix();
 
   glDisable(GL_BLEND);
@@ -499,13 +509,13 @@ void drawObjects(GeometryShader * curShade) {
   vec3 vehLoc = vehicle->worldSpacePos();
   pushMat4(translation3D(vehLoc).transpose());
   
-  //pushMat4(vehicle->orientationBasis());
+  pushMat4(vehicle->orientationBasis());
   pushMat4(scaling3D(vec3(0.2,0.2,0.2)));
   vehicle->draw(curShade);
   //glutSolidCube(1);
   popTransform();
 
-  //popTransform();
+  popTransform();
   popTransform();
 
 //popTransform();
