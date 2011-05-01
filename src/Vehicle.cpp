@@ -51,11 +51,11 @@ void Vehicle::step(double amount) {
   vec3 tbnAcceleration = tbnAccelerationDir * accelerationScalar;
 
   //approximate normal force by projecting velocity onto tb plane and set that as velocity
-  vec3 tbVelocityDir = vec3(tbnVelocityDir[0], tbnVelocityDir[1], 0);
-  vec3 tbVelocity = vec3(tbnVelocity[0], tbnVelocity[1], 0);
+  vec3 tbVelocityDir = vec3(tbnVelocityDir[0], 0, tbnVelocityDir[2]);
+  vec3 tbVelocity = vec3(tbnVelocity[0], 0, tbnVelocity[2]);
 
-  vec3 tbAccelerationDir = vec3(tbnAccelerationDir[0], tbnAccelerationDir[1], 0);
-  vec3 tbAcceleration = vec3(tbnAcceleration[0], tbnAcceleration[1], 0);
+  vec3 tbAccelerationDir = vec3(tbnAccelerationDir[0], 0, tbnAccelerationDir[2]);
+  vec3 tbAcceleration = vec3(tbnAcceleration[0], 0, tbnAcceleration[2]);
 
   vec3 newTbVelocity = tbVelocity + tbAcceleration + (-0.000002 * velocityScalar * velocityScalar * tbVelocity) ;
 
