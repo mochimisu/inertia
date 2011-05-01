@@ -57,6 +57,10 @@ void Vehicle::step(double amount) {
   vec3 tbAccelerationDir = vec3(tbnAccelerationDir[0], 0, tbnAccelerationDir[2]);
   vec3 tbAcceleration = vec3(tbnAcceleration[0], 0, tbnAcceleration[2]);
 
+
+  //make acceleration's normal axis the same as tb's projection
+  acceleration = tbn * tbAccelerationDir;
+
   vec3 newTbVelocity = tbVelocity + tbAcceleration + (-0.000002 * velocityScalar * velocityScalar * tbVelocity) ;
 
   velocityScalar = newTbVelocity.length();
