@@ -41,36 +41,31 @@ void Vehicle::setVelocityScalar(double mag) {
 
 void Vehicle::step(double amount) {
   mat3 tbn = this->sweep->tbnBasis(this->pos[0]);
-
   vec3 tbnVelocityDir = tbn.inverse() * velocity;
   tbnVelocityDir.normalize();
-
-  
   vec3 tbnVelocity = tbnVelocityDir * velocityScalar;
 
   //approximate normal force by projecting velocity onto tb plane and set that as velocity
   vec3 tbVelocityDir = vec3(tbnVelocityDir[0], tbnVelocityDir[1], 0);
   vec3 tbVelocity = vec3(tbnVelocity[0], tbnVelocity[1], 0);
 
-
-
-  //acceleration is relative to velocity and basis from velocityxup
-  vec3 vsnAccelDir = acceleration;
-  vsnAccelDir.normalize();
-  vec3 tbWorldVelocityDir = tbn * tbVelocityDir;
-  tbWorldVelocityDir.normalize();
-  vec3 curUp = sweep->sampleUp(pos[0],0.01);
-  mat3 vsn = mat3(tbWorldVelocityDir,
-		  up,
-		  up ^ tbWorldVelocityDir).transpose();
-  vec3 worldAccelDir = vsn * vsnAccelDir;
-  vec3 tbnAccelDir = tbn.inverse() * worldAccelDir;
-  vec3 tbnAcceleration = tbnAccelDir * accelerationScalar;
-
-  tbnAccelDir = vec3(1,0,0);
-  tbnAcceleration = accelerationScalar * vec3(1,0,0);
+  //rotate acceleration vector accordingly to normal axis rotation
+  vec3 oldUp = up;
+  up = sweep->sampleUp(pos[0]);
+  up.normalize();
+  quat normRot = quat::getRotation(oldUp, up);
+  //cout << "old up: " << oldUp << ", new up: " << up << endl;
+  //cout << "norm Rot" << normRot[0] << normRot[1] << normRot[2] << normRot[3] << endl;
+  acceleration = normRot.rotate(acceleration);
+  //cout << "accel " << acceleration << endl;
+  
+  vec3 tbnAccelDir = vec3(1,0,0);
+  vec3 tbnAcceleration = accelerationScalar * vec3(1,0,0);
 
   vec3 tbAcceleration = accelerationScalar * vec3(tbnAccelDir[0], tbnAccelDir[1], 0);
+
+
+
 
   vec3 newTbVelocity = tbVelocity + tbAcceleration + (-0.000002 * velocityScalar * velocityScalar * tbVelocity) ;
 
@@ -115,7 +110,7 @@ void Vehicle::step(double amount) {
   //now reconstruct the worldPos
   worldPos = sweepLocNew;
 
-  up = this->sweep->sampleUp(pos[0]);
+  //up = this->sweep->sampleUp(pos[0]);
 
 }
 
@@ -186,33 +181,19 @@ vec3 Vehicle::getAcceleration() {
 mat4 Vehicle::orientationBasis() {
   mat3 tbn = this->sweep->tbnBasis(this->pos[0]);
 
-  
   vec3 up = sweep->sampleUp(pos[0]);
   up.normalize();
 
-  vec3 tbnVelocityDir = tbn.inverse() * velocity;
-  vec3 tbVelocityDir = vec3(tbnVelocityDir[0], tbnVelocityDir[1], 0);
-  vec3 tbWorldVelocityDir = tbn * tbVelocityDir;
-  tbWorldVelocityDir.normalize();
-  mat3 vsn = mat3(tbWorldVelocityDir,
-		  up,
-		  up ^ tbWorldVelocityDir).transpose();
+  vec3 forward = acceleration;
+  forward.normalize();
 
-
-  vec3 vsnAccelDir = acceleration;
-  vsnAccelDir.normalize();
-  vec3 worldAccelDir = vsn * vsnAccelDir;
-  
-
-  vec3 side = up ^ worldAccelDir;
-
+  vec3 side = up ^ forward;
   side.normalize();
-  vec3 uprime = worldAccelDir ^ side;
+  
+  vec3 uprime = forward ^ side;
   uprime.normalize();
 
-
-
-  return mat4(vec4(worldAccelDir,0),
+  return mat4(vec4(acceleration,0),
 	      vec4(uprime,0),
 	      vec4(side,0),
 	      vec4(0,0,0,1));

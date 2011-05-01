@@ -431,6 +431,7 @@ void drawHud() {
   float maxVelocityWidth = renderWidth * 2.5/8;
 
   glEnable (GL_BLEND);
+  glDisable(GL_DEPTH_TEST);
   glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   glUseProgramObjectARB(0);
@@ -439,17 +440,35 @@ void drawHud() {
   glOrtho(-renderWidth/2,renderWidth/2,-renderHeight/2,renderHeight/2,1,20);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  glColor4f(.188235294,.474509804,1,0.5);
 
-  glTranslated(0,0,-1);
+  glColor4f(.188235294,.474509804,1,0.5);
+  glPushMatrix();
+  glTranslated(0,0,-5);
   glBegin(GL_QUADS);
   glVertex3f(renderWidth/8,-renderHeight*3.5/8,0); // bottom left
   glVertex3f(renderWidth/8 + vehicle->getVelocityScalar() / 100 * maxVelocityWidth,-renderHeight*3.5/8,0); //bottom right
   glVertex3f(renderWidth/8 + vehicle->getVelocityScalar() / 100 * maxVelocityWidth,-renderHeight*3/8,0); //top right
   glVertex3f(renderWidth/8,-renderHeight*3/8,0); //top left
   glEnd();
+  glPopMatrix();
+
+  glPushMatrix();
+  glTranslated(0,0,-1);
+  glBegin(GL_LINES);
+  glVertex3f(0,0,0);
+  glVertex3f(100,100,0);
+  glEnd();
+  glPopMatrix();
   
+  glPushMatrix();
+  mat4 lookAtTransform = mat4(vec4(l_camera-p_camera,0),vec4(u_camera-p_camera,0),vec4((l_camera-p_camera)^(u_camera-p_camera),0),vec4(p_camera,1)).transpose().inverse();
+  applyMat4(lookAtTransform);
+  applyMat4(translation3D(vehicle->worldSpacePos()).transpose());
+  glutSolidCube(1);
+  glPopMatrix();
+
   glDisable(GL_BLEND);
+  glEnable(GL_DEPTH_TEST);
 }
 
 void drawObjects(GeometryShader * curShade) {
@@ -781,6 +800,10 @@ int main(int argc,char** argv) {
   vehicle->mesh->loadFile("wipeout3.obj");
   vehicle->mesh->loadTextures("thread2.png","thread1_bump.png");
   vehicle->mesh->centerAndScale(4);
+
+
+  //testing 
+  glLineWidth(10.0);
 
   //And Go!
   glutMainLoop();
