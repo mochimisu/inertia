@@ -10,7 +10,7 @@ Vehicle::Vehicle(Sweep * sw) {
   this->velocity = this->sweep->sampleForward(0,0.01);
   this->velocity.normalize();
   this->pos = vec3(0,0,0);
-  this->acceleration = this->sweep->sampleForward(0,0.01);
+  this->acceleration = vec3(1,0,0);
   this->up = this->sweep->sampleUp(0);
 
   this->velocityScalar = 0;
@@ -42,23 +42,34 @@ void Vehicle::setVelocityScalar(double mag) {
 void Vehicle::step(double amount) {
   mat3 tbn = this->sweep->tbnBasis(this->pos[0]);
 
-  //testin accelvec
-  vec3 accelVec = sweep->sampleForward(pos[0]);
-  //vec3 accelVec = acceleration;
-  //accelVec.normalize();
-  //vec3 tbnAccelDir = vec3(1,0,0);
-
   vec3 tbnVelocityDir = tbn.inverse() * velocity;
-  vec3 tbnAccelDir = tbn.inverse() * accelVec;
   tbnVelocityDir.normalize();
-  tbnAccelDir.normalize();
+
   
   vec3 tbnVelocity = tbnVelocityDir * velocityScalar;
-  vec3 tbnAcceleration = tbnAccelDir * accelerationScalar;
 
   //approximate normal force by projecting velocity onto tb plane and set that as velocity
   vec3 tbVelocityDir = vec3(tbnVelocityDir[0], tbnVelocityDir[1], 0);
   vec3 tbVelocity = vec3(tbnVelocity[0], tbnVelocity[1], 0);
+
+
+
+  //acceleration is relative to velocity and basis from velocityxup
+  vec3 vsnAccelDir = acceleration;
+  vsnAccelDir.normalize();
+  vec3 tbWorldVelocityDir = tbn * tbVelocityDir;
+  tbWorldVelocityDir.normalize();
+  vec3 curUp = sweep->sampleUp(pos[0],0.01);
+  mat3 vsn = mat3(tbWorldVelocityDir,
+		  up,
+		  up ^ tbWorldVelocityDir).transpose();
+  vec3 worldAccelDir = vsn * vsnAccelDir;
+  vec3 tbnAccelDir = tbn.inverse() * worldAccelDir;
+  vec3 tbnAcceleration = tbnAccelDir * accelerationScalar;
+
+  tbnAccelDir = vec3(1,0,0);
+  tbnAcceleration = accelerationScalar * vec3(1,0,0);
+
   vec3 tbAcceleration = accelerationScalar * vec3(tbnAccelDir[0], tbnAccelDir[1], 0);
 
   vec3 newTbVelocity = tbVelocity + tbAcceleration + (-0.000002 * velocityScalar * velocityScalar * tbVelocity) ;
@@ -99,7 +110,7 @@ void Vehicle::step(double amount) {
   this->pos[0] = tempTime;
 
   //find sweep location @ new time
-  vec3 sweepLocNew = this->sweep->sample(this->pos[0]).point + tbn*vec3(0,1,0);
+  vec3 sweepLocNew = this->sweep->sample(this->pos[0]).point + tbn*vec3(0,0.5,0);
   
   //now reconstruct the worldPos
   worldPos = sweepLocNew;
@@ -129,7 +140,7 @@ void Vehicle::toggleAcceleration() {
   if(accelerationScalar > 0.0001)
     accelerationScalar = 0.0;
   else
-    accelerationScalar = 0.1;
+    accelerationScalar = 1.0;
 }
 
 void Vehicle::setAccel(float acl) {
@@ -137,17 +148,10 @@ void Vehicle::setAccel(float acl) {
 }
 
 void Vehicle::turnLeft() {
-  mat3 tbn = this->sweep->tbnBasis(this->pos[0]);
-  vec3 accelerationTbnDelta = vec3(0,-0.25,0);
-  vec3 worldAccelDelta = tbn * accelerationTbnDelta;
-  acceleration += worldAccelDelta;
+  acceleration += vec3(0,0,0.1);
 }
 void Vehicle::turnRight() {
-  mat3 tbn = this->sweep->tbnBasis(this->pos[0]);
-  vec3 accelerationTbnDelta = vec3(0,0.25,0);
-  vec3 worldAccelDelta = tbn * accelerationTbnDelta;
-  acceleration += worldAccelDelta;
-
+  acceleration += vec3(0,0,-0.1);
 }
 void Vehicle::turnStraight() {
   acceleration = vec3(1,0,0);
@@ -180,16 +184,35 @@ vec3 Vehicle::getAcceleration() {
 }
 
 mat4 Vehicle::orientationBasis() {
-  vec3 forward = sweep->sampleForward(pos[0]);
+  mat3 tbn = this->sweep->tbnBasis(this->pos[0]);
+
+  
   vec3 up = sweep->sampleUp(pos[0]);
-  forward.normalize();
   up.normalize();
-  vec3 side = up ^ forward;
+
+  vec3 tbnVelocityDir = tbn.inverse() * velocity;
+  vec3 tbVelocityDir = vec3(tbnVelocityDir[0], tbnVelocityDir[1], 0);
+  vec3 tbWorldVelocityDir = tbn * tbVelocityDir;
+  tbWorldVelocityDir.normalize();
+  mat3 vsn = mat3(tbWorldVelocityDir,
+		  up,
+		  up ^ tbWorldVelocityDir).transpose();
+
+
+  vec3 vsnAccelDir = acceleration;
+  vsnAccelDir.normalize();
+  vec3 worldAccelDir = vsn * vsnAccelDir;
+  
+
+  vec3 side = up ^ worldAccelDir;
+
   side.normalize();
-  vec3 uprime = forward ^ side;
+  vec3 uprime = worldAccelDir ^ side;
   uprime.normalize();
 
-  return mat4(vec4(forward,0),
+
+
+  return mat4(vec4(worldAccelDir,0),
 	      vec4(uprime,0),
 	      vec4(side,0),
 	      vec4(0,0,0,1));

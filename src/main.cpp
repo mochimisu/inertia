@@ -23,7 +23,7 @@ vec3 l_camera(0,0,0);
 //Camera up
 vec3 u_camera(0,1,0);
 //Light position
-vec3 p_light(4,12,0);
+vec3 p_light(0,40,0);
 //Light lookAt
 vec3 l_light(0,0,0);
 
@@ -480,13 +480,13 @@ void drawObjects(GeometryShader * curShade) {
   vec3 vehLoc = vehicle->worldSpacePos();
   pushMat4(translation3D(vehLoc).transpose());
   
-  pushMat4(vehicle->orientationBasis());
+  //pushMat4(vehicle->orientationBasis());
   pushMat4(scaling3D(vec3(0.2,0.2,0.2)));
   vehicle->draw(curShade);
   //glutSolidCube(1);
   popTransform();
 
-  popTransform();
+  //popTransform();
   popTransform();
 
 //popTransform();
@@ -510,7 +510,7 @@ void renderScene() {
 
   // Clear previous frame values
   glClear( GL_COLOR_BUFFER_BIT |  GL_DEPTH_BUFFER_BIT);
-  setupMatrices(p_light[0],p_light[1],p_light[2],l_light[0],l_light[1],l_light[2],0,1,0,1,120,90);
+  setupMatrices(p_light[0],p_light[1],p_light[2],l_light[0],l_light[1],l_light[2],0,1,0,1,200,120);
 	
   // Culling switching, rendering only backface, this is done to avoid self-shadowing and improve efficiency
   glCullFace(GL_FRONT);
@@ -697,6 +697,7 @@ void stepVehicle(int x) {
     p_camera = vehicle->cameraPos();
     l_camera = vehicle->cameraLookAt();
     u_camera = vehicle->getUp();
+    l_light = vehicle->worldSpacePos();
   glutTimerFunc(1,stepVehicle,0);
 
 }
