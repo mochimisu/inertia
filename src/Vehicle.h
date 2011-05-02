@@ -33,8 +33,8 @@ class Vehicle {
   vec3 cameraPos();
   vec3 cameraLookAt();
 
-  void turnLeft();
-  void turnRight();
+  void turnLeft(double amt = 0.1);
+  void turnRight(double amt = 0.1);
   void turnStraight();
   void toggleAcceleration();
 
@@ -42,6 +42,8 @@ class Vehicle {
   float getAccelerationScalar() { return accelerationScalar; } 
 
   mat4 orientationBasis();
+  mat3 getTbnSpace() { return tbn; };
+
   void setAccel(float acl);
 
  private:
@@ -50,6 +52,8 @@ class Vehicle {
   void updateWorldPos();
 
   vec3 accelNorm() { vec3 normAccel = acceleration; normAccel.normalize(); return normAccel; }; //need because accel is not normalized automatically
+
+  mat3 tbn;
 
   vec3 worldPos;
   vec3 pos; //TBN coordinates: T is time along sweep, B is lateral, N is distance on normal from sweep
@@ -60,6 +64,8 @@ class Vehicle {
   //(maybe use a quaternion just for kicks?)
   float velocityScalar;
   float accelerationScalar;
+
+  float turnValue; //turn scalar around normal per step
 
   vec3 up; //"cached" up value
 
