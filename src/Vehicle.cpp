@@ -57,11 +57,26 @@ void Vehicle::step(double amount) {
   vec3 tbAccelerationDir = vec3(tbnAccelerationDir[0], 0, tbnAccelerationDir[2]);
   vec3 tbAcceleration = vec3(tbnAcceleration[0], 0, tbnAcceleration[2]);
 
-
   //make acceleration's normal axis the same as tb's projection
   acceleration = tbn * tbAccelerationDir;
 
-  vec3 newTbVelocity = tbVelocity + tbAcceleration + (-0.000002 * velocityScalar * velocityScalar * tbVelocity) ;
+  vec3 newTbVelocity = tbVelocity + tbAcceleration + (-0.00002 * velocityScalar * velocityScalar * tbVelocity) ;
+
+
+  //lateral movement
+  float bLateralDisp = pos[2] + newTbVelocity[2]/200;
+  pos[2] = bLateralDisp;
+
+  if(bLateralDisp > 0.5) {
+    pos[2] = 0.5;
+    newTbVelocity[0] *= 0.8;
+    newTbVelocity[2] = 0;
+  }
+  if(bLateralDisp < -0.5) {
+    pos[2] = -0.5;
+    newTbVelocity[0] *= 0.8;
+    newTbVelocity[2] = 0;
+  }
 
   velocityScalar = newTbVelocity.length();
   if(velocityScalar > 0) {
@@ -74,7 +89,6 @@ void Vehicle::step(double amount) {
   //make sure acceleration's normal component lines up with tangent of track
   vec3 tbnAlignedAcceleration = tbn.inverse() * acceleration;
   tbnAlignedAcceleration[2] = 0;
-  //acceleration = tbn * tbnAlignedAcceleration;
 
   }
 
@@ -103,8 +117,10 @@ void Vehicle::step(double amount) {
   }
   this->pos[0] = tempTime;
 
+  
+
   //find sweep location @ new time
-  vec3 sweepLocNew = this->sweep->sample(this->pos[0]).point + tbn*vec3(0,0.5,0);
+  vec3 sweepLocNew = this->sweep->sample(this->pos[0]).point + tbn*vec3(0,0,pos[2]) + tbn*vec3(0,0.5,0);
   
   //now reconstruct the worldPos
   worldPos = sweepLocNew;
@@ -137,7 +153,7 @@ void Vehicle::toggleAcceleration() {
   if(accelerationScalar > 0.0001)
     accelerationScalar = 0.0;
   else
-    accelerationScalar = 0.01;
+    accelerationScalar = 0.1;
 }
 
 void Vehicle::setAccel(float acl) {
@@ -158,20 +174,7 @@ void Vehicle::turnStraight() {
   acceleration = vec3(1,0,0);
 }
 
-vec3 Vehicle::getWindResistance() {
-  //Drag Force = -1/2 * density * Area * Drag Coeff ~[0.25-0.45] * (velocity dot velocity) * velocity/magvelocity
-  //simplified: F =  - SOME COEFF * velocity^2
-
-  //density of air @ 20C = 1.204 kg/m^3
-  //drag coeff of car ~0.25->0.45 [2010 impreza WRX: 0.36]
-  //frontal area of car 0.717 m^2 [1993 impreza]
-
-
-  //and just dividing by a few thousand to get a higher terminal velocity
-  return -(0.0015538824) * velocityScalar * velocityScalar * velocity;
-}
-
- void Vehicle::updateWorldPos() {
+void Vehicle::updateWorldPos() {
 
 }
 

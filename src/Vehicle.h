@@ -47,7 +47,6 @@ class Vehicle {
  private:
 
   vec3 resistanceAccel();
-  vec3 getWindResistance();
   void updateWorldPos();
 
   vec3 accelNorm() { vec3 normAccel = acceleration; normAccel.normalize(); return normAccel; }; //need because accel is not normalized automatically

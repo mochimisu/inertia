@@ -5,7 +5,7 @@
 const float renderWidth = 1024.0;
 const float renderHeight = 768.0;
 const float shadowMapCoef = 1.0;
-const float blurCoef = 1.0;
+const float blurCoef = 0.25;
 const float lightScatteringCoef = 1.0;
 
 const float shadowMapWidth = renderWidth * shadowMapCoef;
