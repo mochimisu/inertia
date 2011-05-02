@@ -167,9 +167,9 @@ Sweep::Sweep(string filename) : globalTwist(0), globalAzimuth(0) {
 	pathPts.push_back(PathPoint(v));
       }
     } else if (op == "twist") {
-      linestream >> globalTwist;
+      //linestream >> globalTwist;
     } else if (op == "azimuth") {
-      linestream >> globalAzimuth;
+      //linestream >> globalAzimuth;
     } else if (op == "texture") {
       string textureFile = getQuoted(linestream);
       loadTexture(textureFile, texture);
@@ -226,40 +226,15 @@ vec3 Sweep::sampleForward_nonzero(double t, double step, int searchdist) {
 vec3 Sweep::sampleUp(double t, double step) {
   t = fmod(t, 1.0);
   if (t < 0.0) t+=1.0;
-  vec3 up = getFirstUp();
-  vec3 lastpos = sample(0).point;
-  vec3 lastdir = sampleForward_nonzero(0);
-  lastdir.normalize();
-  vec3 dir = lastdir;
-  vec3 pos = lastpos;
-  for (double st = step; st <= t + step*.5; st+=step) {
-    double tt = min(st, t);
-    dir = sampleForward(tt);
-    if (dir.length2() < EPSILON)
-      continue;
-    dir.normalize();
-    pos = sample(tt).point;
-    vec3 right = lastdir ^ up;
-    right.normalize();
-    up = advanceFrame(lastpos, pos, lastdir, right, up, dir);
-    right = dir ^ up;
-    up = right ^ dir;
-    up.normalize();
-    lastpos = pos; lastdir = dir;
-  }
-
-        
   // orthonormalize the frame
-  dir = sampleForward(t);
-  if (dir.length2() < EPSILON)
-    dir = lastdir;
+  vec3 dir = sampleForward(t);
+  double azimuth = sample(t).azimuth;
+  vec3 up(0, 1, 0);
   dir.normalize();
-  vec3 right = dir^up;
-  up = right^dir;
+  vec3 right = dir ^ up;
+  up = right ^ dir;
+  up = rotation3D(dir, azimuth) * up;
   up.normalize();
-        
-  orientVectorInFrame(-dir, fmod(t,1.0), sample(t).azimuth, up);
-
         
   return up;
 }
@@ -298,17 +273,7 @@ void Sweep::orientVectorInFrame(const vec3 &dir, double percent, double localAz,
 }
 
 vec3 Sweep::getFirstUp() {
-  vec3 leg1 = sampleForward_nonzero(0).normalize();
-  vec3 leg2 = sampleForward_nonzero(0,-.001).normalize();
-  vec3 up = leg1+leg2; // start with the frenet frame
-  if (up.length2() < .0001) { // if that doesn't work, try something else
-    up = leg1 ^ vec3(0,1,0);
-    if (up.length2() < .0001) {
-      up = leg1 ^ vec3(.1,1,0);
-    }
-  }
-  up.normalize();
-  return up;
+  return sampleUp(0);
 }
 
 
@@ -335,22 +300,14 @@ void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vec
     if (dir.length2() < .0001)
       dir = pts[2].point - pts[1].point;
     dir.normalize();
-        
-        
-    if (firstDir) { // first time around use a special routine to find the up dir
-      up = getFirstUp();
-      firstDir = false;
-    }
-    else { // after the first frame, advance with the rotation minimizing frame
-      up = advanceFrame(pts[0].point, pts[1].point,
-                        oldDir, right, up, dir);
-    }
+    
+	up = sampleUp(percent);
     right = dir ^ up;
     up = right ^ dir;
     up.normalize(); right.normalize();
 
 
-    double rot = globalAzimuth + globalTwist * percent + pts[1].azimuth;
+    double rot = pts[1].azimuth;
 
     vec3 bisect = leg1 + leg2;
     double len = bisect.length();
