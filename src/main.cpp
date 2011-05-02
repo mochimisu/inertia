@@ -676,25 +676,40 @@ void processNormalKeys(unsigned char key, int x, int y) {
   case 'g':
     renderOpt.toggleDispGround();
     break;
-  case 'W':
-  case 'w':
-    vehicle->toggleAcceleration();
-    break;
-  case 'A':
-  case 'a':
-    vehicle->turnLeft();
-    break;
-  case 'S':
-  case 's':
-    //vehicle->turnStraight();
-    vehicle->setAccel(-0.1);
-    break;
-  case 'D':
-  case 'd':
-    vehicle->turnRight();
-    break;
   }
 }
+
+void processSpecialKeys(int key, int x, int y) {
+  switch(key) {
+    case GLUT_KEY_UP:
+      vehicle->setAccel(0.1);
+      break;
+    case GLUT_KEY_DOWN:
+      vehicle->setAccel(-0.1);
+      break;
+    case GLUT_KEY_LEFT:
+      vehicle->turnLeft(0.01);
+      break;
+    case GLUT_KEY_RIGHT:
+      vehicle->turnRight(0.01);
+      break;
+  }
+}
+
+void processSpecialKeysUp(int key, int x, int y) {
+  switch(key) {
+    case GLUT_KEY_UP:
+    case GLUT_KEY_DOWN:
+      vehicle->setAccel(0.0);
+      break;
+    case GLUT_KEY_LEFT:
+    case GLUT_KEY_RIGHT:
+      vehicle->turnLeft(0.0);
+      break;
+  }
+}
+		
+
 void myActiveMotionFunc(int x, int y) {
 
   // Rotate viewport orientation proportional to mouse motion
@@ -727,7 +742,8 @@ void stepVehicle(int x) {
     l_camera = vehicle->cameraLookAt();
     u_camera = vehicle->getUp();
     l_light = vehicle->worldSpacePos();
-  glutTimerFunc(1,stepVehicle,0);
+	//redo this every 10ms
+  glutTimerFunc(10,stepVehicle,0);
 
 }
 
@@ -770,7 +786,9 @@ int main(int argc,char** argv) {
   glutMotionFunc(myActiveMotionFunc);
   glutPassiveMotionFunc(myPassiveMotionFunc);
 
-  glutTimerFunc(1,stepVehicle,0);
+  glutSpecialFunc(processSpecialKeys);
+  glutSpecialUpFunc(processSpecialKeysUp);
+
 
   glewInit();
 
@@ -814,6 +832,9 @@ int main(int argc,char** argv) {
 
   //testing 
   glLineWidth(10.0);
+
+  //Step Vehicle once (and it will recurse on timer)
+  stepVehicle(0);
 
   //And Go!
   glutMainLoop();

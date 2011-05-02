@@ -33,8 +33,8 @@ class Vehicle {
   vec3 cameraPos();
   vec3 cameraLookAt();
 
-  void turnLeft();
-  void turnRight();
+  void turnLeft(double amt = 0.1);
+  void turnRight(double amt = 0.1);
   void turnStraight();
   void toggleAcceleration();
 
@@ -64,6 +64,8 @@ class Vehicle {
   //(maybe use a quaternion just for kicks?)
   float velocityScalar;
   float accelerationScalar;
+
+  float turnValue; //turn scalar around normal per step
 
   vec3 up; //"cached" up value
 
