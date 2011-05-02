@@ -688,10 +688,10 @@ void processSpecialKeys(int key, int x, int y) {
       vehicle->setAccel(-0.1);
       break;
     case GLUT_KEY_LEFT:
-      vehicle->turnLeft(0.01);
+      vehicle->turnLeft(0.025);
       break;
     case GLUT_KEY_RIGHT:
-      vehicle->turnRight(0.01);
+      vehicle->turnRight(0.025);
       break;
   }
 }
