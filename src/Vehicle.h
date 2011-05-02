@@ -42,6 +42,8 @@ class Vehicle {
   float getAccelerationScalar() { return accelerationScalar; } 
 
   mat4 orientationBasis();
+  mat3 getTbnSpace() { return tbn; };
+
   void setAccel(float acl);
 
  private:
@@ -50,6 +52,8 @@ class Vehicle {
   void updateWorldPos();
 
   vec3 accelNorm() { vec3 normAccel = acceleration; normAccel.normalize(); return normAccel; }; //need because accel is not normalized automatically
+
+  mat3 tbn;
 
   vec3 worldPos;
   vec3 pos; //TBN coordinates: T is time along sweep, B is lateral, N is distance on normal from sweep

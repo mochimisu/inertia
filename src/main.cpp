@@ -567,7 +567,7 @@ void renderScene() {
   glUseProgramObjectARB(darkShade->getProgram());
   glBindTexture(GL_TEXTURE_2D,colorTextureId);
 	
-  setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2],u_camera[0],u_camera[1],u_camera[2],1,120,70);
+  setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2],u_camera[0],u_camera[1],u_camera[2],0.5,120,70);
   
   glCullFace(GL_BACK);
    

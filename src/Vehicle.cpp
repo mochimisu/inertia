@@ -16,6 +16,7 @@ Vehicle::Vehicle(Sweep * sw) {
 
   this->velocityScalar = 0;
   this->accelerationScalar = 0;
+  this->tbn = this->sweep->tbnBasis(0);
 }
 
 void Vehicle::draw(GeometryShader * shade) {
@@ -41,7 +42,10 @@ void Vehicle::setVelocityScalar(double mag) {
 }
 
 void Vehicle::step(double amount) {
-  mat3 tbn = this->sweep->tbnBasis(this->pos[0]);
+  //update the local state variables
+  tbn = this->sweep->tbnBasis(this->pos[0]);
+  
+
   vec3 tbnVelocityDir = tbn.inverse() * velocity;
   tbnVelocityDir.normalize();
   vec3 tbnVelocity = tbnVelocityDir * velocityScalar;
@@ -131,13 +135,15 @@ void Vehicle::step(double amount) {
 }
 
 vec3 Vehicle::cameraPos() {
-  return sweep->sample(pos[0]-0.002).point + up;
+  //return sweep->sample(pos[0]-0.002).point + up;
+  return worldPos + tbn*vec3(-1,0.5,0);
 }
 
 vec3 Vehicle::cameraLookAt() {
-  mat3 tbn = this->sweep->tbnBasis(this->pos[0]);
-  vec3 tbnVelocity = tbn * velocity;
-  return sweep->sample(pos[0]+0.02).point;
+  //mat3 tbn = this->sweep->tbnBasis(this->pos[0]);
+  //vec3 tbnVelocity = tbn * velocity;
+  //return sweep->sample(pos[0]+0.02).point;
+  return worldPos + tbn*vec3(8,0,0);
 }
 
 vec3 Vehicle::worldSpacePos() {
