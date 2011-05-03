@@ -7,7 +7,7 @@
 
 ### YOU CAN CHANGE THESE VARIABLES AS YOU ADD CODE:
 TARGET := sweep
-SOURCES := $(wildcard ./src/UCB/*.cpp) $(wildcard ./src/*.cpp)
+SOURCES := $(wildcard ./src/UCB/*.cpp) $(wildcard ./src/*.cpp) $(wildcard ./lib/mac/*.m)
 
 #Libraries -------------------------------
 
@@ -18,8 +18,9 @@ ifeq ($(shell sw_vers 2>/dev/null | grep Mac | awk '{ print $$2}'),Mac)
 	INCLUDE := -I./include/ -I/usr/X11/include
 	LIBRARY := -L./lib/mac/ \
     	-L"/System/Library/Frameworks/OpenGL.framework/Libraries" \
+		-I"lib/mac/SDL.framework/Headers" \
     	-lGL -lGLU -lm -lstdc++
-	FRAMEWORK := -framework GLUT -framework OpenGL
+	FRAMEWORK := -framework SDL -framework GLUT -framework OpenGL
 	MACROS := -DOSX
 	PLATFORM := Mac
 else
