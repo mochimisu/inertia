@@ -123,11 +123,11 @@ void Vehicle::step(double amount) {
 
       tempPos = sweep->sample(tempTime).point;
     } while (tempDist < distance);
-
+/*
     if(tempTime < pos[0]) {
       ++lap;
     }
-
+*/
   } else if(distance < -0.00001) {
     do {
       tempTime -= 0.0000025;
