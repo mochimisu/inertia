@@ -82,6 +82,7 @@ GLuint scatterFboId;
 
 //==USER INTERACTION/GAMEPLAY
 int lastTimeStep;
+int lapStartTime;
 
 //draw text (temporarily here until i figure out sdl
 void drawString(string str, float x, float y) {
@@ -474,6 +475,21 @@ void drawHud() {
   glColor4f(.9,.9,1,0.8);
   drawString(buff.str(),renderWidth/8,-renderHeight*3/8 - 10); 
 
+  buff.str("");
+  buff << "Lap Time";
+  glColor4f(1,1,1,0.75);
+  drawString(buff.str(),-renderWidth*3.5/8,-renderHeight*3/8); 
+
+  buff.str("");
+  int msTime = glutGet(GLUT_ELAPSED_TIME) - lapStartTime;
+  int sTime = msTime/1000;
+  int mTime  = sTime/60;
+  buff << mTime << ".";
+  buff << (sTime%60) << ".";
+  buff << (msTime%1000);
+  glColor4f(1,1,1,0.75);
+  drawString(buff.str(),-renderWidth*3.5/8,-renderHeight*3/8 - 10); 
+
 
   glPopMatrix();
   glDisable(GL_BLEND);
@@ -861,9 +877,8 @@ int main(int argc,char** argv) {
   vehicle->mesh->loadTextures("thread2.png","thread1_bump.png");
   vehicle->mesh->centerAndScale(4);
 
-
-  //testing 
-  glLineWidth(10.0);
+  //Lap time 
+  lapStartTime = glutGet(GLUT_ELAPSED_TIME);
 
   //Step Vehicle once (and it will recurse on timer)
   lastTimeStep = glutGet(GLUT_ELAPSED_TIME);
