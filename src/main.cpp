@@ -741,7 +741,7 @@ void stepVehicle(int x) {
   gettimeofday(&tim,NULL);
   float dif = (tim.tv_sec+(tim.tv_usec/1000000.0))*1000 - lasttime; 
 	//cout << (dif/1) << endl;
-    vehicle->step(0.01 *0.0000000000005* dif);
+    vehicle->step(0.01 *0.000000000001* dif);
 
 
     p_camera = vehicle->cameraPos();
@@ -844,7 +844,7 @@ int main(int argc,char** argv) {
   //Step Vehicle once (and it will recurse on timer)
   gettimeofday(&tim,NULL);
   lasttime = tim.tv_sec+tim.tv_usec/1000000.0; 
-  stepVehicle(tim.tv_sec+tim.tv_usec/1000000.0 * 1000 * 100);
+  stepVehicle((tim.tv_sec+tim.tv_usec/1000000.0) * 1000);
 
   //And Go!
   glutMainLoop();
