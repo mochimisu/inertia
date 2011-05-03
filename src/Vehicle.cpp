@@ -19,6 +19,7 @@ Vehicle::Vehicle(Sweep * sw) {
   this->tbn = this->sweep->tbnBasis(0);
   this->turnValue = 0.0;
   this->airBrake = 0.0;
+  this->energy = 100.0;
 }
 
 void Vehicle::draw(GeometryShader * shade) {
@@ -79,11 +80,13 @@ void Vehicle::step(double amount) {
 
   if(bLateralDisp > 1.25) {
     pos[2] = 1.25;
+    energy -= newTbVelocity[2] / 2.0;
     newTbVelocity[0] *= 0.8;
     newTbVelocity[2] = 0;
   }
   if(bLateralDisp < -1.25) {
     pos[2] = -1.25;
+    energy -= -newTbVelocity[2] / 2.0;
     newTbVelocity[0] *= 0.8;
     newTbVelocity[2] = 0;
   }

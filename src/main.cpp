@@ -453,32 +453,50 @@ void drawHud() {
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
-  glColor4f(.188235294,.474509804,1,0.5);
+  //==Actual HUD stuff
+  std::ostringstream buff;
   glPushMatrix();
   glTranslated(0,0,-5);
-  glBegin(GL_QUADS);
-  glVertex3f(renderWidth/8,-renderHeight*3.5/8,0); // bottom left
-  glVertex3f(renderWidth/8 + vehicle->getVelocityScalar() * maxVelocityWidth,-renderHeight*3.5/8,0); //bottom right
-  glVertex3f(renderWidth/8 + vehicle->getVelocityScalar() * maxVelocityWidth,-renderHeight*3/8,0); //top right
-  glVertex3f(renderWidth/8,-renderHeight*3/8,0); //top left
-  glEnd();
 
-
-  std::ostringstream buff;
+ 
+  //Velocity
   buff.str("");
   buff << "Velocity";
   glColor4f(.188235294,.474509804,1,0.9);
-  drawString(buff.str(),renderWidth/8,-renderHeight*3/8 + 5); 
+  drawString(buff.str(),renderWidth/8,-renderHeight*3.2/8 + 5); 
 
   buff.str("");
   buff << vehicle->getVelocityScalar();
   glColor4f(.9,.9,1,0.8);
-  drawString(buff.str(),renderWidth/8,-renderHeight*3/8 - 10); 
+  drawString(buff.str(),renderWidth/8,-renderHeight*3.2/8 - 10); 
 
+  //Velocity Bar
+  glColor4f(.188235294,.474509804,1,0.5);
+  glBegin(GL_QUADS);
+  glVertex3f(renderWidth/8,-renderHeight*3.7/8,0); // bottom left
+  glVertex3f(renderWidth/8 + vehicle->getVelocityScalar() * maxVelocityWidth,-renderHeight*3.7/8,0); //bottom right
+  glVertex3f(renderWidth/8 + vehicle->getVelocityScalar() * maxVelocityWidth,-renderHeight*3.2/8,0); //top right
+  glVertex3f(renderWidth/8,-renderHeight*3.2/8,0); //top left
+  glEnd();
+
+  //Air Break Bar
+  if(vehicle->isAirBrake()) {
+    glColor4f(.901960784,.160784314,.160784314,0.5);  
+
+    glBegin(GL_QUADS);
+    glVertex3f(renderWidth/8,-renderHeight*3.8/8,0); // bottom left
+    glVertex3f(renderWidth*3.5/8 ,-renderHeight*3.8/8,0); //bottom right
+    glVertex3f(renderWidth*3.5/8,-renderHeight*3.7/8,0); //top right
+    glVertex3f(renderWidth/8,-renderHeight*3.7/8,0); //top left
+    glEnd();
+  }
+  
+
+  //Lap Time
   buff.str("");
   buff << "Lap Time";
   glColor4f(1,1,1,0.75);
-  drawString(buff.str(),-renderWidth*3.5/8,-renderHeight*3/8); 
+  drawString(buff.str(),-renderWidth*3.8/8,-renderHeight*3.3/8); 
 
   buff.str("");
   int msTime = glutGet(GLUT_ELAPSED_TIME) - lapStartTime;
@@ -488,7 +506,36 @@ void drawHud() {
   buff << (sTime%60) << ".";
   buff << (msTime%1000);
   glColor4f(1,1,1,0.75);
-  drawString(buff.str(),-renderWidth*3.5/8,-renderHeight*3/8 - 10); 
+  drawString(buff.str(),-renderWidth*3.8/8,-renderHeight*3.3/8 - 10); 
+
+  //Lap Number [TODO: LAPS]
+  buff.str("");
+  buff << "Lap" << 0;
+  glColor4f(1,1,1,0.75);
+  drawString(buff.str(),-renderWidth*3.8/8,renderHeight*3.5/8); 
+
+  //Record [TODO: RECORD]
+  buff.str("");
+  msTime = glutGet(GLUT_ELAPSED_TIME) - lapStartTime;
+  sTime = msTime/1000;
+  mTime  = sTime/60;
+  buff << "Lap Record:";
+  buff << mTime << ".";
+  buff << (sTime%60) << ".";
+  buff << (msTime%1000);
+  glColor4f(1,1,1,0.75);
+  drawString(buff.str(),renderWidth*3.2/8,renderHeight*3.5/8);
+
+  //Name [TODO: CENTER]
+  buff.str("");
+  buff << "INERTIA ALPHA";
+  drawString(buff.str(), -10,renderHeight*3.8/8);
+
+  //Energy
+  buff.str("");
+  buff << "Energy: ";
+  buff << vehicle->getEnergy();
+  drawString(buff.str(), -10,renderHeight*3.7/8);
 
 
   glPopMatrix();

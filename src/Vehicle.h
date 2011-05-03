@@ -47,6 +47,10 @@ class Vehicle {
 
   void setAirBrake(float dcl) { airBrake = dcl; };
 
+  float getEnergy() { return energy; };
+
+  bool isAirBrake() { return (airBrake > 0.0000001); };
+
  private:
 
   vec3 resistanceAccel();
@@ -68,6 +72,7 @@ class Vehicle {
 
   float turnValue; //turn scalar around normal per step
   float airBrake; //airbrake value
+  float energy;
 
   vec3 up; //"cached" up value
 
