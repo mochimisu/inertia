@@ -7,7 +7,7 @@
 
 ### YOU CAN CHANGE THESE VARIABLES AS YOU ADD CODE:
 TARGET := sweep
-SOURCES := $(wildcard ./src/UCB/*.cpp) $(wildcard ./src/*.cpp) $(wildcard ./lib/mac/*.m)
+SOURCES := $(wildcard ./src/UCB/*.cpp) $(wildcard ./src/*.cpp)
 
 #Libraries -------------------------------
 
@@ -20,7 +20,7 @@ ifeq ($(shell sw_vers 2>/dev/null | grep Mac | awk '{ print $$2}'),Mac)
     	-L"/System/Library/Frameworks/OpenGL.framework/Libraries" \
 		-I"lib/mac/SDL.framework/Headers" \
     	-lGL -lGLU -lm -lstdc++
-	FRAMEWORK := -framework SDL -framework GLUT -framework OpenGL
+	FRAMEWORK := -framework GLUT -framework OpenGL
 	MACROS := -DOSX
 	PLATFORM := Mac
 else
@@ -41,6 +41,7 @@ CXX := g++
 CXXFLAGS := -g -Wall -O3 -fmessage-length=0 $(INCLUDE) $(MACROS)
 LDFLAGS := $(FRAMEWORK) $(LIBRARY)
 #-----------------------------------------
+
 %.o : %.cpp
 	@echo "Compiling .cpp to .o for $(PLATFORM) Platform:  $<" 
 	@$(CXX) -c -Wall $(CXXFLAGS) $< -o $@

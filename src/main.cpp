@@ -116,6 +116,7 @@ vec2 getLightScreenCoor() {
   return vec2(winX/renderWidth,  winY/renderHeight);
 }
 
+
 /*
  * Shadow stuff. Will probably move somewhere else.
  */
