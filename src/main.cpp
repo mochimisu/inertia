@@ -83,6 +83,16 @@ GLuint scatterFboId;
 //==USER INTERACTION/GAMEPLAY
 int lastTimeStep;
 
+//draw text (temporarily here until i figure out sdl
+void drawString(string str, float x, float y) {
+	void * font = GLUT_BITMAP_HELVETICA_10;
+		glRasterPos2f(x,y);
+		for (string::iterator i = (&str)->begin(); i != (&str)->end(); ++i){
+			char c = *i;
+			glutBitmapCharacter(font, c);
+		}
+	}
+
 /* 
  * light scattering stuff. testingg!!!!!
  */
@@ -428,7 +438,8 @@ void drawDebugBuffer(int option) {
 }
 
 void drawHud() {
-  float maxVelocityWidth = renderWidth * 2.5/8;
+//fudging this...
+  const float maxVelocityWidth = renderWidth * 2.5/8 /20;
 
   glEnable (GL_BLEND);
   glDisable(GL_DEPTH_TEST);
@@ -446,37 +457,25 @@ void drawHud() {
   glTranslated(0,0,-5);
   glBegin(GL_QUADS);
   glVertex3f(renderWidth/8,-renderHeight*3.5/8,0); // bottom left
-  glVertex3f(renderWidth/8 + vehicle->getVelocityScalar() / 100 * maxVelocityWidth,-renderHeight*3.5/8,0); //bottom right
-  glVertex3f(renderWidth/8 + vehicle->getVelocityScalar() / 100 * maxVelocityWidth,-renderHeight*3/8,0); //top right
+  glVertex3f(renderWidth/8 + vehicle->getVelocityScalar() * maxVelocityWidth,-renderHeight*3.5/8,0); //bottom right
+  glVertex3f(renderWidth/8 + vehicle->getVelocityScalar() * maxVelocityWidth,-renderHeight*3/8,0); //top right
   glVertex3f(renderWidth/8,-renderHeight*3/8,0); //top left
   glEnd();
+
+
+  std::ostringstream buff;
+  buff.str("");
+  buff << "Velocity";
+  glColor4f(.188235294,.474509804,1,0.9);
+  drawString(buff.str(),renderWidth/8,-renderHeight*3/8 + 5); 
+
+  buff.str("");
+  buff << vehicle->getVelocityScalar();
+  glColor4f(.9,.9,1,0.8);
+  drawString(buff.str(),renderWidth/8,-renderHeight*3/8 - 10); 
+
+
   glPopMatrix();
-  
-  glPushMatrix();
-  gluLookAt(l_camera[0], l_camera[1], l_camera[2],
-	    p_camera[0], p_camera[1], p_camera[2],
-	    u_camera[0], u_camera[1], u_camera[2]);
-  applyMat4(translation3D(vehicle->worldSpacePos()).transpose());
-  glutSolidCube(1);
-  glBegin(GL_LINES);
-  glColor4f(0,0,1,0.5);
-  glVertex3f(0,0,0);
-  vec3 up = vehicle->getUp();
-  glVertex3f(100*up[0],100*up[1],100*up[2]);
-
-  glColor4f(0,1,0,0.5);
-  glVertex3f(0,0,0);
-  vec3 vel = vehicle->getVelocity();
-  glVertex3f(100*vel[0],100*vel[1],100*vel[2]);
-
-  glColor4f(1,0,0,0.5);
-  glVertex3f(0,0,0);
-  vec3 accel = vehicle->getAcceleration();
-  glVertex3f(100*accel[0],100*accel[1],100*accel[2]);
-
-  glEnd();
-  glPopMatrix();
-
   glDisable(GL_BLEND);
   glEnable(GL_DEPTH_TEST);
 }
