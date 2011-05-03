@@ -18,6 +18,7 @@ Vehicle::Vehicle(Sweep * sw) {
   this->accelerationScalar = 0;
   this->tbn = this->sweep->tbnBasis(0);
   this->turnValue = 0.0;
+  this->airBrake = 0.0;
 }
 
 void Vehicle::draw(GeometryShader * shade) {
@@ -69,7 +70,7 @@ void Vehicle::step(double amount) {
   //make acceleration's normal axis the same as tb's projection
   acceleration = tbn * tbAccelerationDir;
 
-  vec3 newTbVelocity = tbVelocity + tbAcceleration + (-0.00002 * velocityScalar * velocityScalar * tbVelocity) ;
+  vec3 newTbVelocity = tbVelocity + tbAcceleration + (-(0.00002+airBrake) * velocityScalar * velocityScalar * tbVelocity) ;
 
 
   //lateral movement

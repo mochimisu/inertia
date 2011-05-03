@@ -1,4 +1,3 @@
-
 #ifndef VEHICLE_H
 #define VEHICLE_H
 
@@ -46,6 +45,8 @@ class Vehicle {
 
   void setAccel(float acl);
 
+  void setAirBrake(float dcl) { airBrake = dcl; };
+
  private:
 
   vec3 resistanceAccel();
@@ -66,6 +67,7 @@ class Vehicle {
   float accelerationScalar;
 
   float turnValue; //turn scalar around normal per step
+  float airBrake; //airbrake value
 
   vec3 up; //"cached" up value
 

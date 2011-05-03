@@ -675,6 +675,17 @@ void processNormalKeys(unsigned char key, int x, int y) {
   case 'g':
     renderOpt.toggleDispGround();
     break;
+  case ' ':
+    vehicle->setAirBrake(0.00008);
+    break;
+  }
+}
+
+void processNormalKeysUp(unsigned char key, int x, int y) {
+  switch(key) {
+  case ' ':
+    vehicle->setAirBrake(0);
+    break;
   }
 }
 
@@ -687,10 +698,10 @@ void processSpecialKeys(int key, int x, int y) {
       vehicle->setAccel(-0.1);
       break;
     case GLUT_KEY_LEFT:
-      vehicle->turnLeft(3.9);
+      vehicle->turnLeft(3);
       break;
     case GLUT_KEY_RIGHT:
-      vehicle->turnRight(3.9);
+      vehicle->turnRight(3);
       break;
   }
 }
@@ -802,6 +813,7 @@ int main(int argc,char** argv) {
   glutDisplayFunc(renderScene);
   glutIdleFunc(renderScene);
   glutKeyboardFunc(processNormalKeys);
+  glutKeyboardUpFunc(processNormalKeysUp);
   glutMotionFunc(myActiveMotionFunc);
   glutPassiveMotionFunc(myPassiveMotionFunc);
 
