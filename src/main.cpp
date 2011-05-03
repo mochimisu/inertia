@@ -734,6 +734,20 @@ void myPassiveMotionFunc(int x, int y) {
   glutPostRedisplay();
 }
 
+void joystickFunc(unsigned int buttonMask, int x, int y, int z) {
+  //cout << (buttonMask) << endl;
+  //cout << (buttonMask & 16384) << endl;
+  if(buttonMask & 16384) { //button 14: X on DualShock3
+    vehicle->setAccel(0.1);
+  } else if(buttonMask & 8192) { //button 13: O on DualShock3
+    vehicle->setAccel(-0.1);
+  } else {
+    vehicle->setAccel(0.0);
+  }
+	//cout << x << endl;
+  vehicle->turnRight(x/500);
+}
+
 void stepVehicle(int x) {
 	//call at beginning for consistency..
 	int newTime =glutGet(GLUT_ELAPSED_TIME);
@@ -793,6 +807,7 @@ int main(int argc,char** argv) {
 
   glutSpecialFunc(processSpecialKeys);
   glutSpecialUpFunc(processSpecialKeysUp);
+  //glutJoystickFunc(joystickFunc,10);
 
 
   glewInit();
