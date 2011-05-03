@@ -45,7 +45,7 @@ void Vehicle::setVelocityScalar(double mag) {
 void Vehicle::step(double amount) {
  
   //turn
-  quat qRot = quat::axisAngle(up, turnValue);
+  quat qRot = quat::axisAngle(up, turnValue*amount);
   acceleration = qRot.rotate(acceleration);
 
   //update the local state variables
@@ -73,7 +73,7 @@ void Vehicle::step(double amount) {
 
 
   //lateral movement
-  float bLateralDisp = pos[2] + newTbVelocity[2]/200;
+  float bLateralDisp = pos[2] + newTbVelocity[2]*amount;
   pos[2] = bLateralDisp;
 
   if(bLateralDisp > 0.5) {

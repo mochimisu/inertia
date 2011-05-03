@@ -1,5 +1,6 @@
 #include "main.h"
 #include "functions.h"
+#include <sys/time.h>
 
 // Constants (some issues with aspect ratio; and i think defines will speed some stuff up. keep it?)
 const float renderWidth = 1024.0;
@@ -77,8 +78,8 @@ Vehicle *vehicle;
 RenderOptions renderOpt;
 
 //Framecount and time
-int frameCount;
-clock_t startTime;
+timeval tim;
+float lasttime;
 
 //==LIGHT SCATTERING STUFF
 GLuint scatterTextureId;
@@ -688,10 +689,10 @@ void processSpecialKeys(int key, int x, int y) {
       vehicle->setAccel(-0.1);
       break;
     case GLUT_KEY_LEFT:
-      vehicle->turnLeft(0.025);
+      vehicle->turnLeft(3.9);
       break;
     case GLUT_KEY_RIGHT:
-      vehicle->turnRight(0.025);
+      vehicle->turnRight(3.9);
       break;
   }
 }
@@ -737,13 +738,20 @@ void myPassiveMotionFunc(int x, int y) {
 
 void stepVehicle(int x) {
 
-    vehicle->step(0.01);
+  gettimeofday(&tim,NULL);
+  float dif = (tim.tv_sec+(tim.tv_usec/1000000.0))*1000 - lasttime; 
+	//cout << (dif/1) << endl;
+    vehicle->step(0.01 *0.0000000000005* dif);
+
+
     p_camera = vehicle->cameraPos();
     l_camera = vehicle->cameraLookAt();
     u_camera = vehicle->getUp();
     l_light = vehicle->worldSpacePos();
+
 	//redo this every 10ms
-  glutTimerFunc(10,stepVehicle,0);
+gettimeofday(&tim,NULL);
+  glutTimerFunc(10,stepVehicle, (tim.tv_sec+tim.tv_usec/1000000.0) * 1000);
 
 }
 
@@ -834,7 +842,9 @@ int main(int argc,char** argv) {
   glLineWidth(10.0);
 
   //Step Vehicle once (and it will recurse on timer)
-  stepVehicle(0);
+  gettimeofday(&tim,NULL);
+  lasttime = tim.tv_sec+tim.tv_usec/1000000.0; 
+  stepVehicle(tim.tv_sec+tim.tv_usec/1000000.0 * 1000 * 100);
 
   //And Go!
   glutMainLoop();
