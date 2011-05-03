@@ -77,7 +77,7 @@ class Vehicle {
   float energy;
 
   float bestTime;
-  float lapStart;
+  float lapStartTime;
   int lap;
 
   vec3 up; //"cached" up value
