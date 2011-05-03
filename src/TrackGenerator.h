@@ -246,12 +246,43 @@ public:
 		}
 
 		// TODO - compare segment distances to make sure that they aren't overalapping too closely
+
+
+		/*
+		 * Recenter the track
+		 */
+		vector<vec3>::iterator it = controlPts.begin();
+		double xMin = (*it)[0];
+		double xMax = (*it)[0];
+		double zMin = (*it)[2];
+		double zMax = (*it)[2];
+		it++;
+		while (it != controlPts.end()) {
+			xMin = min(xMin, (*it)[0]);
+			xMax = max(xMax, (*it)[0]);
+			zMin = min(zMin, (*it)[2]);
+			zMax = max(zMax, (*it)[2]);
+			it++;
+		}
+		double xMid = (xMax + xMin) / 2;
+		double zMid = (zMax + zMin) / 2;
+		for (int i = 0; i < controlPts.size(); i++) {
+			controlPts[i][0] -= xMid;
+			controlPts[i][2] -= zMid;
+		}
+		
+		xWidth = xMax - xMin;
+		zWidth = zMax - zMin;
 	}
 
 	vector<vec3> getControlPts() { return controlPts; }
+	double getXWidth() { return xWidth; }
+	double getZWidth() { return zWidth; }
 
 private:
 	vector<vec3> controlPts;
+	double xWidth;
+	double zWidth;
 };
 
 #endif

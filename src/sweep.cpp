@@ -1,6 +1,5 @@
 // vim: ts=2:sw=2:softtabstop=2
 #include "sweep.h"
-#include "TrackGenerator.h"
 
 #include "global.h"
 #include "LoadImage.h"
@@ -190,6 +189,10 @@ Sweep::Sweep(string filename) : globalTwist(0), globalAzimuth(0) {
 	  pathPts.push_back(newPt);
   }
 
+  cscape = new Cityscape(trkGen.getXWidth() + 20, trkGen.getZWidth() + 20, 64);
+  
+  cout << trkGen.getXWidth() + 20 << endl;
+  cout << trkGen.getZWidth() + 20 << endl;
   
   vector<vec2>::iterator fwd = profilePts.begin();
   vector<vec2>::iterator bkwd = profilePts.end();
@@ -402,6 +405,8 @@ void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vec
 	glVertexAttrib3fARB(bitangentAttrib,bit1[0],bit1[1],bit1[2]);
                 
 	glVertex3dv(&newSlice[vn][0]);
+
+	cscape->cull(newSlice[vn][0], newSlice[vn][2]);
                 
       }
       glEnd();
@@ -459,6 +464,7 @@ void Sweep::renderWithDisplayList(GeometryShader &shader, int pathSamplesPerPt, 
     GLuint DLid = glGenLists(1);
     glNewList(DLid, GL_COMPILE);
     render(shader, pathSamplesPerPt, crossSectionScale, xsectSamplesPerPt);
+	cscape->render();
     glEndList();
     shaderDL[shadeId] = DLid;
   }

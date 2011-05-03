@@ -1,12 +1,41 @@
 #include "Cityscape.h"
 
-Cityscape::Cityscape(int width, int height, int area) {
-	rootBSD = new BuildingSubdivision(-width / 2, -width / 2 + width, -height / 2, -height / 2 + height, 0.0, 64);
+BuildingSubdivision::BuildingSubdivision(int setXMin, int setXMax, int setZMin, int setZMax, double setHeight, int area) {
+	xMin = setXMin;
+	xMax = setXMax;
+	zMin = setZMin;
+	zMax = setZMax;
+
+	int xWidth = xMax - xMin;
+	int zWidth = zMax - zMin;
+		
+	if (zWidth * xWidth < area) {
+		leaf = true;
+		draw = true;
+		height = setHeight;
+	}
+	else {
+		leaf = false;
+		if (zWidth > xWidth) {
+			int division = (rand() % (zWidth - 1)) + 1 + zMin;
+			one = new BuildingSubdivision(xMin, xMax, zMin, division, double(rand() % zWidth) / zWidth * 5 + setHeight, area);
+			two = new BuildingSubdivision(xMin, xMax, division, zMax, double(rand() % zWidth) / zWidth * 5 + setHeight, area);
+		}
+		else {
+			int division = (rand() % (xWidth - 1)) + 1 + xMin;
+			one = new BuildingSubdivision(xMin, division, zMin, zMax, double(rand() % xWidth) / xWidth * 5 + setHeight, area);
+			two = new BuildingSubdivision(division, xMax, zMin, zMax, double(rand() % xWidth) / xWidth * 5 + setHeight, area);
+		}
+	}
+}
+
+Cityscape::Cityscape(int xWidth, int zWidth, int area) {
+	rootBSD = new BuildingSubdivision(-xWidth / 2, -xWidth / 2 + xWidth, -zWidth / 2, -zWidth / 2 + zWidth, 0.0, 64);
 	hasDL = false;
 }
 
 void Cityscape::render() {
-	if (!hasDL) {
+	/*if (!hasDL) {
         DLid = glGenLists(1);
         glNewList(DLid, GL_COMPILE);
 		glColor3f(0.8, 0.8, 0.8);
@@ -16,41 +45,45 @@ void Cityscape::render() {
         glEndList();
 		hasDL = true;
 	}
-	glCallList(DLid);
+	glCallList(DLid);*/
+	renderBuildingSubdivision(rootBSD);
 }
 
 void Cityscape::renderBuildingSubdivision(BuildingSubdivision* bsd) {
 	if (bsd->leaf) {
-		/*glBegin(GL_QUADS);
+		/*
+		if (bsd->draw) {
+			glBegin(GL_QUADS);
 
-		// Missing setting the normals
+			// Missing setting the normals
 
-		glVertex3d(bsd->right, bsd->top, bsd->height);
-		glVertex3d(bsd->left, bsd->top, bsd->height);
-		glVertex3d(bsd->left, bsd->bottom, bsd->height);
-		glVertex3d(bsd->right, bsd->bottom, bsd->height);
+			glVertex3d(bsd->xMax, bsd->zMin, bsd->height);
+			glVertex3d(bsd->xMin, bsd->zMin, bsd->height);
+			glVertex3d(bsd->xMin, bsd->zMax, bsd->height);
+			glVertex3d(bsd->xMax, bsd->zMax, bsd->height);
 		
-		glVertex3d(bsd->left, bsd->top, bsd->height);
-		glVertex3d(bsd->right, bsd->top, bsd->height);
-		glVertex3d(bsd->right, bsd->top, 0);
-		glVertex3d(bsd->left, bsd->top, 0);
+			glVertex3d(bsd->xMin, bsd->zMin, bsd->height);
+			glVertex3d(bsd->xMax, bsd->zMin, bsd->height);
+			glVertex3d(bsd->xMax, bsd->zMin, 0);
+			glVertex3d(bsd->xMin, bsd->zMin, 0);
 		
-		glVertex3d(bsd->right, bsd->bottom, bsd->height);
-		glVertex3d(bsd->right, bsd->top, bsd->height);
-		glVertex3d(bsd->right, bsd->top, 0);
-		glVertex3d(bsd->right, bsd->bottom, 0);
+			glVertex3d(bsd->xMax, bsd->zMax, bsd->height);
+			glVertex3d(bsd->xMax, bsd->zMin, bsd->height);
+			glVertex3d(bsd->xMax, bsd->zMin, 0);
+			glVertex3d(bsd->xMax, bsd->zMax, 0);
 		
-		glVertex3d(bsd->left, bsd->bottom, bsd->height);
-		glVertex3d(bsd->right, bsd->bottom, bsd->height);
-		glVertex3d(bsd->right, bsd->bottom, 0);
-		glVertex3d(bsd->left, bsd->bottom, 0);
+			glVertex3d(bsd->xMin, bsd->zMax, bsd->height);
+			glVertex3d(bsd->xMax, bsd->zMax, bsd->height);
+			glVertex3d(bsd->xMax, bsd->zMax, 0);
+			glVertex3d(bsd->xMin, bsd->zMax, 0);
 		
-		glVertex3d(bsd->left, bsd->top, bsd->height);
-		glVertex3d(bsd->left, bsd->bottom, bsd->height);
-		glVertex3d(bsd->left, bsd->bottom, 0);
-		glVertex3d(bsd->left, bsd->top, 0);
+			glVertex3d(bsd->xMin, bsd->zMin, bsd->height);
+			glVertex3d(bsd->xMin, bsd->zMax, bsd->height);
+			glVertex3d(bsd->xMin, bsd->zMax, 0);
+			glVertex3d(bsd->xMin, bsd->zMin, 0);
 
-		glEnd();
+			glEnd();
+		}
 		*/
 		if (bsd->draw) {
 			double xWidth = bsd->xMax - bsd->xMin;
