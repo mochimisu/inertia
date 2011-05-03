@@ -4,9 +4,9 @@
 // Constants (some issues with aspect ratio; and i think defines will speed some stuff up. keep it?)
 const float renderWidth = 1024.0;
 const float renderHeight = 768.0;
-const float shadowMapCoef = 1.0;
+const float shadowMapCoef = 0.5;
 const float blurCoef = 0.25;
-const float lightScatteringCoef = 1.0;
+const float lightScatteringCoef = 0.5;
 
 const float shadowMapWidth = renderWidth * shadowMapCoef;
 const float shadowMapHeight = renderHeight * shadowMapCoef;
