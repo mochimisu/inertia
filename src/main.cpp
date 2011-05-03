@@ -510,7 +510,7 @@ void drawHud() {
 
   //Lap Number [TODO: LAPS]
   buff.str("");
-  buff << "Lap" << 0;
+  buff << "Lap" << vehicle->getLap();
   glColor4f(1,1,1,0.75);
   drawString(buff.str(),-renderWidth*3.8/8,renderHeight*3.5/8); 
 
@@ -818,6 +818,15 @@ void joystickFunc(unsigned int buttonMask, int x, int y, int z) {
   } else {
     vehicle->setAccel(0.0);
   }
+  if(buttonMask & 256 && buttonMask & 512) { //256:L2, 512: R2
+    vehicle->setAirBrake(0.0001);
+  } else if(buttonMask & 256) { //TODO: left and right airbrake
+    vehicle->setAirBrake(0.00005);
+  } else if(buttonMask & 512) {
+    vehicle->setAirBrake(0.00005);
+  } else {
+    vehicle->setAirBrake(0.0);
+  }
 	//cout << x << endl;
   vehicle->turnRight(x/500);
 }
@@ -882,7 +891,7 @@ int main(int argc,char** argv) {
 
   glutSpecialFunc(processSpecialKeys);
   glutSpecialUpFunc(processSpecialKeysUp);
-  //glutJoystickFunc(joystickFunc,10);
+  glutJoystickFunc(joystickFunc,10);
 
 
   glewInit();

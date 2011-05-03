@@ -51,6 +51,8 @@ class Vehicle {
 
   bool isAirBrake() { return (airBrake > 0.0000001); };
 
+  int getLap() { return lap; };
+
  private:
 
   vec3 resistanceAccel();
@@ -73,6 +75,10 @@ class Vehicle {
   float turnValue; //turn scalar around normal per step
   float airBrake; //airbrake value
   float energy;
+
+  float bestTime;
+  float lapStart;
+  int lap;
 
   vec3 up; //"cached" up value
 
