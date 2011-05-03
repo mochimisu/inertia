@@ -23,7 +23,7 @@ vec3 l_camera(0,0,0);
 //Camera up
 vec3 u_camera(0,1,0);
 //Light position
-vec3 p_light(0,40,0);
+vec3 p_light(10,20,0);
 //Light lookAt
 vec3 l_light(0,0,0);
 

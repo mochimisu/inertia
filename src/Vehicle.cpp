@@ -76,13 +76,13 @@ void Vehicle::step(double amount) {
   float bLateralDisp = pos[2] + newTbVelocity[2]*amount;
   pos[2] = bLateralDisp;
 
-  if(bLateralDisp > 0.5) {
-    pos[2] = 0.5;
+  if(bLateralDisp > 1.25) {
+    pos[2] = 1.25;
     newTbVelocity[0] *= 0.8;
     newTbVelocity[2] = 0;
   }
-  if(bLateralDisp < -0.5) {
-    pos[2] = -0.5;
+  if(bLateralDisp < -1.25) {
+    pos[2] = -1.25;
     newTbVelocity[0] *= 0.8;
     newTbVelocity[2] = 0;
   }

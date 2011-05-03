@@ -7,10 +7,10 @@ twist -60
 texture "craptexture.PNG" 5 2
 bump "crapbumpmap.PNG"
 # a simple cross section
-p -3 1
-p 3 1
-p 3 -1
-p -3 -1
+p -7 1
+p 7 1
+p 7 -1
+p -7 -1
 
 
 # a simple knotted loop (trefoil knot).
