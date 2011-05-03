@@ -80,6 +80,9 @@ RenderOptions renderOpt;
 GLuint scatterTextureId;
 GLuint scatterFboId;
 
+//==USER INTERACTION/GAMEPLAY
+int lastTimeStep;
+
 /* 
  * light scattering stuff. testingg!!!!!
  */
@@ -732,7 +735,10 @@ void myPassiveMotionFunc(int x, int y) {
 }
 
 void stepVehicle(int x) {
-    vehicle->step(0.01);
+	//call at beginning for consistency..
+	int newTime =glutGet(GLUT_ELAPSED_TIME);
+	int timeDif = newTime - lastTimeStep;
+    vehicle->step(0.01 * timeDif/10.0);
 
 
     p_camera = vehicle->cameraPos();
@@ -741,6 +747,7 @@ void stepVehicle(int x) {
     l_light = vehicle->worldSpacePos();
 
 	//redo this every 10ms
+	lastTimeStep = newTime;
   glutTimerFunc(10,stepVehicle, 0);
 
 }
@@ -832,6 +839,7 @@ int main(int argc,char** argv) {
   glLineWidth(10.0);
 
   //Step Vehicle once (and it will recurse on timer)
+  lastTimeStep = glutGet(GLUT_ELAPSED_TIME);
   stepVehicle(0);
 
   //And Go!
