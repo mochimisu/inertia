@@ -15,6 +15,8 @@
 
 #include "algebra3.h"
 //#include "main.h"
+#include "TrackGenerator.h"
+#include "Cityscape.h"
 #include "shaders.h"
 
 #include "LoadImage.h"
@@ -29,7 +31,7 @@ struct PathPoint {
   double scale;
 
   PathPoint() {}
-PathPoint(vec3 pt, double az = 0, double s = 1) : point(pt), azimuth(az), scale(s) {}
+  PathPoint(vec3 pt, double az = 0, double s = 1) : point(pt), azimuth(az), scale(s) {}
 };
 
 template<typename Pt> 
@@ -72,11 +74,12 @@ class Sweep {
     return (pathPts.size() == 0);
   }
 
- private:
+private:
   vector<PathPoint> pathPts; // control points for the sweep path
   double globalTwist; // twists the whole frame
   double globalAzimuth; // global azimuth rotates the whole frame
   vector<vec2> profilePts; // control points for cross section to be swept
+  Cityscape* cscape;
 
   // display list for caching sweep geometry
   //y hashmap not a c++ standard :<
