@@ -19,11 +19,12 @@ ifeq ($(shell sw_vers 2>/dev/null | grep Mac | awk '{ print $$2}'),Mac)
 		-I"lib/mac/SDL.framework/Headers"
 	LIBRARY := -L./lib/mac/ \
     	-L"/System/Library/Frameworks/OpenGL.framework/Libraries" \
-	-L"lib/mac/SDL.framework/Libraries"
     	-lGL -lGLU -lm -lstdc++
-	FRAMEWORK := -framework GLUT -framework OpenGL
+	FRAMEWORK := -framework GLUT -framework OpenGL -framework SDL -framework Cocoa
 	MACROS := -DOSX
 	PLATFORM := Mac
+    SDLM := "devel-lite/SDLMain.m"
+    FRAMEWORK_PATH := "lib/mac"
 else
 	#Assume X11
 	INCLUDE := -I./include/ -I/usr/X11R6/include -I/sw/include \
@@ -33,6 +34,8 @@ else
 	FRAMEWORK := 
 	MACROS := 
 	PLATFORM := *Nix
+    SDLM := 
+    FRAMEWORK_PATH := 
 endif
 
 #Basic Stuff -----------------------------
@@ -40,7 +43,7 @@ endif
 CC := gcc
 CXX := g++
 CXXFLAGS := -g -Wall -O3 -fmessage-length=0 $(INCLUDE) $(MACROS)
-LDFLAGS := $(FRAMEWORK) $(LIBRARY)
+LDFLAGS := $(SDLM) $(FRAMEWORK) $(LIBRARY)
 #-----------------------------------------
 
 %.o : %.cpp
@@ -51,7 +54,7 @@ OBJECTS = $(SOURCES:.cpp=.o)
 
 $(TARGET): $(OBJECTS)
 	@echo "Linking .o files into:  $(TARGET)"
-	@$(CXX) $(LDFLAGS) $(OBJECTS) -o $(TARGET) -lfreeimage -lGLEW
+	@$(CXX) $(LDFLAGS) $(OBJECTS) $(INCLUDE) $(LIBRARY) -F$(FRAMEWORK_PATH) -o $(TARGET) -lfreeimage -lGLEW
 	
 all: $(TARGET)
 
