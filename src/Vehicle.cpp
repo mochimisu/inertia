@@ -27,7 +27,11 @@ Vehicle::Vehicle(Sweep * sw) {
 }
 
 void Vehicle::draw(GeometryShader * shade) {
+	shade->toggleDisplacement();
+	glCullFace(GL_FRONT);
   mesh->draw(*shade);
+  glCullFace(GL_BACK);
+  shade->toggleDisplacement();
 }
 
 void Vehicle::setAccel(vec3 accel) {

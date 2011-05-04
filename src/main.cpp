@@ -929,8 +929,8 @@ int main(int argc,char** argv) {
   loadTexture(bg,bgText);
 
   vehicle = new Vehicle(sweep);
-  vehicle->mesh->loadFile("wipeout3.obj");
-  vehicle->mesh->loadTextures("thread2.png","thread1_bump.png");
+  vehicle->mesh->loadFile("test.obj");
+  vehicle->mesh->loadTextures("unnamed_object1_auv.bmp","unnamed_object1_auv.bmp");
   vehicle->mesh->centerAndScale(4);
 
   //Lap time 
