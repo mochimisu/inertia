@@ -24,7 +24,7 @@ ifeq ($(shell sw_vers 2>/dev/null | grep Mac | awk '{ print $$2}'),Mac)
 	MACROS := -DOSX
 	PLATFORM := Mac
     SDLM := "devel-lite/SDLMain.m"
-    FRAMEWORK_PATH := "lib/mac"
+    FRAMEWORK_PATH := -F"lib/mac"
 else
 	#Assume X11
 	INCLUDE := -I./include/ -I/usr/X11R6/include -I/sw/include \
@@ -54,7 +54,7 @@ OBJECTS = $(SOURCES:.cpp=.o)
 
 $(TARGET): $(OBJECTS)
 	@echo "Linking .o files into:  $(TARGET)"
-	@$(CXX) $(LDFLAGS) $(OBJECTS) $(INCLUDE) $(LIBRARY) -F$(FRAMEWORK_PATH) -o $(TARGET) -lfreeimage -lGLEW
+	@$(CXX) $(LDFLAGS) $(OBJECTS) $(INCLUDE) $(LIBRARY) $(FRAMEWORK_PATH) -o $(TARGET) -lfreeimage -lGLEW
 	
 all: $(TARGET)
 
