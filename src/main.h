@@ -31,4 +31,6 @@
 #include <float.h>
 #include <ctime>
 
+#include <SDL.h>
+
 #endif /* MAIN_H_ */

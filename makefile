@@ -15,10 +15,11 @@ SOURCES := $(wildcard ./src/UCB/*.cpp) $(wildcard ./src/*.cpp)
 #This line still kicks out an annoying error on Solaris.
 ifeq ($(shell sw_vers 2>/dev/null | grep Mac | awk '{ print $$2}'),Mac)
 	#Assume Mac
-	INCLUDE := -I./include/ -I/usr/X11/include
+	INCLUDE := -I./include/ -I/usr/X11/include \
+		-I"lib/mac/SDL.framework/Headers"
 	LIBRARY := -L./lib/mac/ \
     	-L"/System/Library/Frameworks/OpenGL.framework/Libraries" \
-		-I"lib/mac/SDL.framework/Headers" \
+	-L"lib/mac/SDL.framework/Libraries"
     	-lGL -lGLU -lm -lstdc++
 	FRAMEWORK := -framework GLUT -framework OpenGL
 	MACROS := -DOSX
