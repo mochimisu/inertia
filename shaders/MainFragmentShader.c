@@ -51,8 +51,11 @@ void main()
   float distanceFromLight;
 
   // shadows
-  if(shadowMapEnabled)
+  if(shadowMapEnabled) {
       shadow = chebyshevUpperBound(shadowCoordPostW);
+      shadow *= 0.7;
+      shadow += 0.3;
+  }
 
   // sample from a texture map
   vec4 texcolor;

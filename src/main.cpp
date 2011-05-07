@@ -23,7 +23,7 @@ vec3 l_camera(0,0,0);
 //Camera up
 vec3 u_camera(0,1,0);
 //Light position
-vec3 p_light(60,50,0);
+vec3 p_light(60,45,0);
 //Light lookAt
 vec3 l_light(0,0,0);
 
@@ -869,10 +869,10 @@ int main(int argc,char** argv) {
 
   // set some lights
   {
-    float ambient[4] = { .1f, .1f, .1f, 1.f };
+    float ambient[4] = { .5f, .5f, .5f, 1.f };
     float diffuse[4] = { 1.0f, 1.0f, 1.0f, 1.f };
     float pos[4] = { p_light[0], p_light[1], p_light[2], 0 };
-    glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
+    //glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
     glLightfv(GL_LIGHT0, GL_POSITION, pos);
     glEnable(GL_LIGHT0);
