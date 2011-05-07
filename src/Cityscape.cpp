@@ -13,16 +13,20 @@ BuildingSubdivision::BuildingSubdivision(int setXMin, int setXMax, int setZMin, 
 		leaf = true;
 		draw = true;
 		height = setHeight;
+		xMin += min(1.0, xWidth * 0.1);
+		xMax -= min(1.0, xWidth * 0.1);
+		zMin += min(1.0, zWidth * 0.1);
+		zMax -= min(1.0, zWidth * 0.1);
 	}
 	else {
 		leaf = false;
 		if (zWidth > xWidth) {
-			int division = (rand() % (zWidth - 1)) + 1 + zMin;
+			int division = (rand() % (zWidth - 3)) + 2 + zMin;
 			one = new BuildingSubdivision(xMin, xMax, zMin, division, double(rand() % zWidth) / zWidth * 5 + setHeight, area);
 			two = new BuildingSubdivision(xMin, xMax, division, zMax, double(rand() % zWidth) / zWidth * 5 + setHeight, area);
 		}
 		else {
-			int division = (rand() % (xWidth - 1)) + 1 + xMin;
+			int division = (rand() % (xWidth - 3)) + 2 + xMin;
 			one = new BuildingSubdivision(xMin, division, zMin, zMax, double(rand() % xWidth) / xWidth * 5 + setHeight, area);
 			two = new BuildingSubdivision(division, xMax, zMin, zMax, double(rand() % xWidth) / xWidth * 5 + setHeight, area);
 		}
@@ -63,44 +67,41 @@ void Cityscape::renderBuildingSubdivision(BuildingSubdivision* bsd) {
 	if (bsd->leaf) {
       if (bsd->draw) {
 			glBegin(GL_QUADS);
-
-			// Missing setting the normals
-            double distanceSpacing = 1.5;
 			
             //top
 			glNormal3d(0, 1, 0);
-            glVertex3d(bsd->xMax-distanceSpacing, bsd->height, bsd->zMax-distanceSpacing);
-			glVertex3d(bsd->xMax-distanceSpacing, bsd->height, bsd->zMin+distanceSpacing); 
-            glVertex3d(bsd->xMin+distanceSpacing, bsd->height, bsd->zMin+distanceSpacing);
-            glVertex3d(bsd->xMin+distanceSpacing, bsd->height, bsd->zMax-distanceSpacing);
+            glVertex3d(bsd->xMax, bsd->height, bsd->zMax);
+			glVertex3d(bsd->xMax, bsd->height, bsd->zMin); 
+            glVertex3d(bsd->xMin, bsd->height, bsd->zMin);
+            glVertex3d(bsd->xMin, bsd->height, bsd->zMax);
 
             //back
 			glNormal3d(0, 0, -1);
-            glVertex3d(bsd->xMax-distanceSpacing, 0, bsd->zMin+distanceSpacing);
-            glVertex3d(bsd->xMin+distanceSpacing, 0, bsd->zMin+distanceSpacing);
-            glVertex3d(bsd->xMin+distanceSpacing, bsd->height, bsd->zMin+distanceSpacing);
-            glVertex3d(bsd->xMax-distanceSpacing, bsd->height, bsd->zMin+distanceSpacing);
+            glVertex3d(bsd->xMax, 0, bsd->zMin);
+            glVertex3d(bsd->xMin, 0, bsd->zMin);
+            glVertex3d(bsd->xMin, bsd->height, bsd->zMin);
+            glVertex3d(bsd->xMax, bsd->height, bsd->zMin);
 
             //left side
 			glNormal3d(-1, 0, 0);
-            glVertex3d(bsd->xMin+distanceSpacing, 0, bsd->zMin+distanceSpacing);
-            glVertex3d(bsd->xMin+distanceSpacing, 0, bsd->zMax-distanceSpacing);
-            glVertex3d(bsd->xMin+distanceSpacing, bsd->height, bsd->zMax-distanceSpacing);
-            glVertex3d(bsd->xMin+distanceSpacing, bsd->height, bsd->zMin+distanceSpacing);
+            glVertex3d(bsd->xMin, 0, bsd->zMin);
+            glVertex3d(bsd->xMin, 0, bsd->zMax);
+            glVertex3d(bsd->xMin, bsd->height, bsd->zMax);
+            glVertex3d(bsd->xMin, bsd->height, bsd->zMin);
 
             //right side
 			glNormal3d(1, 0, 0);
-            glVertex3d(bsd->xMax-distanceSpacing, 0, bsd->zMin+distanceSpacing);
-            glVertex3d(bsd->xMax-distanceSpacing, bsd->height, bsd->zMin+distanceSpacing);
-            glVertex3d(bsd->xMax-distanceSpacing, bsd->height, bsd->zMax-distanceSpacing);
-            glVertex3d(bsd->xMax-distanceSpacing, 0, bsd->zMax-distanceSpacing);
+            glVertex3d(bsd->xMax, 0, bsd->zMin);
+            glVertex3d(bsd->xMax, bsd->height, bsd->zMin);
+            glVertex3d(bsd->xMax, bsd->height, bsd->zMax);
+            glVertex3d(bsd->xMax, 0, bsd->zMax);
 
             //front
 			glNormal3d(0, 0, 1);
-            glVertex3d(bsd->xMax-distanceSpacing, 0, bsd->zMax-distanceSpacing);
-            glVertex3d(bsd->xMax-distanceSpacing, bsd->height, bsd->zMax-distanceSpacing);
-            glVertex3d(bsd->xMin+distanceSpacing, bsd->height, bsd->zMax-distanceSpacing);
-            glVertex3d(bsd->xMin+distanceSpacing, 0, bsd->zMax-distanceSpacing);
+            glVertex3d(bsd->xMax, 0, bsd->zMax);
+            glVertex3d(bsd->xMax, bsd->height, bsd->zMax);
+            glVertex3d(bsd->xMin, bsd->height, bsd->zMax);
+            glVertex3d(bsd->xMin, 0, bsd->zMax);
             
             glEnd();
 		}
