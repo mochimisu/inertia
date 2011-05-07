@@ -598,6 +598,7 @@ void renderScene() {
   //try to make shadow view "bigger" than normal view
 
   // Clear previous frame values
+  glClearColor(0,0,0,1.0f);
   glClear( GL_COLOR_BUFFER_BIT |  GL_DEPTH_BUFFER_BIT);
   setupMatrices(p_light[0],p_light[1],p_light[2],l_light[0],l_light[1],l_light[2],0,1,0,10,100,120);
 	
@@ -636,7 +637,7 @@ void renderScene() {
   glPushMatrix();
   glTranslatef(p_light[0],p_light[1],p_light[2]);
   glColor4f(1.0,1.0,1.0,1.0);
-  glutSolidSphere(40,40,40);
+  glutSolidSphere(25,10,10);
   glPopMatrix();
 
   //Draw objects in black
