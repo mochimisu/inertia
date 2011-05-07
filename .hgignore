@@ -8,3 +8,5 @@ syntax: glob
 *.orig
 *.swp
 cs184.sdf
+Thumbs.db
+cs184.suo
