@@ -79,7 +79,7 @@ void Vehicle::step(double amount) {
   //make acceleration's normal axis the same as tb's projection
   acceleration = tbn * tbAccelerationDir;
 
-  vec3 newTbVelocity = tbVelocity + tbAcceleration + (-(0.00002+airBrake) * velocityScalar * velocityScalar * tbVelocity) ;
+  vec3 newTbVelocity = 0.99*tbVelocity + tbAcceleration + (-(0.00002+airBrake) * velocityScalar * velocityScalar * tbVelocity) ;
 
 
   //lateral movement
