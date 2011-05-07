@@ -879,7 +879,7 @@ int main(int argc,char** argv) {
   }
 
   glEnable(GL_DEPTH_TEST);
-  glClearColor(0,0,0,1.0f);
+  glClearColor(1,1,1,1.0f);
   glEnable(GL_CULL_FACE);
   glFrontFace(GL_CCW);
   glHint(GL_PERSPECTIVE_CORRECTION_HINT,GL_NICEST);
