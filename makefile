@@ -18,7 +18,6 @@ ifeq ($(shell sw_vers 2>/dev/null | grep Mac | awk '{ print $$2}'),Mac)
 	INCLUDE := -I./include/ -I/usr/X11/include
 	LIBRARY := -L./lib/mac/ \
     	-L"/System/Library/Frameworks/OpenGL.framework/Libraries" \
-		-I"lib/mac/SDL.framework/Headers" \
     	-lGL -lGLU -lm -lstdc++
 	FRAMEWORK := -framework GLUT -framework OpenGL
 	MACROS := -DOSX
