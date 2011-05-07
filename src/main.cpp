@@ -4,8 +4,8 @@
 // Constants (some issues with aspect ratio; and i think defines will speed some stuff up. keep it?)
 const float renderWidth = 1024.0;
 const float renderHeight = 768.0;
-const float shadowMapCoef = 1.0;
-const float blurCoef = 1.0;
+const float shadowMapCoef = 0.5;
+const float blurCoef = 0.5;
 const float lightScatteringCoef = 1.0;
 
 const float shadowMapWidth = renderWidth * shadowMapCoef;
@@ -566,20 +566,18 @@ void drawObjects(GeometryShader * curShade) {
 
   //pushTranslate(0,0,0);
   //pushViewportOrientation();
-  sweep->renderWithDisplayList(*curShade,20,0.3,20);
+  sweep->renderWithDisplayList(*curShade,20,0.3,10);
 
   vec3 vehLoc = vehicle->worldSpacePos();
-  pushMat4(translation3D(vehLoc).transpose());
-  
-  pushMat4(vehicle->orientationBasis());
-  pushMat4(scaling3D(vec3(0.2,0.2,0.2)));
+
+  mat4 transformation = scaling3D(vec3(0.2,0.2,0.2)) *
+                        vehicle->orientationBasis() *
+                        translation3D(vehLoc).transpose();
+
+  pushMat4(transformation);
   vehicle->draw(curShade);
   //glutSolidCube(1);
   popTransform();
-
-  popTransform();
-  popTransform();
-
 //popTransform();
 //popTransform();
 
@@ -623,6 +621,7 @@ void renderScene() {
   glViewport(0,0,lightScatterWidth,lightScatterHeight);
     
   // Clear previous frame values
+  glClearColor(0,0,0,1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
   //Using the shadow shader
@@ -637,7 +636,7 @@ void renderScene() {
   glPushMatrix();
   glTranslatef(p_light[0],p_light[1],p_light[2]);
   glColor4f(1.0,1.0,1.0,1.0);
-  glutSolidSphere(2,40,40);
+  glutSolidSphere(40,40,40);
   glPopMatrix();
 
   //Draw objects in black
@@ -651,6 +650,7 @@ void renderScene() {
   glViewport(0,0,renderWidth,renderHeight);
     
   // Clear previous frame values
+  glClearColor(.764705882,.890196078,1,1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
   //Using the shadow shader
@@ -879,7 +879,7 @@ int main(int argc,char** argv) {
   }
 
   glEnable(GL_DEPTH_TEST);
-  glClearColor(1,1,1,1.0f);
+  glClearColor(0,0,0,1.0f);
   glEnable(GL_CULL_FACE);
   glFrontFace(GL_CCW);
   glHint(GL_PERSPECTIVE_CORRECTION_HINT,GL_NICEST);

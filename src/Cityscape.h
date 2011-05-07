@@ -49,6 +49,9 @@ private:
 	BuildingSubdivision* rootBSD;
     GLuint DLid;
     bool hasDL;
+
+    float xWidth;
+    float zWidth;
 };
 
 #endif

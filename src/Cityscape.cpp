@@ -32,6 +32,8 @@ BuildingSubdivision::BuildingSubdivision(int setXMin, int setXMax, int setZMin, 
 Cityscape::Cityscape(int xWidth, int zWidth, int area) {
 	rootBSD = new BuildingSubdivision(-xWidth / 2, -xWidth / 2 + xWidth, -zWidth / 2, -zWidth / 2 + zWidth, 0.0, 64);
 	hasDL = false;
+    this->xWidth = xWidth;
+    this->zWidth = zWidth;
 }
 
 void Cityscape::render() {
@@ -46,6 +48,14 @@ void Cityscape::render() {
 		hasDL = true;
 	}
 	glCallList(DLid);*/
+	glBegin(GL_QUADS);
+    glVertex3d(xWidth/2, 0, zWidth/2);
+    glVertex3d(xWidth/2, 0, -zWidth/2);
+    glVertex3d(-xWidth/2, 0, -zWidth/2); 
+    glVertex3d(-xWidth/2, 0, zWidth/2);   
+    glEnd();
+
+    
 	renderBuildingSubdivision(rootBSD);
 }
 
