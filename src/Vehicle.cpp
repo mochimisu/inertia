@@ -236,3 +236,7 @@ mat4 Vehicle::orientationBasis() {
 	      vec4(side,0),
 	      vec4(0,0,0,1));
 }
+
+vec3 Vehicle::lightPos() {
+    return worldPos + vec3(0,2,10);
+}

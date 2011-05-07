@@ -4,9 +4,9 @@
 // Constants (some issues with aspect ratio; and i think defines will speed some stuff up. keep it?)
 const float renderWidth = 1024.0;
 const float renderHeight = 768.0;
-const float shadowMapCoef = 0.5;
-const float blurCoef = 0.25;
-const float lightScatteringCoef = 0.5;
+const float shadowMapCoef = 1.0;
+const float blurCoef = 1.0;
+const float lightScatteringCoef = 1.0;
 
 const float shadowMapWidth = renderWidth * shadowMapCoef;
 const float shadowMapHeight = renderHeight * shadowMapCoef;
@@ -23,7 +23,7 @@ vec3 l_camera(0,0,0);
 //Camera up
 vec3 u_camera(0,1,0);
 //Light position
-vec3 p_light(10,20,0);
+vec3 p_light(60,50,0);
 //Light lookAt
 vec3 l_light(0,0,0);
 
@@ -355,8 +355,8 @@ void blurShadowMap() {
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,blurFboId);	
   glViewport(0,0,renderWidth * shadowMapCoef *blurCoef ,renderHeight* shadowMapCoef*blurCoef);
   glUseProgramObjectARB(blurShade->getProgram());
-  glUniform2fARB( blurShade->getScaleAttrib(),1.0/ (renderWidth * shadowMapCoef * blurCoef),0.0);
-  //glUniform2fARB( blurShade->getScaleAttrib(),1.0/512.0,0.0);		// horiz
+  //glUniform2fARB( blurShade->getScaleAttrib(),1.0/ (renderWidth * shadowMapCoef * blurCoef),0.0);
+  glUniform2fARB( blurShade->getScaleAttrib(),1.0/512.0,0.0);		// horiz
   //glUniform1iARB(blurShade->getTextureSourceAttrib(),0);
   glActiveTextureARB(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D,colorTextureId);
@@ -384,8 +384,8 @@ void blurShadowMap() {
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,shadowFboId);	
   //glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);	
   glViewport(0,0,renderWidth * shadowMapCoef ,renderHeight* shadowMapCoef);
-  glUniform2fARB( blurShade->getScaleAttrib(),0.0, 1.0/ (renderHeight * shadowMapCoef ) );	
-  //glUniform2fARB( blurShade->getScaleAttrib(),0.0, 1.0/ (512.0 ) );
+  //glUniform2fARB( blurShade->getScaleAttrib(),0.0, 1.0/ (renderHeight * shadowMapCoef ) );	
+  glUniform2fARB( blurShade->getScaleAttrib(),0.0, 1.0/ (512.0 ) );
   glBindTexture(GL_TEXTURE_2D,blurFboIdColorTextureId);
   //glBindTexture(GL_TEXTURE_2D,colorTextureId);
   glBegin(GL_QUADS);
@@ -544,7 +544,7 @@ void drawHud() {
 }
 
 void drawObjects(GeometryShader * curShade) {
-  
+  /*
   // Ground [double for face culling]
   if(renderOpt.isDispGround()) {
     glActiveTextureARB(GL_TEXTURE0);
@@ -561,7 +561,7 @@ void drawObjects(GeometryShader * curShade) {
     glTexCoord2d(1,1);glVertex3f( 50,-10, 50);
     glTexCoord2d(0,1);glVertex3f( 50,-10,-50);
     glEnd();
-  }
+  }*/
 
 
   //pushTranslate(0,0,0);
@@ -601,7 +601,7 @@ void renderScene() {
 
   // Clear previous frame values
   glClear( GL_COLOR_BUFFER_BIT |  GL_DEPTH_BUFFER_BIT);
-  setupMatrices(p_light[0],p_light[1],p_light[2],l_light[0],l_light[1],l_light[2],0,1,0,1,200,120);
+  setupMatrices(p_light[0],p_light[1],p_light[2],l_light[0],l_light[1],l_light[2],0,1,0,10,100,120);
 	
   // Culling switching, rendering only backface, this is done to avoid self-shadowing and improve efficiency
   glCullFace(GL_FRONT);
@@ -841,6 +841,8 @@ void stepVehicle(int x) {
     p_camera = vehicle->cameraPos();
     l_camera = vehicle->cameraLookAt();
     u_camera = vehicle->getUp();
+
+    //p_light = vehicle->lightPos();
     l_light = vehicle->worldSpacePos();
 
 	//redo this every 10ms
@@ -860,7 +862,7 @@ int main(int argc,char** argv) {
   viewport.h = 768;
   glutInitWindowSize(viewport.w,viewport.h);
   glutInitWindowPosition(0,0);
-  glutCreateWindow("Inertia 0.0000001");
+  glutCreateWindow("Inertia Alpha");
 
 
   FreeImage_Initialise();

@@ -53,6 +53,8 @@ class Vehicle {
 
   int getLap() { return lap; };
 
+  vec3 lightPos();
+
  private:
 
   vec3 resistanceAccel();
