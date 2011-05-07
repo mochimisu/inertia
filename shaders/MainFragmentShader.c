@@ -13,9 +13,6 @@ varying vec3 t;
 varying vec3 b;
 varying vec3 n;
 
-varying vec4 gouradColorDiffuse;
-varying vec4 gouradColorSpecular;
-
 varying vec4 shadowCoord;
 
 float chebyshevUpperBound( vec4 shadowCoordPostW)
@@ -68,9 +65,7 @@ void main()
     
 
   vec4 color;
-  if(phongEnabled) {
-
-    // sample from a normal map
+  // sample from a normal map
 
     vec3 normal;
   
@@ -98,11 +93,7 @@ void main()
     color = cr * (ca + cl * max(0.0,dot(normal,l))) + 
       cl * pow(max(0.0,dot(r,-e)),p);
 
-  } else {
-
-    color = cr * gouradColorDiffuse + gouradColorSpecular;
-  }
-  // set the output color to what we've computed
+    // set the output color to what we've computed
   gl_FragColor = shadow * color * ao;
   
   //gl_FragColor = (texture2D(normalMap, gl_TexCoord[0].st));
