@@ -755,7 +755,7 @@ void processNormalKeysUp(unsigned char key, int x, int y) {
 void processSpecialKeys(int key, int x, int y) {
   switch(key) {
     case GLUT_KEY_UP:
-      vehicle->setAccel(0.1);
+      vehicle->setAccel(0.2);
       break;
     case GLUT_KEY_DOWN:
       vehicle->setAccel(-0.1);

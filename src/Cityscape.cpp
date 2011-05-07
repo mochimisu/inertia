@@ -85,6 +85,7 @@ void Cityscape::renderBuildingSubdivision(BuildingSubdivision* bsd) {
 			glEnd();
 		}
 		*/
+      /*
 		if (bsd->draw) {
 			double xWidth = bsd->xMax - bsd->xMin;
 			double zWidth = bsd->zMax - bsd->zMin;
@@ -94,7 +95,44 @@ void Cityscape::renderBuildingSubdivision(BuildingSubdivision* bsd) {
 			glScaled(xWidth, bsd->height, zWidth);
 			glutSolidCube(1.0);
 			glPopMatrix();
+		}*/
+		if (bsd->draw) {
+			glBegin(GL_QUADS);
+
+			// Missing setting the normals
+            //top
+            glVertex3d(bsd->xMax, bsd->height, bsd->zMax);
+			glVertex3d(bsd->xMax, bsd->height, bsd->zMin); 
+            glVertex3d(bsd->xMin, bsd->height, bsd->zMin);
+            glVertex3d(bsd->xMin, bsd->height, bsd->zMax);
+
+            //back
+            glVertex3d(bsd->xMax, 0, bsd->zMin);
+            glVertex3d(bsd->xMin, 0, bsd->zMin);
+            glVertex3d(bsd->xMin, bsd->height, bsd->zMin);
+            glVertex3d(bsd->xMax, bsd->height, bsd->zMin);
+
+            //left side
+            glVertex3d(bsd->xMin, 0, bsd->zMin);
+            glVertex3d(bsd->xMin, 0, bsd->zMax);
+            glVertex3d(bsd->xMin, bsd->height, bsd->zMax);
+            glVertex3d(bsd->xMin, bsd->height, bsd->zMin);
+
+            //right side
+            glVertex3d(bsd->xMax, 0, bsd->zMin);
+            glVertex3d(bsd->xMax, bsd->height, bsd->zMin);
+            glVertex3d(bsd->xMax, bsd->height, bsd->zMax);
+            glVertex3d(bsd->xMax, 0, bsd->zMax);
+
+            //front
+            glVertex3d(bsd->xMax, 0, bsd->zMax);
+            glVertex3d(bsd->xMax, bsd->height, bsd->zMax);
+            glVertex3d(bsd->xMin, bsd->height, bsd->zMax);
+            glVertex3d(bsd->xMin, 0, bsd->zMax);
+            
+            glEnd();
 		}
+
 	}
 	else {
 		renderBuildingSubdivision(bsd->one);
