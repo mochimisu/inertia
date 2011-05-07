@@ -24,6 +24,9 @@ Vehicle::Vehicle(Sweep * sw) {
 
   this->bestTime = numeric_limits<float>::infinity();
   this->lapStartTime = 0;
+
+  this->turnTargetValue = 0;
+  this->turnCurrentValue = 0;
 }
 
 void Vehicle::draw(GeometryShader * shade) {
@@ -54,7 +57,7 @@ void Vehicle::setVelocityScalar(double mag) {
 
 void Vehicle::step(double amount) {
   
-  turnCurrentValue = turnTargetValue - pow(TURNING_INERTIA, amount) * (turnTargetValue - turnCurrentValue);
+  turnCurrentValue = turnTargetValue - pow(TURNING_INERTIA, amount)*0.95 * (turnTargetValue - turnCurrentValue);
   
   //turn
   quat qRot = quat::axisAngle(up, turnCurrentValue*amount);
