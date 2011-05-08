@@ -545,7 +545,7 @@ void drawHud() {
 
 void drawObjects(GeometryShader * curShade) {
   //Track/City
-  sweep->renderWithDisplayList(*curShade,20,0.3,10);
+  sweep->renderWithDisplayList(*curShade,20,0.3,20);
 
   //Vehicle Location
   vec3 vehLoc = vehicle->worldSpacePos();

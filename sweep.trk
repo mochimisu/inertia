@@ -5,7 +5,7 @@ azimuth 45
 # global twist 360 degrees - i.e., a linearly increasing azimuth, starting at 0 degrees and ending at 360 degrees.
 twist -60
 texture "road.jpg" 50 1
-bump "roadbumpmap.png"
+bump "roadbumpmap.jpg"
 # a simple cross section
 p -7 1
 p 7 1
