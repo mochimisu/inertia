@@ -7,6 +7,8 @@
 #include "algebra3.h"
 #include "functions.h"
 
+#define TURNING_INERTIA 0.01
+
 class Mesh;
 
 class Vehicle {
@@ -53,6 +55,8 @@ class Vehicle {
 
   int getLap() { return lap; };
 
+  vec3 lightPos();
+
  private:
 
   vec3 resistanceAccel();
@@ -71,8 +75,9 @@ class Vehicle {
   //(maybe use a quaternion just for kicks?)
   float velocityScalar;
   float accelerationScalar;
-
-  float turnValue; //turn scalar around normal per step
+  
+  float turnTargetValue; //turn scalar around normal per step
+  float turnCurrentValue;
   float airBrake; //airbrake value
   float energy;
 

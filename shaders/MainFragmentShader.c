@@ -13,9 +13,6 @@ varying vec3 t;
 varying vec3 b;
 varying vec3 n;
 
-varying vec4 gouradColorDiffuse;
-varying vec4 gouradColorSpecular;
-
 varying vec4 shadowCoord;
 
 float chebyshevUpperBound( vec4 shadowCoordPostW)
@@ -29,7 +26,7 @@ float chebyshevUpperBound( vec4 shadowCoordPostW)
 	// The fragment is either in shadow or penumbra. We now use chebyshev's upperBound to check
 	// How likely this pixel is to be lit (p_max)
 	float variance = moments.y - (moments.x*moments.x);
-	variance = max(variance,0.002);
+	variance = max(variance,0.02);
 
 	float d = shadowCoordPostW.z - moments.x;
 	float p_max = variance / (variance + d*d);
@@ -51,8 +48,11 @@ void main()
   float distanceFromLight;
 
   // shadows
-  if(shadowMapEnabled)
+  if(shadowMapEnabled) {
       shadow = chebyshevUpperBound(shadowCoordPostW);
+      shadow *= 0.7;
+      shadow += 0.3;
+  }
 
   // sample from a texture map
   vec4 texcolor;
@@ -65,9 +65,7 @@ void main()
     
 
   vec4 color;
-  if(phongEnabled) {
-
-    // sample from a normal map
+  // sample from a normal map
 
     vec3 normal;
   
@@ -95,11 +93,7 @@ void main()
     color = cr * (ca + cl * max(0.0,dot(normal,l))) + 
       cl * pow(max(0.0,dot(r,-e)),p);
 
-  } else {
-
-    color = cr * gouradColorDiffuse + gouradColorSpecular;
-  }
-  // set the output color to what we've computed
+    // set the output color to what we've computed
   gl_FragColor = shadow * color * ao;
   
   //gl_FragColor = (texture2D(normalMap, gl_TexCoord[0].st));

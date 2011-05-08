@@ -17,13 +17,16 @@ Vehicle::Vehicle(Sweep * sw) {
   this->velocityScalar = 0;
   this->accelerationScalar = 0;
   this->tbn = this->sweep->tbnBasis(0);
-  this->turnValue = 0.0;
+  this->turnCurrentValue = 0.0;
   this->airBrake = 0.0;
   this->lap = 0;
   this->energy = 100.0;
 
   this->bestTime = numeric_limits<float>::infinity();
   this->lapStartTime = 0;
+
+  this->turnTargetValue = 0;
+  this->turnCurrentValue = 0;
 }
 
 void Vehicle::draw(GeometryShader * shade) {
@@ -53,9 +56,11 @@ void Vehicle::setVelocityScalar(double mag) {
 }
 
 void Vehicle::step(double amount) {
- 
+  
+  turnCurrentValue = turnTargetValue - pow(TURNING_INERTIA, amount)*0.95 * (turnTargetValue - turnCurrentValue);
+  
   //turn
-  quat qRot = quat::axisAngle(up, turnValue*amount);
+  quat qRot = quat::axisAngle(up, turnCurrentValue*amount);
   acceleration = qRot.rotate(acceleration);
 
   //update the local state variables
@@ -193,13 +198,13 @@ void Vehicle::turnLeft(double amt) {
   //acceleration += vec3(0,0,0.1);
   //quat qRot =  quat::axisAngle(up,amt);
   //acceleration = qRot.rotate(acceleration);
-  turnValue = amt;
+  turnTargetValue = amt;
 }
 void Vehicle::turnRight(double amt) {
   //acceleration += vec3(0,0,-0.1);
   //quat qRot =  quat::axisAngle(up,-amt);
   //acceleration = qRot.rotate(acceleration);
-  turnValue = -amt;
+  turnTargetValue = -amt;
 }
 void Vehicle::turnStraight() {
   acceleration = vec3(1,0,0);
@@ -235,4 +240,8 @@ mat4 Vehicle::orientationBasis() {
 	      vec4(uprime,0),
 	      vec4(side,0),
 	      vec4(0,0,0,1));
+}
+
+vec3 Vehicle::lightPos() {
+    return worldPos + vec3(0,2,10);
 }
