@@ -23,6 +23,9 @@
 #include "RenderOptions.h"
 #include "Vehicle.h"
 
+#include "functions.h"
+#include "GameMode.h"
+
 //#include "GL/gl.h"
 
 #include <stdio.h>
@@ -31,6 +34,9 @@
 #include <float.h>
 #include <ctime>
 
+const float renderWidth = 1024.0;
+const float renderHeight = 768.0;
+
 // Sound support
 #include <stdlib.h>
 #include <al.h>
@@ -38,5 +44,6 @@
 #include <alut.h>
 
 //#include "freetype.h"
+#include <FTGL/ftgl.h>
 
 #endif /* MAIN_H_ */

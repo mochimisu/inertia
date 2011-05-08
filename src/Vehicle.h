@@ -7,6 +7,8 @@
 #include "algebra3.h"
 #include "functions.h"
 
+#include <limits>
+
 #define TURNING_INERTIA 0.01
 
 class Mesh;
@@ -57,6 +59,9 @@ class Vehicle {
 
   vec3 lightPos();
 
+  int getBestLapTime() { return bestLapTime; };
+  int getLapStartTime() { return lapStartTime; };
+
  private:
 
   vec3 resistanceAccel();
@@ -81,8 +86,8 @@ class Vehicle {
   float airBrake; //airbrake value
   float energy;
 
-  float bestTime;
-  float lapStartTime;
+  int bestLapTime;
+  int lapStartTime;
   int lap;
 
   vec3 up; //"cached" up value

@@ -7,7 +7,6 @@
 #define CONSOLE_H_
 
 #include "global.h"
-#include "freetype.h"
 
 #include <list>
 

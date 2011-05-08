@@ -22,7 +22,7 @@ Vehicle::Vehicle(Sweep * sw) {
   this->lap = 0;
   this->energy = 100.0;
 
-  this->bestTime = numeric_limits<float>::infinity();
+  this->bestLapTime = -1;
   this->lapStartTime = 0;
 
   this->turnTargetValue = 0;
@@ -57,9 +57,9 @@ void Vehicle::setVelocityScalar(double mag) {
 
 void Vehicle::step(double amount) {
   
-  turnCurrentValue = turnTargetValue - pow(TURNING_INERTIA, amount)*0.95 * (turnTargetValue - turnCurrentValue);
-  
   //turn
+  //Linear term because TURNING_INERTIA loses effect at small amounts and you "drift" for a while. It approaches asymptotic zero, but slower than a linear term. Without a linear term, you drift for a long time, especially at smaller amount values. tl;dr: keep it.
+  turnCurrentValue = turnTargetValue - pow(TURNING_INERTIA, amount) * (turnTargetValue - turnCurrentValue) * 0.98;
   quat qRot = quat::axisAngle(up, turnCurrentValue*amount);
   acceleration = qRot.rotate(acceleration);
 
@@ -132,11 +132,15 @@ void Vehicle::step(double amount) {
 
       tempPos = sweep->sample(tempTime).point;
     } while (tempDist < distance);
-/*
     if(tempTime < pos[0]) {
       ++lap;
+      int newTime = glutGet(GLUT_ELAPSED_TIME);
+      int curLapTime = newTime - lapStartTime;
+      if(curLapTime < bestLapTime || bestLapTime == -1) {
+        bestLapTime = curLapTime;
+      }
+      lapStartTime = newTime;
     }
-*/
   } else if(distance < -0.00001) {
     do {
       tempTime -= 0.0000025;

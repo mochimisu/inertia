@@ -191,9 +191,6 @@ Sweep::Sweep(string filename) : globalTwist(0), globalAzimuth(0) {
 
   cscape = new Cityscape(trkGen.getXWidth() + 20, trkGen.getZWidth() + 20, 64);
   
-  cout << trkGen.getXWidth() + 20 << endl;
-  cout << trkGen.getZWidth() + 20 << endl;
-  
   vector<vec2>::iterator fwd = profilePts.begin();
   vector<vec2>::iterator bkwd = profilePts.end();
   bkwd--;
