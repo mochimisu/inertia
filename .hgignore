@@ -7,3 +7,6 @@ syntax: glob
 *.o
 *.orig
 *.swp
+cs184.sdf
+Thumbs.db
+cs184.suo
