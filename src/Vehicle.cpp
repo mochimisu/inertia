@@ -57,7 +57,8 @@ void Vehicle::setVelocityScalar(double mag) {
 
 void Vehicle::step(double amount) {
   
-  turnCurrentValue = turnTargetValue - pow(TURNING_INERTIA, amount)*0.95 * (turnTargetValue - turnCurrentValue);
+  turnCurrentValue = turnTargetValue - pow(TURNING_INERTIA, amount) * (turnTargetValue - turnCurrentValue);
+  cout << turnCurrentValue << endl;
   
   //turn
   quat qRot = quat::axisAngle(up, turnCurrentValue*amount);

@@ -41,24 +41,12 @@ Cityscape::Cityscape(int xWidth, int zWidth, int area) {
 }
 
 void Cityscape::render() {
-	/*if (!hasDL) {
-        DLid = glGenLists(1);
-        glNewList(DLid, GL_COMPILE);
-		glColor3f(0.8, 0.8, 0.8);
-
-		renderBuildingSubdivision(rootBSD);
-
-        glEndList();
-		hasDL = true;
-	}
-	glCallList(DLid);*/
 	glBegin(GL_QUADS);
     glVertex3d(xWidth/2, 0, zWidth/2);
     glVertex3d(xWidth/2, 0, -zWidth/2);
     glVertex3d(-xWidth/2, 0, -zWidth/2); 
     glVertex3d(-xWidth/2, 0, zWidth/2);   
     glEnd();
-
     
 	renderBuildingSubdivision(rootBSD);
 }

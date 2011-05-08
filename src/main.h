@@ -31,6 +31,9 @@
 #include <float.h>
 #include <ctime>
 
+const float renderWidth = 1024.0;
+const float renderHeight = 768.0;
+
 //#include <conio.h>
 #include <stdlib.h>
 #include <al.h>
