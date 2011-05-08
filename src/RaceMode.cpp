@@ -43,10 +43,10 @@ vec3 p_light(3,4,-7);
 vec3 l_light(0,0,0);
 */
 
-                                                                                                                            ////===WINDOW PROPERTIES
-                                                                                                                            //Viewport viewport;
+                                                                                                                
+
+//===DEBUG STUFF 
 //background texture
-GLuint bgText;
 enum { DISPLAY_DEPTH_BUFFER,
        DISPLAY_DEPTH_SQUARED_HALF_BLUR_BUFFER,
        DISPLAY_DEPTH_SQUARED_COMPLETE_BUFFER };
@@ -85,8 +85,6 @@ GLuint scatterFboId;
 //==USER INTERACTION/GAMEPLAY
 int lastTimeStep;
 int lapStartTime;
-
-int curRenderScene=0;
 
 //draw text (temporarily here until i figure out sdl
 void drawString(string str, float x, float y) {
@@ -548,43 +546,20 @@ void drawHud() {
 }
 
 void drawObjects(GeometryShader * curShade) {
-  /*
-  // Ground [double for face culling]
-  if(renderOpt.isDispGround()) {
-    glActiveTextureARB(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D,bgText);
-    glBegin(GL_QUADS);
-    glTexCoord2d(0,1);glVertex3f( 50,-10,-50);
-    glTexCoord2d(1,1);glVertex3f( 50,-10, 50);
-    glTexCoord2d(1,0);glVertex3f(-50,-10, 50);
-    glTexCoord2d(0,0);glVertex3f(-50,-10,-50);
-    glEnd();
-    glBegin(GL_QUADS);
-    glTexCoord2d(0,0);glVertex3f(-50,-10,-50);
-    glTexCoord2d(1,0);glVertex3f(-50,-10, 50);
-    glTexCoord2d(1,1);glVertex3f( 50,-10, 50);
-    glTexCoord2d(0,1);glVertex3f( 50,-10,-50);
-    glEnd();
-  }*/
-
-
-  //pushTranslate(0,0,0);
-  //pushViewportOrientation();
+  //Track/City
   sweep->renderWithDisplayList(*curShade,20,0.3,10);
 
+  //Vehicle Location
   vec3 vehLoc = vehicle->worldSpacePos();
 
+  //Put matrices together for smaller stack size
   mat4 transformation = scaling3D(vec3(0.2,0.2,0.2)) *
                         vehicle->orientationBasis() *
                         translation3D(vehLoc).transpose();
 
   pushMat4(transformation);
   vehicle->draw(curShade);
-  //glutSolidCube(1);
   popTransform();
-//popTransform();
-//popTransform();
-
 }
 
 void renderScene() {
@@ -721,12 +696,7 @@ void renderScene() {
   if(renderOpt.isDepthBuffer())
     drawDebugBuffer(renderOpt.getDepthBufferOption());
 
-  glutSwapBuffers();
-
-      alSourcePlay(noiseSource);
-      alSourcePlay(noiseSource);
-      alSourceStop(noiseSource);
-    
+  glutSwapBuffers();    
 }
 
 /*
@@ -749,23 +719,7 @@ void processNormalKeys(unsigned char key, int x, int y) {
     break;
   case ' ':
     vehicle->setAirBrake(0.00008);
-    break;
-  case 'a':
-    switch(curRenderScene) {
-      case 0:
-        glutDisplayFunc(renderScene);
-        glutIdleFunc(renderScene);
-        break;
-      case 1:
-        glutDisplayFunc(renderScene);
-        glutIdleFunc(renderScene);
-        break;
-    }
-
-    curRenderScene = (curRenderScene+1)%2;
-          
-  break;
-        
+    break;          
   }
 }
 
@@ -795,6 +749,33 @@ void processSpecialKeys(int key, int x, int y) {
       break;
   }
 }
+
+void joystickFunc(unsigned int buttonMask, int x, int y, int z) {
+  //cout << (buttonMask) << endl;
+  //cout << (buttonMask & 16384) << endl;
+  if(buttonMask & 16384) { //button 14: X on DualShock3
+    vehicle->setAccel(0.2);
+    alSourcePlay(noiseSource);
+  } else if(buttonMask & 8192) { //button 13: O on DualShock3
+    vehicle->setAccel(-0.1);
+    alSourcePlay(noiseSource);
+  } else {
+    alSourceStop(noiseSource);
+    vehicle->setAccel(0.0);
+  }
+  if(buttonMask & 256 && buttonMask & 512) { //256:L2, 512: R2
+    vehicle->setAirBrake(0.0001);
+  } else if(buttonMask & 256) { //TODO: left and right airbrake
+    vehicle->setAirBrake(0.00005);
+  } else if(buttonMask & 512) {
+    vehicle->setAirBrake(0.00005);
+  } else {
+    vehicle->setAirBrake(0.0);
+  }
+	//cout << x << endl;
+  vehicle->turnRight(x/500);
+}
+
 
 void processSpecialKeysUp(int key, int x, int y) {
   switch(key) {
@@ -828,6 +809,7 @@ void myActiveMotionFunc(int x, int y) {
   //Force a redraw of the window.
   glutPostRedisplay();
 }
+
 void myPassiveMotionFunc(int x, int y) {
   //Record the mouse location for drawing crosshairs
   viewport.mousePos = vec2((double)x / glutGet(GLUT_WINDOW_WIDTH),(double)y / glutGet(GLUT_WINDOW_HEIGHT));
@@ -836,45 +818,21 @@ void myPassiveMotionFunc(int x, int y) {
   glutPostRedisplay();
 }
 
-void joystickFunc(unsigned int buttonMask, int x, int y, int z) {
-  //cout << (buttonMask) << endl;
-  //cout << (buttonMask & 16384) << endl;
-  if(buttonMask & 16384) { //button 14: X on DualShock3
-    vehicle->setAccel(0.1);
-  } else if(buttonMask & 8192) { //button 13: O on DualShock3
-    vehicle->setAccel(-0.1);
-  } else {
-    vehicle->setAccel(0.0);
-  }
-  if(buttonMask & 256 && buttonMask & 512) { //256:L2, 512: R2
-    vehicle->setAirBrake(0.0001);
-  } else if(buttonMask & 256) { //TODO: left and right airbrake
-    vehicle->setAirBrake(0.00005);
-  } else if(buttonMask & 512) {
-    vehicle->setAirBrake(0.00005);
-  } else {
-    vehicle->setAirBrake(0.0);
-  }
-	//cout << x << endl;
-  vehicle->turnRight(x/500);
-}
-
 void stepVehicle(int x) {
-	//call at beginning for consistency..
-	int newTime =glutGet(GLUT_ELAPSED_TIME);
-	int timeDif = newTime - lastTimeStep;
-    vehicle->step(0.01 * timeDif/10.0);
+  //call at beginning for consistency..
+  int newTime =glutGet(GLUT_ELAPSED_TIME);
+  int timeDif = newTime - lastTimeStep;
+  vehicle->step(0.01 * timeDif/10.0);
+  
+  p_camera = vehicle->cameraPos();
+  l_camera = vehicle->cameraLookAt();
+  u_camera = vehicle->getUp();
 
-
-    p_camera = vehicle->cameraPos();
-    l_camera = vehicle->cameraLookAt();
-    u_camera = vehicle->getUp();
-
-    //p_light = vehicle->lightPos();
-    l_light = vehicle->worldSpacePos();
-
-	//redo this every 10ms
-	lastTimeStep = newTime;
+  //p_light = vehicle->lightPos();
+  l_light = vehicle->worldSpacePos();
+  
+  //redo this every 10ms
+  lastTimeStep = newTime;
   glutTimerFunc(20,stepVehicle, 0);
 
 }
@@ -898,9 +856,6 @@ void initialize() {
   glFrontFace(GL_CCW);
   glHint(GL_PERSPECTIVE_CORRECTION_HINT,GL_NICEST);
 	
-
-
-
   if (GLEW_ARB_vertex_shader && GLEW_ARB_fragment_shader)
     printf("Ready for GLSL\n");
   else {
@@ -920,20 +875,12 @@ void initialize() {
   scatterShade = new ScatterShader("shaders/ScatteringVertexShader.c", "shaders/ScatteringFragmentShader.c");
   darkShade = new GeometryShader("shaders/SimpleDarkVertexShader.c", "shaders/SimpleDarkFragmentShader.c");
   
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////sweep = new Sweep(argv[1]);
   sweep = new Sweep("sweep.trk");
   
   //load the default render options
   renderOpt = RenderOptions();
-  //but for the sake of coolness we'll display the blurred color depth buffer by default
   renderOpt.setDepthBufferOption(DISPLAY_DEPTH_SQUARED_COMPLETE_BUFFER);
   
-  //hacky quicky way to load a background texture
-  string bg = "lantern1.png";
-  //if(argc > 2)
-  //  bg = argv[2];
-  loadTexture(bg,bgText);
-
   vehicle = new Vehicle(sweep);
   vehicle->mesh->loadFile("test.obj");
   vehicle->mesh->loadTextures("test.png","test.png");

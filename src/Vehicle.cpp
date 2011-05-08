@@ -57,10 +57,9 @@ void Vehicle::setVelocityScalar(double mag) {
 
 void Vehicle::step(double amount) {
   
-  turnCurrentValue = turnTargetValue - pow(TURNING_INERTIA, amount) * (turnTargetValue - turnCurrentValue);
-  cout << turnCurrentValue << endl;
-  
   //turn
+  //Linear term because TURNING_INERTIA loses effect at small amounts and you "drift" for a while. It approaches asymptotic zero, but slower than a linear term. Without a linear term, you drift for a long time, especially at smaller amount values. tl;dr: keep it.
+  turnCurrentValue = turnTargetValue - pow(TURNING_INERTIA, amount) * (turnTargetValue - turnCurrentValue) * 0.98;
   quat qRot = quat::axisAngle(up, turnCurrentValue*amount);
   acceleration = qRot.rotate(acceleration);
 
