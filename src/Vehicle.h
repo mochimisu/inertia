@@ -7,6 +7,8 @@
 #include "algebra3.h"
 #include "functions.h"
 
+#include <limits>
+
 #define TURNING_INERTIA 0.01
 
 class Mesh;

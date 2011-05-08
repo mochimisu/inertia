@@ -1,16 +1,16 @@
 #if !defined(AL_ALUT_H)
 #define AL_ALUT_H
 
-#if defined(_MSC_VER)
+//#if defined(_MSC_VER ||1)
 #include <alc.h>
 #include <al.h>
-#elif defined(__APPLE__)
-#include <OpenAL/alc.h>
-#include <OpenAL/al.h>
-#else
-#include <AL/al.h>
-#include <AL/alc.h>
-#endif
+//#elif defined(__APPLE__)
+//#include <OpenAL/alc.h>
+//#include <OpenAL/al.h>
+//#else
+//#include <AL/al.h>
+//#include <AL/alc.h>
+//#endif
 
 #if defined(__cplusplus)
 extern "C" {
