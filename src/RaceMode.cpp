@@ -936,7 +936,7 @@ void initialize() {
 
   vehicle = new Vehicle(sweep);
   vehicle->mesh->loadFile("test.obj");
-  vehicle->mesh->loadTextures("unnamed_object1_auv.bmp","unnamed_object1_auv.bmp");
+  vehicle->mesh->loadTextures("test.png","test.png");
   vehicle->mesh->centerAndScale(4);
 
   //Lap time 
