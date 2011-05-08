@@ -184,7 +184,7 @@ Sweep::Sweep(string filename) : globalTwist(0), globalAzimuth(0) {
   pathPts.clear();
   TrackGenerator trkGen;
   vector<vec3> controlPts = trkGen.getControlPts();
-  for (int i = 0; i < controlPts.size(); i++) {
+  for (unsigned int i = 0; i < controlPts.size(); i++) {
 	  PathPoint newPt(controlPts[i]);
 	  pathPts.push_back(newPt);
   }

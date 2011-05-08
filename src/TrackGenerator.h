@@ -241,7 +241,7 @@ public:
 		 */
 
 		// First, randomly assign heights
-		for (int i = 0; i < controlPts.size(); i++) {
+		for (unsigned int i = 0; i < controlPts.size(); i++) {
 			controlPts[i][1] = RAND * 20 + 5;
 		}
 
@@ -266,7 +266,7 @@ public:
 		}
 		double xMid = (xMax + xMin) / 2;
 		double zMid = (zMax + zMin) / 2;
-		for (int i = 0; i < controlPts.size(); i++) {
+		for (unsigned int i = 0; i < controlPts.size(); i++) {
 			controlPts[i][0] -= xMid;
 			controlPts[i][2] -= zMid;
 		}

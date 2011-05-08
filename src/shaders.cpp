@@ -8,7 +8,11 @@ char *textFileRead(const char *fn) {
   int count=0;
 
   if (fn != NULL) {
+#ifdef WIN32
+	fopen_s(&fp, fn, "rt");
+#else
     fp = fopen(fn,"rt");
+#endif
 
     if (fp != NULL) {
 

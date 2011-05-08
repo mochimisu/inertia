@@ -44,7 +44,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>freealut-1.1.0-bin\include\AL;C:\Program Files (x86)\OpenAL 1.1 SDK\include;glew\include;FreeImage\Dist;glut-3.7.6-bin;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>ftgl-2.1.3~rc5\src;freealut-1.1.0-bin\include\AL;C:\Program Files (x86)\OpenAL 1.1 SDK\include;glew\include;FreeImage\Dist;glut-3.7.6-bin;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -55,8 +55,8 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>OpenAL32.lib;Alut.lib;glew32.lib;FreeImage.lib;glut32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>freealut-1.1.0-bin\lib;C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;glew\lib;FreeImage\Dist;glut-3.7.6-bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ftgl.lib;freetype.lib;OpenAL32.lib;Alut.lib;glew32.lib;FreeImage.lib;glut32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>ftgl-2.1.3~rc5\msvc\Build;lib;freealut-1.1.0-bin\lib;C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;glew\lib;FreeImage\Dist;glut-3.7.6-bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -67,7 +67,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>freealut-1.1.0-bin\include\AL;C:\Program Files (x86)\OpenAL 1.1 SDK\include;glew\include;FreeImage\Dist;glut-3.7.6-bin;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>ftgl-2.1.3~rc5\src;freealut-1.1.0-bin\include\AL;C:\Program Files (x86)\OpenAL 1.1 SDK\include;glew\include;FreeImage\Dist;glut-3.7.6-bin;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>
@@ -76,8 +76,8 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>OpenAL32.lib;Alut.lib;glew32.lib;FreeImage.lib;glut32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>freealut-1.1.0-bin\lib;C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;glew\lib;FreeImage\Dist;glut-3.7.6-bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ftgl.lib;freetype.lib;OpenAL32.lib;Alut.lib;glew32.lib;FreeImage.lib;glut32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>ftgl-2.1.3~rc5\msvc\Build;lib;freealut-1.1.0-bin\lib;C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;glew\lib;FreeImage\Dist;glut-3.7.6-bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>

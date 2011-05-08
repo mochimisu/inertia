@@ -7,6 +7,7 @@
 #define CONSOLE_H_
 
 #include "global.h"
+#include "freetype.h"
 
 #include <list>
 
@@ -14,6 +15,8 @@ class Console {
 public:
 	//instantiate.
 	Console();
+	//destroy.
+	~Console();
 	//configure.
 	void config(float x, float y, int numLines, float lineInterval);
 	//output.

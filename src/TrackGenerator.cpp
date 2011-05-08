@@ -48,7 +48,7 @@ bool TrackTreeComparator::operator() (TrackTreeNode* t1, TrackTreeNode* t2) {
  * A function that tests if a candidate point is okay.
  */
 bool TrackTreeNode::allGood(vec2 newXZ) {
-	for (int i = 0; i < neighbors.size(); i++) {
+	for (unsigned int i = 0; i < neighbors.size(); i++) {
 		if (angleBetween(xz, neighbors[i]->xz, newXZ) < M_PI / 3) {
 			return false;
 		}

@@ -1,5 +1,6 @@
 #include "main.h"
 #include "functions.h"
+#include <FTGL/ftgl.h>
 
 // Buffers hold sound data.
 ALuint noiseBuffer;
@@ -107,6 +108,11 @@ GLuint scatterFboId;
 //==USER INTERACTION/GAMEPLAY
 int lastTimeStep;
 int lapStartTime;
+//freetype::font_data our_font;
+//OGLFT::Monochrome* font;
+FTGLPixmapFont font("impact.ttf");
+double cnt1=0;
+
 
 int curRenderScene=0;
 
@@ -207,7 +213,11 @@ void drawString(string str, float x, float y) {
 			char c = *i;
 			glutBitmapCharacter(font, c);
 		}
-	}
+	glPushMatrix();
+	//freetype::print(our_font, 320, 200, "Active FreeType Text - %7.2f", cnt1);
+	glPopMatrix();
+	cnt1+=0.015f;
+}
 
 /* 
  * light scattering stuff. testingg!!!!!
@@ -690,7 +700,9 @@ void drawObjects(GeometryShader * curShade) {
                         translation3D(vehLoc).transpose();
 
   pushMat4(transformation);
+
   vehicle->draw(curShade);
+  font.Render("Hello World!");
   //glutSolidCube(1);
   popTransform();
 //popTransform();
@@ -761,6 +773,7 @@ void renderScene() {
     
   //==FOURTH RENDER: MAIN RENDER (without light scattering)
   // Now rendering from the camera POV, using the FBO to generate shadows
+
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);
 	
   glViewport(0,0,renderWidth,renderHeight);
@@ -774,6 +787,8 @@ void renderScene() {
   glUniform1iARB(shade->getShadowMapAttrib(),7);
   glActiveTextureARB(GL_TEXTURE7);
   glBindTexture(GL_TEXTURE_2D,colorTextureId);
+
+
 
   //declared in third pass
   //setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2],u_camera[0],u_camera[1],u_camera[2],1,120);
@@ -827,13 +842,16 @@ void renderScene() {
   glPopMatrix();
   glDisable(GL_BLEND);
   
+  font.Render("Hello World!");
   drawHud();
   
   if(renderOpt.isDepthBuffer())
     drawDebugBuffer(renderOpt.getDepthBufferOption());
+  //cout << font << endl;
+  //font->draw(250,250, "THIS IS SAMPLE TEXT");
 
+  //font.Render("Hello World!");
   glutSwapBuffers();
-    
 }
 
 
@@ -972,7 +990,8 @@ void renderScene2() {
   
   if(renderOpt.isDepthBuffer())
     drawDebugBuffer(renderOpt.getDepthBufferOption());
-
+  //cout << font << endl;
+  //font->draw(10,250, "THIS IS SAMPLE TEXT");
   glutSwapBuffers();
     
 }
@@ -1002,7 +1021,7 @@ void processNormalKeys(unsigned char key, int x, int y) {
     switch(curRenderScene) {
       case 0:
         glutDisplayFunc(renderScene2);
-        glutIdleFunc(renderScene2);
+        glutIdleFunc( renderScene2);
         break;
       case 1:
         glutDisplayFunc(renderScene);
@@ -1235,7 +1254,25 @@ int main(int argc,char** argv) {
   lastTimeStep = glutGet(GLUT_ELAPSED_TIME);
   stepVehicle(0);
 
+
+  //our_font.init("impact.ttf", 16);
+  //font = new OGLFT::Monochrome( "impact.ttf", 24 );
+  //cout << font << endl;
+  //if (font == 0 || !font->isValid()) {
+	//  cerr << "font broken" << endl;
+	//  exit(-4);
+  //}
+
   //And Go!
+
+  // Create a pixmap font from a TrueType file.
+
+  // If something went wrong, bail out.
+  if(font.Error())
+	  return -1;
+
+  // Set the font size and render a small text.
+  font.FaceSize(72);
   alSourcePlay(musicSource);
   glutMainLoop();
 }

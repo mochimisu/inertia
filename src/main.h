@@ -31,11 +31,12 @@
 #include <float.h>
 #include <ctime>
 
-//#include <conio.h>
+// Sound support
 #include <stdlib.h>
 #include <al.h>
 #include <alc.h>
-//#include <alu.h>
 #include <alut.h>
+
+//#include "freetype.h"
 
 #endif /* MAIN_H_ */
