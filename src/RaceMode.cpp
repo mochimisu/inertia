@@ -780,9 +780,11 @@ void processNormalKeysUp(unsigned char key, int x, int y) {
 void processSpecialKeys(int key, int x, int y) {
   switch(key) {
     case GLUT_KEY_UP:
+      alSourcePlay(noiseSource);
       vehicle->setAccel(0.2);
       break;
     case GLUT_KEY_DOWN:
+      alSourcePlay(noiseSource);
       vehicle->setAccel(-0.1);
       break;
     case GLUT_KEY_LEFT:
@@ -798,6 +800,7 @@ void processSpecialKeysUp(int key, int x, int y) {
   switch(key) {
     case GLUT_KEY_UP:
     case GLUT_KEY_DOWN:
+      alSourceStop(noiseSource);
       vehicle->setAccel(0.0);
       break;
     case GLUT_KEY_LEFT:
