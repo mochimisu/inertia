@@ -31,7 +31,7 @@
 #include <float.h>
 #include <ctime>
 
-#include <conio.h>
+//#include <conio.h>
 #include <stdlib.h>
 #include <al.h>
 #include <alc.h>

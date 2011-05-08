@@ -16,15 +16,15 @@ SOURCES := $(wildcard ./src/UCB/*.cpp) $(wildcard ./src/*.cpp)
 ifeq ($(shell sw_vers 2>/dev/null | grep Mac | awk '{ print $$2}'),Mac)
 	#Assume Mac
 	INCLUDE := -I./include/ -I/usr/X11/include \
-		-I"lib/mac/SDL.framework/Headers"
+		-I"lib/mac/OpenAL.framework/Headers" \
+		-I"freealut-1.1.0-bin/include/AL"
 	LIBRARY := -L./lib/mac/ \
     	-L"/System/Library/Frameworks/OpenGL.framework/Libraries" \
     	-lGL -lGLU -lm -lstdc++
-	FRAMEWORK := -framework GLUT -framework OpenGL -framework SDL -framework Cocoa
+	FRAMEWORK := -framework GLUT -framework OpenGL -framework OpenAL -framework Cocoa
 	MACROS := -DOSX
 	PLATFORM := Mac
-    SDLM := "devel-lite/SDLMain.m"
-    FRAMEWORK_PATH := -F"lib/mac"
+	FRAMEWORK_PATH := -F"lib/mac"
 else
 	#Assume X11
 	INCLUDE := -I./include/ -I/usr/X11R6/include -I/sw/include \
@@ -34,8 +34,7 @@ else
 	FRAMEWORK := 
 	MACROS := 
 	PLATFORM := *Nix
-    SDLM := 
-    FRAMEWORK_PATH := 
+	FRAMEWORK_PATH := 
 endif
 
 #Basic Stuff -----------------------------
@@ -43,7 +42,7 @@ endif
 CC := gcc
 CXX := g++
 CXXFLAGS := -g -Wall -O3 -fmessage-length=0 $(INCLUDE) $(MACROS)
-LDFLAGS := $(SDLM) $(FRAMEWORK) $(LIBRARY)
+LDFLAGS := $(FRAMEWORK) $(LIBRARY)
 #-----------------------------------------
 
 %.o : %.cpp

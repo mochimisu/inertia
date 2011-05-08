@@ -106,13 +106,13 @@ ALUT_API ALint ALUT_APIENTRY alutGetMinorVersion (void);
 ALUT_API ALboolean ALUT_APIENTRY alutSleep (ALfloat duration);
 
 /* Nasty Compatibility stuff, WARNING: THESE FUNCTIONS ARE STRONGLY DEPRECATED */
-#if defined(__APPLE__)
-ALUT_API ALUT_ATTRIBUTE_DEPRECATED void ALUT_APIENTRY alutLoadWAVFile (ALbyte *fileName, ALenum *format, void **data, ALsizei *size, ALsizei *frequency);
-ALUT_API ALUT_ATTRIBUTE_DEPRECATED void ALUT_APIENTRY alutLoadWAVMemory (ALbyte *buffer, ALenum *format, void **data, ALsizei *size, ALsizei *frequency);
-#else
+//#if defined(__APPLE__)
+//ALUT_API ALUT_ATTRIBUTE_DEPRECATED void ALUT_APIENTRY alutLoadWAVFile (ALbyte *fileName, ALenum *format, void **data, ALsizei *size, ALsizei *frequency);
+//ALUT_API ALUT_ATTRIBUTE_DEPRECATED void ALUT_APIENTRY alutLoadWAVMemory (ALbyte *buffer, ALenum *format, void **data, ALsizei *size, ALsizei *frequency);
+//#else
 ALUT_API ALUT_ATTRIBUTE_DEPRECATED void ALUT_APIENTRY alutLoadWAVFile (ALbyte *fileName, ALenum *format, void **data, ALsizei *size, ALsizei *frequency, ALboolean *loop);
 ALUT_API ALUT_ATTRIBUTE_DEPRECATED void ALUT_APIENTRY alutLoadWAVMemory (ALbyte *buffer, ALenum *format, void **data, ALsizei *size, ALsizei *frequency, ALboolean *loop);
-#endif
+//#endif
 ALUT_API ALUT_ATTRIBUTE_DEPRECATED void ALUT_APIENTRY alutUnloadWAV (ALenum format, ALvoid *data, ALsizei size, ALsizei frequency);
 
 #if defined(__MWERKS_)
