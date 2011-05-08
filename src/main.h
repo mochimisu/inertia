@@ -23,6 +23,9 @@
 #include "RenderOptions.h"
 #include "Vehicle.h"
 
+#include "functions.h"
+#include "GameMode.h"
+
 //#include "GL/gl.h"
 
 #include <stdio.h>

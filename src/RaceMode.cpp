@@ -1,6 +1,4 @@
 #include "main.h"
-#include "functions.h"
-#include "GameMode.h"
 
 // Constants (some issues with aspect ratio; and i think defines will speed some stuff up. keep it?)
 const float shadowMapCoef = 0.5;
