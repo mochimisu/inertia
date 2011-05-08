@@ -84,6 +84,8 @@ GLuint scatterFboId;
 int lastTimeStep;
 int lapStartTime;
 
+int curRenderScene=0;
+
 //draw text (temporarily here until i figure out sdl
 void drawString(string str, float x, float y) {
 	void * font = GLUT_BITMAP_HELVETICA_10;
@@ -581,9 +583,7 @@ void drawObjects(GeometryShader * curShade) {
 //popTransform();
 //popTransform();
 
-}
-
-void renderScene() {
+}void renderScene() {
 
   //==CAMERA
 
@@ -721,6 +721,147 @@ void renderScene() {
     
 }
 
+
+void renderScene2() {
+
+  //==CAMERA
+
+  //==FIRST RENDER: DEPTH BUFFER
+  //Render from the light POV to a FBO, store depth and square depth in a 32F frameBuffer
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,shadowFboId);
+	
+  //Using the depth shader to do so
+  glUseProgramObjectARB(depthShade->getProgram());
+  // In the case we render the shadowmap to a higher resolution, the viewport must be modified accordingly.
+  glViewport(0,0,renderWidth * shadowMapCoef,renderHeight* shadowMapCoef);
+  //try to make shadow view "bigger" than normal view
+
+  // Clear previous frame values
+  glClearColor(0,0,0,1.0f);
+  glClear( GL_COLOR_BUFFER_BIT |  GL_DEPTH_BUFFER_BIT);
+  setupMatrices(p_light[0],p_light[1],p_light[2],l_light[0],l_light[1],l_light[2],0,1,0,10,100,120);
+	
+  // Culling switching, rendering only backface, this is done to avoid self-shadowing and improve efficiency
+  glCullFace(GL_FRONT);
+  //draw objects using the depth shader
+  drawObjects(depthShade);
+	
+  //cout << "0 " << glGetError() << endl;
+  glGenerateMipmapEXT(GL_TEXTURE_2D);
+  //Save modelview/projection matrice into texture7, also add a biais
+  setTextureMatrix();
+
+  //==SECOND (and a half) RENDER: DOUBLE PASS GAUSSIAN BLUR
+  blurShadowMap();
+    
+
+  //==THIRD RENDER: PATH TRACED LIGHT SCATTERING EFFECT (CREPUSCULAR RAYS)
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,scatterFboId);
+	
+  glViewport(0,0,lightScatterWidth,lightScatterHeight);
+    
+  // Clear previous frame values
+  //glClearColor(0,0,0,1.0f);
+  glClearColor(1,1,1,1.0f);
+
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  
+  //Using the shadow shader
+  glUseProgramObjectARB(darkShade->getProgram());
+  glBindTexture(GL_TEXTURE_2D,colorTextureId);
+	
+  setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2],u_camera[0],u_camera[1],u_camera[2],0.5,120,70);
+  
+  glCullFace(GL_BACK);
+   
+  //Draw light
+  glPushMatrix();
+  glTranslatef(p_light[0],p_light[1],p_light[2]);
+  glColor4f(1.0,1.0,1.0,1.0);
+  glutSolidSphere(25,10,10);
+  glPopMatrix();
+
+  //Draw objects in black
+  glColor4f(0.0f,0.0f,0.0f,1);
+  drawObjects(darkShade);
+    
+  //==FOURTH RENDER: MAIN RENDER (without light scattering)
+  // Now rendering from the camera POV, using the FBO to generate shadows
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);
+	
+  glViewport(0,0,renderWidth,renderHeight);
+    
+  // Clear previous frame values
+  glClearColor(.764705882,.890196078,1,1.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  
+  //Using the shadow shader
+  glUseProgramObjectARB(shade->getProgram());
+  glUniform1iARB(shade->getShadowMapAttrib(),7);
+  glActiveTextureARB(GL_TEXTURE7);
+  glBindTexture(GL_TEXTURE_2D,colorTextureId);
+
+  //declared in third pass
+  //setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2],u_camera[0],u_camera[1],u_camera[2],1,120);
+  
+  //okay seriously, why do we have vec and float[] is required by openGL -_-
+  float tempLight[4] = {p_light[0], p_light[1], p_light[2], 1};
+  glLightfv(GL_LIGHT0, GL_POSITION, tempLight);
+  
+  glCullFace(GL_BACK);
+  //draw objects using our shadow shader
+  drawObjects(shade);
+    
+    
+  //==FIFTH PASS: LIGHT SCATTERING OVERLAY
+  //uses main screen
+  //glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);
+  //glViewport(0,0,renderWidth,renderHeight);
+  glClear (GL_DEPTH_BUFFER_BIT );
+	
+  //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glUseProgramObjectARB(scatterShade->getProgram());
+  //default values
+
+  vec2 cameraSpaceLightPos = getLightScreenCoor();
+  glUniform1fARB(scatterShade->getExposureAttrib(),0.0034);
+  glUniform1fARB(scatterShade->getDecayAttrib(),1.0);
+  glUniform1fARB(scatterShade->getDensityAttrib(),0.84);
+  glUniform1fARB(scatterShade->getWeightAttrib(),5.65);
+  glUniform1iARB(scatterShade->getTextureAttrib(),0);
+  glUniform2fARB(scatterShade->getLightPositionOnScreenAttrib(),cameraSpaceLightPos[0],cameraSpaceLightPos[1]);
+
+  glActiveTextureARB(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D,scatterTextureId);
+  glEnable(GL_BLEND); //blend the resulting render
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(-renderWidth/2,renderWidth/2,-renderHeight/2,renderHeight/2,1,20);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  glColor4f(1.0f,1.0f,1.0f,1); //rectangle to display texture
+  glPushMatrix();
+  glTranslated(0,0,-5);
+  glBegin(GL_QUADS);
+  glTexCoord2d(0,0);glVertex3f(-renderWidth/2,-renderHeight/2,0);
+  glTexCoord2d(1,0);glVertex3f(renderWidth/2,-renderHeight/2,0);
+  glTexCoord2d(1,1);glVertex3f(renderWidth/2,renderHeight/2,0);
+  glTexCoord2d(0,1);glVertex3f(-renderWidth/2,renderHeight/2,0);
+  glEnd();
+  glPopMatrix();
+  glDisable(GL_BLEND);
+  
+  drawHud();
+  
+  if(renderOpt.isDepthBuffer())
+    drawDebugBuffer(renderOpt.getDepthBufferOption());
+
+  glutSwapBuffers();
+    
+}
+
 /*
  * Interface Stuff
  */
@@ -742,6 +883,22 @@ void processNormalKeys(unsigned char key, int x, int y) {
   case ' ':
     vehicle->setAirBrake(0.00008);
     break;
+  case 'a':
+    switch(curRenderScene) {
+      case 0:
+        glutDisplayFunc(renderScene2);
+        glutIdleFunc(renderScene2);
+        break;
+      case 1:
+        glutDisplayFunc(renderScene);
+        glutIdleFunc(renderScene);
+        break;
+    }
+
+    curRenderScene = (curRenderScene+1)%2;
+          
+  break;
+        
   }
 }
 
@@ -848,7 +1005,7 @@ void stepVehicle(int x) {
 
 	//redo this every 10ms
 	lastTimeStep = newTime;
-  glutTimerFunc(10,stepVehicle, 0);
+  glutTimerFunc(20,stepVehicle, 0);
 
 }
 
