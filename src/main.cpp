@@ -2,10 +2,12 @@
 #include "functions.h"
 
 // Buffers hold sound data.
-ALuint Buffer;
+ALuint noiseBuffer;
+ALuint musicBuffer;
 
 // Sources are points emitting sound.
-ALuint Source;
+ALuint noiseSource;
+ALuint musicSource;
 
 // Position of the source sound.
 ALfloat SourcePos[] = { 0.0, 0.0, 0.0 };
@@ -117,25 +119,62 @@ ALboolean LoadALData()
     ALsizei freq;
     ALboolean loop;
     // Load wav data into a buffer.
-    alGenBuffers(1, &Buffer);
+    alGenBuffers(1, &musicBuffer);
     if (alGetError() != AL_NO_ERROR)
         return AL_FALSE;
 
-    alutLoadWAVFile("11k16bitpcm.wav", &format, &data, &size, &freq, &loop);
-    alBufferData(Buffer, format, data, size, freq);
+    alutLoadWAVFile("race2.wav", &format, &data, &size, &freq, &loop);
+    alBufferData(musicBuffer, format, data, size, freq);
     alutUnloadWAV(format, data, size, freq);
     // Bind buffer with a source.
-    alGenSources(1, &Source);
+    alGenSources(1, &musicSource);
 
     if (alGetError() != AL_NO_ERROR)
         return AL_FALSE;
 
-    alSourcei (Source, AL_BUFFER,   Buffer   );
-    alSourcef (Source, AL_PITCH,    1.0f     );
-    alSourcef (Source, AL_GAIN,     1.0f     );
-    alSourcefv(Source, AL_POSITION, SourcePos);
-    alSourcefv(Source, AL_VELOCITY, SourceVel);
-    alSourcei (Source, AL_LOOPING,  loop     );
+    alSourcei (musicSource, AL_BUFFER,   musicBuffer   );
+    alSourcef (musicSource, AL_PITCH,    1.0f     );
+    alSourcef (musicSource, AL_GAIN,     1.0f     );
+    alSourcefv(musicSource, AL_POSITION, SourcePos);
+    alSourcefv(musicSource, AL_VELOCITY, SourceVel);
+    alSourcei (musicSource, AL_LOOPING,  loop     );
+    // Do another error check and return.
+    if (alGetError() == AL_NO_ERROR)
+        return AL_TRUE;
+
+    return AL_FALSE;
+}
+
+ALboolean LoadALData2()
+{
+    // Variables to load into.
+
+    ALenum format;
+    ALsizei size;
+    ALvoid* data;
+    ALsizei freq;
+    ALboolean loop;
+    // Load wav data into a buffer.
+    alGenBuffers(1, &noiseBuffer);
+    if (alGetError() != AL_NO_ERROR)
+        return AL_FALSE;
+
+    alutLoadWAVFile("White_Noise.wav", &format, &data, &size, &freq, &loop);
+    alBufferData(noiseBuffer, format, data, size, freq);
+    alutUnloadWAV(format, data, size, freq);
+    // Bind buffer with a source.
+    alGenSources(1, &noiseSource);
+
+    if (alGetError() != AL_NO_ERROR)
+        return AL_FALSE;
+
+    alSourcei (noiseSource, AL_BUFFER,   noiseBuffer   );
+    cout << alGetString(alGetError()) << endl;
+    alSourcef (noiseSource, AL_PITCH,    1.0f     );
+    alSourcef (noiseSource, AL_GAIN,     1.0f     );
+    alSourcefv(noiseSource, AL_POSITION, SourcePos);
+    alSourcefv(noiseSource, AL_VELOCITY, SourceVel);
+    alSourcei (noiseSource, AL_LOOPING,  loop     );
     // Do another error check and return.
     if (alGetError() == AL_NO_ERROR)
         return AL_TRUE;
@@ -152,8 +191,10 @@ void SetListenerValues()
 
 void KillALData()
 {
-    alDeleteBuffers(1, &Buffer);
-    alDeleteSources(1, &Source);
+    alDeleteBuffers(2, &noiseBuffer);
+    alDeleteSources(2, &noiseSource);
+    alDeleteBuffers(1, &musicBuffer);
+    alDeleteSources(1, &musicSource);
     alutExit();
 }
 
@@ -828,9 +869,11 @@ void processNormalKeysUp(unsigned char key, int x, int y) {
 void processSpecialKeys(int key, int x, int y) {
   switch(key) {
     case GLUT_KEY_UP:
+      alSourcePlay(noiseSource);
       vehicle->setAccel(0.2);
       break;
     case GLUT_KEY_DOWN:
+      alSourcePlay(noiseSource);
       vehicle->setAccel(-0.1);
       break;
     case GLUT_KEY_LEFT:
@@ -846,6 +889,7 @@ void processSpecialKeysUp(int key, int x, int y) {
   switch(key) {
     case GLUT_KEY_UP:
     case GLUT_KEY_DOWN:
+      alSourceStop(noiseSource);
       vehicle->setAccel(0.0);
       break;
     case GLUT_KEY_LEFT:
@@ -935,12 +979,15 @@ int main(int argc,char** argv) {
   // Load the wav data.
   if (LoadALData() == AL_FALSE)
     return -1;
+  SetListenerValues();
+  if (LoadALData2() == AL_FALSE)
+    return -2;
 
   SetListenerValues();
 
   // Setup an exit procedure.
   atexit(KillALData);
-  alSourcePlay(Source);
+  alSourcePlay(musicSource);
 
 
   glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH);
