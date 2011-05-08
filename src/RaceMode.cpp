@@ -499,7 +499,7 @@ void drawHud() {
   drawString(buff.str(),-renderWidth*3.8/8,-renderHeight*3.3/8); 
 
   buff.str("");
-  int msTime = glutGet(GLUT_ELAPSED_TIME) - lapStartTime;
+  int msTime = glutGet(GLUT_ELAPSED_TIME) - vehicle->getLapStartTime();
   int sTime = msTime/1000;
   int mTime  = sTime/60;
   buff << mTime << ".";
@@ -516,15 +516,17 @@ void drawHud() {
 
   //Record [TODO: RECORD]
   buff.str("");
-  msTime = glutGet(GLUT_ELAPSED_TIME) - lapStartTime;
-  sTime = msTime/1000;
-  mTime  = sTime/60;
-  buff << "Lap Record:";
-  buff << mTime << ".";
-  buff << (sTime%60) << ".";
-  buff << (msTime%1000);
-  glColor4f(1,1,1,0.75);
-  drawString(buff.str(),renderWidth*3.2/8,renderHeight*3.5/8);
+  msTime = vehicle->getBestLapTime();
+  if(msTime != -1) {
+    sTime = msTime/1000;
+    mTime  = sTime/60;
+    buff << "Lap Record:";
+    buff << mTime << ".";
+    buff << (sTime%60) << ".";
+    buff << (msTime%1000);
+    glColor4f(1,1,1,0.75);
+    drawString(buff.str(),renderWidth*3.2/8,renderHeight*3.5/8);
+  }
 
   //Name [TODO: CENTER]
   buff.str("");

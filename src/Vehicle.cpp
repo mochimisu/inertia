@@ -22,7 +22,7 @@ Vehicle::Vehicle(Sweep * sw) {
   this->lap = 0;
   this->energy = 100.0;
 
-  this->bestTime = numeric_limits<float>::infinity();
+  this->bestLapTime = -1;
   this->lapStartTime = 0;
 
   this->turnTargetValue = 0;
@@ -132,11 +132,15 @@ void Vehicle::step(double amount) {
 
       tempPos = sweep->sample(tempTime).point;
     } while (tempDist < distance);
-/*
     if(tempTime < pos[0]) {
       ++lap;
+      int newTime = glutGet(GLUT_ELAPSED_TIME);
+      int curLapTime = newTime - lapStartTime;
+      if(curLapTime < bestLapTime || bestLapTime == -1) {
+        bestLapTime = curLapTime;
+      }
+      lapStartTime = newTime;
     }
-*/
   } else if(distance < -0.00001) {
     do {
       tempTime -= 0.0000025;
