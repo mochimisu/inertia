@@ -31,6 +31,11 @@
 #include <float.h>
 #include <ctime>
 
-#include <SDL.h>
+#include <conio.h>
+#include <stdlib.h>
+#include <al.h>
+#include <alc.h>
+//#include <alu.h>
+#include <alut.h>
 
 #endif /* MAIN_H_ */

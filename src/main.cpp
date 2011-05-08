@@ -1,6 +1,28 @@
 #include "main.h"
 #include "functions.h"
 
+// Buffers hold sound data.
+ALuint Buffer;
+
+// Sources are points emitting sound.
+ALuint Source;
+
+// Position of the source sound.
+ALfloat SourcePos[] = { 0.0, 0.0, 0.0 };
+
+// Velocity of the source sound.
+ALfloat SourceVel[] = { 0.0, 0.0, 0.0 };
+
+
+// Position of the listener.
+ALfloat ListenerPos[] = { 0.0, 0.0, 0.0 };
+
+// Velocity of the listener.
+ALfloat ListenerVel[] = { 0.0, 0.0, 0.0 };
+
+// Orientation of the listener. (first 3 elements are "at", second 3 are "up")
+ALfloat ListenerOri[] = { 0.0, 0.0, -1.0,  0.0, 1.0, 0.0 };
+
 // Constants (some issues with aspect ratio; and i think defines will speed some stuff up. keep it?)
 const float renderWidth = 1024.0;
 const float renderHeight = 768.0;
@@ -83,6 +105,57 @@ GLuint scatterFboId;
 //==USER INTERACTION/GAMEPLAY
 int lastTimeStep;
 int lapStartTime;
+
+
+ALboolean LoadALData()
+{
+    // Variables to load into.
+
+    ALenum format;
+    ALsizei size;
+    ALvoid* data;
+    ALsizei freq;
+    ALboolean loop;
+    // Load wav data into a buffer.
+    alGenBuffers(1, &Buffer);
+    if (alGetError() != AL_NO_ERROR)
+        return AL_FALSE;
+
+    alutLoadWAVFile("11k16bitpcm.wav", &format, &data, &size, &freq, &loop);
+    alBufferData(Buffer, format, data, size, freq);
+    alutUnloadWAV(format, data, size, freq);
+    // Bind buffer with a source.
+    alGenSources(1, &Source);
+
+    if (alGetError() != AL_NO_ERROR)
+        return AL_FALSE;
+
+    alSourcei (Source, AL_BUFFER,   Buffer   );
+    alSourcef (Source, AL_PITCH,    1.0f     );
+    alSourcef (Source, AL_GAIN,     1.0f     );
+    alSourcefv(Source, AL_POSITION, SourcePos);
+    alSourcefv(Source, AL_VELOCITY, SourceVel);
+    alSourcei (Source, AL_LOOPING,  loop     );
+    // Do another error check and return.
+    if (alGetError() == AL_NO_ERROR)
+        return AL_TRUE;
+
+    return AL_FALSE;
+}
+
+void SetListenerValues()
+{
+    alListenerfv(AL_POSITION,    ListenerPos);
+    alListenerfv(AL_VELOCITY,    ListenerVel);
+    alListenerfv(AL_ORIENTATION, ListenerOri);
+}
+
+void KillALData()
+{
+    alDeleteBuffers(1, &Buffer);
+    alDeleteSources(1, &Source);
+    alutExit();
+}
 
 //draw text (temporarily here until i figure out sdl
 void drawString(string str, float x, float y) {
@@ -855,6 +928,21 @@ void stepVehicle(int x) {
 int main(int argc,char** argv) {
   //Initialize OpenGL
   glutInit(&argc, argv);
+
+  //Initialize OpenAL
+  alutInit(&argc, argv);
+  alGetError(); // zero-out the error status
+  // Load the wav data.
+  if (LoadALData() == AL_FALSE)
+    return -1;
+
+  SetListenerValues();
+
+  // Setup an exit procedure.
+  atexit(KillALData);
+  alSourcePlay(Source);
+
+
   glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH);
   viewport.w = 1024;
   viewport.h = 768;
