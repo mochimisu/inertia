@@ -172,7 +172,7 @@ ALboolean LoadALData2()
     alSourcei (noiseSource, AL_BUFFER,   noiseBuffer   );
     cout << alGetString(alGetError()) << endl;
     alSourcef (noiseSource, AL_PITCH,    1.0f     );
-    alSourcef (noiseSource, AL_GAIN,     1.0f     );
+    alSourcef (noiseSource, AL_GAIN,     0.5f     );
     alSourcefv(noiseSource, AL_POSITION, SourcePos);
     alSourcefv(noiseSource, AL_VELOCITY, SourceVel);
     alSourcei (noiseSource, AL_LOOPING,  AL_TRUE     );
