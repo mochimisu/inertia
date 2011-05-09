@@ -27,9 +27,11 @@ ALfloat ListenerOri[] = { 0.0, 0.0, -1.0,  0.0, 1.0, 0.0 };
 
 //===WINDOW PROPERTIES
 Viewport viewport;
-FTGLTextureFont * evolutionFont = new FTGLTextureFont("Evolution.ttf");
-FTGLTextureFont * digitalNinjaFont = new FTGLTextureFont("DigitalNinja.ttf");
-FTGLTextureFont * accidentalPresidencyFont = new FTGLTextureFont("AccidentalPresidency.ttf");
+FTGLTextureFont * evolutionFont;
+FTGLTextureFont * digitalNinjaFont;
+FTGLTextureFont * accidentalPresidencyFont;
+FTBufferFont * evolutionBufferFont;
+FTBufferFont * accidentalPresidencyBufferFont;
 
 ALboolean LoadALData()
 {
@@ -145,15 +147,6 @@ int main(int argc,char** argv) {
   // Setup an exit procedure.
   atexit(KillALData);
 
-  //FTGL checking
-  //// If something went wrong, bail out.
-  if(evolutionFont->Error())
-	  return -1;
-
-  // Set the font size and render a small text.
-  evolutionFont->FaceSize(36);
-  digitalNinjaFont->FaceSize(27);
-  accidentalPresidencyFont->FaceSize(16);
 
   glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH);
   viewport.w = 1024;
@@ -167,6 +160,26 @@ int main(int argc,char** argv) {
   raceMode.activate();
 
   FreeImage_Initialise();
+  
+  //FTGL checking
+
+  // Set the fonts size and render a small text.
+  evolutionFont = new FTGLTextureFont("Evolution.ttf");
+  digitalNinjaFont = new FTGLTextureFont("DigitalNinja.ttf");
+  accidentalPresidencyFont = new FTGLTextureFont("AccidentalPresidency.ttf");
+  evolutionBufferFont = new FTBufferFont("Evolution.ttf");
+  accidentalPresidencyBufferFont = new FTBufferFont("AccidentalPresidency.ttf");
+
+  evolutionFont->FaceSize(36);
+  evolutionBufferFont->FaceSize(36);
+  digitalNinjaFont->FaceSize(27);
+  accidentalPresidencyFont->FaceSize(16);
+  accidentalPresidencyBufferFont->FaceSize(16);
+
+  
+  //// If something went wrong, bail out.
+  if(evolutionFont->Error())
+	  return -1;
 
   //And Go!
   alSourcePlay(musicSource);

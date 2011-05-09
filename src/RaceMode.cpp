@@ -17,6 +17,8 @@ extern ALuint noiseSource;
 extern FTGLTextureFont * evolutionFont;
 extern FTGLTextureFont * digitalNinjaFont;
 extern FTGLTextureFont * accidentalPresidencyFont;
+extern FTBufferFont * evolutionBufferFont;
+extern FTBufferFont * accidentalPresidencyBufferFont;
 
 //===SCENE DESCRIPTORS
 //Camera position
@@ -431,17 +433,14 @@ void drawHud() {
   glVertex3f(renderWidth/2,renderHeight * 3.8/8,0);
   glVertex3f(renderWidth/2,renderHeight/2,0);
   glVertex3f(-renderWidth/2,renderHeight/2,0);
-  glEnd();
 
   glColor4f(.250980392,.458823529,.631372549,0.1);
 
   //Lap
-  glBegin(GL_QUADS);
   glVertex3f(-renderWidth/2,renderHeight * 3.0/8,0);
   glVertex3f(-renderWidth * 3.4/8,renderHeight * 3.0/8,0);
   glVertex3f(-renderWidth * 3.4/8,renderHeight * 3.8/8,0);
   glVertex3f(-renderWidth/2,renderHeight * 3.8/8,0);
-  glEnd();
 
   //Record (with record to have less branches)
   /*
@@ -450,27 +449,22 @@ void drawHud() {
   glVertex3f(renderWidth/2,renderHeight * 3.0/8,0);
   glVertex3f(renderWidth/2,renderHeight * 3.8/8,0);
   glVertex3f(renderWidth * 2.2/8,renderHeight * 3.8/8,0);
-  glEnd();
-  */
+  */glEnd();
+  
   
   //Energy
-  glBegin(GL_QUADS);
   glVertex3f(-65,renderHeight * 3.0/8,0);
   glVertex3f(65,renderHeight * 3.0/8,0);
   glVertex3f(65,renderHeight * 3.8/8,0);
   glVertex3f(-65,renderHeight * 3.8/8,0);
-  glEnd();
 
   //Lap Time
-  glBegin(GL_QUADS);
   glVertex3f(-renderWidth/2, -renderHeight*4.0/8,0);
   glVertex3f(-renderWidth*2.5/8, -renderHeight*4.0/8,0);
   glVertex3f(-renderWidth*2.5/8, -renderHeight*3.0/8,0);
   glVertex3f(-renderWidth/2, -renderHeight*3.0/8,0);
-  glEnd();
 
   //Velocity
-  glBegin(GL_QUADS);
   glVertex3f(renderWidth*2/8, -renderHeight*4.0/8,0);
   glVertex3f(renderWidth/2, -renderHeight*4.0/8,0);
   glVertex3f(renderWidth/2, -renderHeight*3.0/8,0);
@@ -485,7 +479,7 @@ void drawHud() {
   buff.str("");
   buff << "Velocity";
   glColor4f(.188235294,.474509804,1,0.9);
-  drawString(evolutionFont, buff.str(),renderWidth*2.3/8,-renderHeight*3.4/8 + 5); 
+  drawString(evolutionBufferFont, buff.str(),renderWidth*2.3/8,-renderHeight*3.4/8 + 5); 
 
   //Velocity Bar
   glColor4f(.188235294,.474509804,1,0.5);
@@ -519,7 +513,7 @@ void drawHud() {
   buff.str("");
   buff << "Lap Time";
   glColor4f(1,1,1,0.75);
-  drawString(evolutionFont, buff.str(),-renderWidth*3.8/8,-renderHeight*3.4/8); 
+  drawString(evolutionBufferFont, buff.str(),-renderWidth*3.8/8,-renderHeight*3.4/8); 
 
   buff.str("");
   int msTime = glutGet(GLUT_ELAPSED_TIME) - vehicle->getLapStartTime();
@@ -535,7 +529,7 @@ void drawHud() {
   buff.str("");
   buff << "Lap"; // << vehicle->getLap();
   glColor4f(1,1,1,0.75);
-  drawString(evolutionFont, buff.str(),-renderWidth*3.9/8,renderHeight*3.5/8); 
+  drawString(evolutionBufferFont, buff.str(),-renderWidth*3.9/8,renderHeight*3.5/8); 
 
   buff.str("");
   buff << vehicle->getLap();
@@ -557,7 +551,7 @@ void drawHud() {
     sTime = msTime/1000;
     mTime  = sTime/60;
     buff << "Lap Record:";
-    drawString(evolutionFont, buff.str(),renderWidth*2.4/8, renderHeight*3.5/8);
+    drawString(evolutionBufferFont, buff.str(),renderWidth*2.4/8, renderHeight*3.5/8);
 
     buff.str("");
     buff << mTime << ".";
@@ -571,13 +565,13 @@ void drawHud() {
   //Name 
   buff.str("");
   buff << "cs184sp11 final project: inertia. pre-submission version. brandon wang, andrew lee, chris tandiono";
-  drawString(accidentalPresidencyFont, buff.str(), -renderWidth*3.9/8, renderHeight*3.85/8);
+  drawString(accidentalPresidencyBufferFont, buff.str(), -renderWidth*3.9/8, renderHeight*3.85/8);
 
   //Energy
   buff.str("");
   buff << "Energy: ";
   //buff << vehicle->getEnergy();
-  drawString(evolutionFont, buff.str(), -55,renderHeight*3.5/8);
+  drawString(evolutionBufferFont, buff.str(), -55,renderHeight*3.5/8);
 
   buff.str("");
   buff << vehicle->getEnergy();
@@ -653,6 +647,7 @@ void renderScene() {
     
   // Clear previous frame values
   glClearColor(0,0,0,1.0f);
+  //glClearColor(1,1,1,1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
   //Using the shadow shader
@@ -667,7 +662,7 @@ void renderScene() {
   glPushMatrix();
   glTranslatef(p_light[0],p_light[1],p_light[2]);
   glColor4f(1.0,1.0,1.0,1.0);
-  glutSolidSphere(25,10,10);
+  glutSolidSphere(30,10,10);
   glPopMatrix();
 
   //Draw objects in black
@@ -941,6 +936,7 @@ void initialize() {
 
   //Lap time 
   lapStartTime = glutGet(GLUT_ELAPSED_TIME);
+
 
   //Step Vehicle once (and it will recurse on timer)
   lastTimeStep = glutGet(GLUT_ELAPSED_TIME);
