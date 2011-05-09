@@ -1103,10 +1103,7 @@ namespace titleScene {
   }
 
   void processSpecialKeys(int key, int x, int y) {
-    switch(key) {
-    default:
-      break;
-    }
+    return;
   }
 
   void joystickFunc(unsigned int buttonMask, int x, int y, int z) {
