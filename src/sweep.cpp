@@ -251,7 +251,7 @@ void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vec
   vector<vec3> rights;
 
   // Precompute the coordinate axes for each PathPoint
-  for (int j = 0; j < polyline.size(); j++) {
+  for (unsigned int j = 0; j < polyline.size(); j++) {
     double percentageAlongTrack = double(j) / polyline.size();
     PathPoint pathPtCurr = polyline[j];
 
@@ -273,7 +273,7 @@ void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vec
   }
   
   // FOR loop for going AROUND track
-  for (int i = 0; i <= crossSection.size(); i++) {
+  for (unsigned int i = 0; i <= crossSection.size(); i++) {
     int aroundIndexCurr = (i) % crossSection.size();
     int aroundIndexPrev = (i - 1 + crossSection.size()) % crossSection.size();
     double percentageAroundTrackCurr = i != crossSection.size() ? crossSection[aroundIndexCurr].second : 1.0;
@@ -292,7 +292,7 @@ void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vec
       // FOR loop for going ALONG track
       // Drawing the QUAD_STRIP
       glBegin(GL_QUAD_STRIP);
-      for (int j = 0; j <= (polyline.size() - 3); j++) {
+      for (unsigned int j = 0; j <= (polyline.size() - 3); j++) {
         int alongIndexCurr = (j) % (polyline.size() - 3);
         double percentageAlongTrack = double(alongIndexCurr) / (polyline.size() - 3);
       
