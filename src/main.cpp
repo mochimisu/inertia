@@ -263,10 +263,14 @@ void SetListenerValues()
 
 void KillALData()
 {
-    alDeleteBuffers(2, &noiseBuffer);
-    alDeleteSources(2, &noiseSource);
+    alDeleteBuffers(1, &noiseBuffer);
+    alDeleteSources(1, &noiseSource);
     alDeleteBuffers(1, &musicBuffer);
     alDeleteSources(1, &musicSource);
+	alDeleteSources(1, &musicSource2);
+	alDeleteBuffers(1, &musicBuffer2);
+	alDeleteSources(1, &noiseSource2);
+	alDeleteBuffers(1, &noiseBuffer2);
     alutExit();
 }
 
@@ -973,6 +977,7 @@ namespace raceScene {
       currentMusic = musicSource;
       currentNoise = noiseSource;
       alSourcePlay(currentMusic);
+	  break;
     case '2':
       alSourceStop(currentMusic);
       alSourceStop(currentNoise);
@@ -1026,12 +1031,12 @@ namespace raceScene {
     //cout << (buttonMask & 16384) << endl;
     if(buttonMask & 16384) { //button 14: X on DualShock3
       vehicle->setAccel(0.2);
-      alSourcePlay(noiseSource);
+      alSourcePlay(currentNoise);
     } else if(buttonMask & 8192) { //button 13: O on DualShock3
       vehicle->setAccel(-0.1);
-      alSourcePlay(noiseSource);
+      alSourcePlay(currentNoise);
     } else {
-      alSourceStop(noiseSource);
+      alSourceStop(currentNoise);
       vehicle->setAccel(0.0);
     }
     if(buttonMask & 256 && buttonMask & 512) { //256:L2, 512: R2
@@ -1192,6 +1197,7 @@ namespace titleScene {
       currentMusic = musicSource;
       currentNoise = noiseSource;
       alSourcePlay(currentMusic);
+	  break;
     case '2':
       alSourceStop(currentMusic);
       alSourceStop(currentNoise);
@@ -1328,7 +1334,7 @@ void setMode(int newMode) {
     case MODE_TITLE:
         gameMode = MODE_TITLE;
 
-        alSourceStop(noiseSource);
+        alSourceStop(currentNoise);
 
         vehicle->mesh->centerAndScale(40);
         drawObjectTarget = titleScene::drawObjects;
@@ -1478,7 +1484,7 @@ int main(int argc,char** argv) {
   //And Go!
   currentMusic = musicSource;
   currentNoise = noiseSource;
-  alSourcePlay(musicSource);
+  alSourcePlay(currentMusic);
   glutMainLoop();
 }
 
