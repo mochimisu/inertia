@@ -140,7 +140,7 @@ Sweep::Sweep() : globalTwist(0), globalAzimuth(0), widthRepeats(1) {
   lengthRepeats = 50;
 
   //string bumpFile = getQuoted(linestream);
-  //loadHeightAndNormalMaps(bumpFile, heightMap, normalMap, .2);
+  //loadHeightAndNormalMaps("roadbumpmap.png", heightMap, normalMap, .2);
   
   // Procedurally generated
   TrackGenerator trkGen;
@@ -238,8 +238,8 @@ vec3 Sweep::getFirstUp() {
 }
 
 // sweep the cross section along the curve (helper for the big render function)
-void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vector<vec2> &profile, double crossSectionScale) {
-  vector<vec2> & crossSection = profile;
+void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vector<pair<vec2, double> > &profile, double crossSectionScale) {
+  vector<pair<vec2, double> > & crossSection = profile;
   vec3 * stripCurr = new vec3[polyline.size()];
   vec3 * stripPrev = new vec3[polyline.size()];
   
@@ -276,10 +276,10 @@ void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vec
   for (unsigned int i = 0; i <= crossSection.size(); i++) {
     int aroundIndexCurr = (i) % crossSection.size();
     int aroundIndexPrev = (i - 1 + crossSection.size()) % crossSection.size();
-    double percentageAroundTrackCurr = double(i) / crossSection.size();
-    double percentageAroundTrackPrev = double(i - 1) / crossSection.size();
-    vec2 csPtCurr = crossSection[aroundIndexCurr];
-    vec2 csPtPrev = crossSection[aroundIndexPrev];
+    double percentageAroundTrackCurr = i != crossSection.size() ? crossSection[aroundIndexCurr].second : 1.0;
+    double percentageAroundTrackPrev = i != 0 ? crossSection[aroundIndexPrev].second : 0.0;
+    vec2 csPtCurr = crossSection[aroundIndexCurr].first;
+    vec2 csPtPrev = crossSection[aroundIndexPrev].first;
     
     // FOR loop for going ALONG track
     // Populating stripCurr
@@ -354,17 +354,16 @@ void Sweep::render(GeometryShader &shader, int pathSamplesPerPt, double crossSec
   vector<PathPoint> polyline;
   sampleBSpline(pathPts, polyline, totalSamples);
 
-  vector<vec2> profile;
-  //sampleBSpline(profilePts, profile, xsectSamplesPerPt * int(profilePts.size()));
-  profile.push_back(vec2(0, -1));
-  profile.push_back(vec2(7, -1));
-  profile.push_back(vec2(7, 1));
-  profile.push_back(vec2(6, 1));
-  profile.push_back(vec2(6, 0));
-  profile.push_back(vec2(-6, 0));
-  profile.push_back(vec2(-6, 1));
-  profile.push_back(vec2(-7, 1));
-  profile.push_back(vec2(-7, -1));
+  vector<pair<vec2, double> > profile;
+  profile.push_back(pair<vec2, double>(vec2(0, -1), 0.0));
+  profile.push_back(pair<vec2, double>(vec2(7, -1), 0.10));
+  profile.push_back(pair<vec2, double>(vec2(7, 1), 0.15));
+  profile.push_back(pair<vec2, double>(vec2(6, 1), 0.20));
+  profile.push_back(pair<vec2, double>(vec2(6, 0), 0.25));
+  profile.push_back(pair<vec2, double>(vec2(-6, 0), 0.75));
+  profile.push_back(pair<vec2, double>(vec2(-6, 1), 0.80));
+  profile.push_back(pair<vec2, double>(vec2(-7, 1), 0.85));
+  profile.push_back(pair<vec2, double>(vec2(-7, -1), 0.90));
 
   int size = (int) polyline.size();
   if (size <= 1) { // a polyline with only one point is pretty lame!

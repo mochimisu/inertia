@@ -1223,6 +1223,8 @@ void setMode(int newMode) {
  * Main
  */
 int main(int argc,char** argv) {
+  srand(time(NULL));
+
   //Initialize OpenGL
   glutInit(&argc, argv);
 
