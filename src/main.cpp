@@ -24,7 +24,7 @@ ALfloat ListenerVel[] = { 0.0, 0.0, 0.0 };
 ALfloat ListenerOri[] = { 0.0, 0.0, -1.0,  0.0, 1.0, 0.0 };
 
 //===RENDER CONSTANTS
-const float shadowMapCoef = 0.5;
+const float shadowMapCoef = 1.0;
 const float blurCoef = 0.5;
 const float lightScatteringCoef = 1.0;
 
@@ -96,6 +96,7 @@ GLuint scatterFboId;
 //==USER INTERACTION/GAMEPLAY
 int lastTimeStep;
 int lapStartTime;
+void (*drawObjectTarget)(GeometryShader *);
 
 
 ALboolean LoadALData()
@@ -483,7 +484,7 @@ void popTransform() {
 
 
 /*
- * Actual render stuff
+ * Race Render Scene
  */
 
 void drawDebugBuffer(int option) {
@@ -585,8 +586,6 @@ void drawHud() {
   glVertex3f(renderWidth/2, -renderHeight*3.0/8,0);
   glVertex3f(renderWidth*2/8, -renderHeight*3.0/8,0);
   glEnd();
-
-
 
   //Actual stuff
 
@@ -743,7 +742,8 @@ void renderScene() {
   // Culling switching, rendering only backface, this is done to avoid self-shadowing and improve efficiency
   glCullFace(GL_FRONT);
   //draw objects using the depth shader
-  drawObjects(depthShade);
+  //drawObjects(depthShade);
+  drawObjectTarget(depthShade);
     
   //cout << "0 " << glGetError() << endl;
   glGenerateMipmapEXT(GL_TEXTURE_2D);
@@ -775,7 +775,7 @@ void renderScene() {
   glPushMatrix();
   glTranslatef(p_light[0],p_light[1],p_light[2]);
   glColor4f(1.0,1.0,1.0,1.0);
-  glutSolidSphere(30,10,10);
+  glutSolidSphere(30,20,20);
   glPopMatrix();
 
   //Draw objects in black
@@ -807,8 +807,8 @@ void renderScene() {
   
   glCullFace(GL_BACK);
   //draw objects using our shadow shader
-  drawObjects(shade);
-    
+  //drawObjects(shade);
+  drawObjectTarget(shade);
     
   //==FIFTH PASS: LIGHT SCATTERING OVERLAY
   //uses main screen
@@ -852,10 +852,10 @@ void renderScene() {
   
   drawHud();
  
-  /*
+  
   if(renderOpt.isDepthBuffer())
     drawDebugBuffer(renderOpt.getDepthBufferOption());
-*/
+
 
   glutSwapBuffers();    
 }
@@ -1102,18 +1102,23 @@ int main(int argc,char** argv) {
           return -1;
 
 
+
   sweep = new Sweep();
   
   //load the default render options
   renderOpt = RenderOptions();
   //but for the sake of coolness we'll display the blurred color depth buffer by default
   renderOpt.setDepthBufferOption(DISPLAY_DEPTH_SQUARED_COMPLETE_BUFFER);
+  renderOpt.setDepthBufferOption(DISPLAY_DEPTH_SQUARED_COMPLETE_BUFFER);
+
   
 
   vehicle = new Vehicle(sweep);
   vehicle->mesh->loadFile("test.obj");
   vehicle->mesh->loadTextures("test.png","test.png");
   vehicle->mesh->centerAndScale(0.8);
+
+  drawObjectTarget = drawObjects;
 
   //Lap time 
   lapStartTime = glutGet(GLUT_ELAPSED_TIME);
