@@ -38,8 +38,8 @@ void main()
 
   //shadows
   float shadow = chebyshevUpperBound(shadowCoordPostW);
-  shadow *= 0.7;
-  shadow += 0.3;
+  shadow *= 0.6;
+  shadow += 0.4;
 
   // sample from a texture map
   vec4 cr = texture2D(textureMap,gl_TexCoord[0].st);     

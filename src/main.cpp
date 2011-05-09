@@ -742,11 +742,12 @@ void renderScene() {
   glDisable(GL_BLEND);
   
   drawOverlayTarget();
- 
+
+  /*
   
   if(renderOpt.isDepthBuffer())
     drawDebugBuffer(renderOpt.getDepthBufferOption());
-
+*/
 
   glutSwapBuffers();    
 }
@@ -804,7 +805,7 @@ namespace raceScene {
     glVertex3f(renderWidth/2,renderHeight * 3.0/8,0);
     glVertex3f(renderWidth/2,renderHeight * 3.8/8,0);
     glVertex3f(renderWidth * 2.2/8,renderHeight * 3.8/8,0);
-    */glEnd();
+    glEnd(); */
     
     
     //Energy
