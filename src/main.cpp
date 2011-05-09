@@ -606,7 +606,7 @@ void renderScene() {
   
   //Using the shadow shader
   glUseProgramObjectARB(shade->getProgram());
-  glUniform1iARB(shade->getShadowMapAttrib(),7);
+  //glUniform1iARB(shade->getShadowMapAttrib(),7);
   glActiveTextureARB(GL_TEXTURE7);
   glBindTexture(GL_TEXTURE_2D,colorTextureId);
 
