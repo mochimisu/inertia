@@ -19,7 +19,7 @@ Vehicle::Vehicle(Sweep * sw) {
   this->tbn = this->sweep->tbnBasis(0);
   this->turnCurrentValue = 0.0;
   this->airBrake = 0.0;
-  this->lap = 0;
+  this->lap = 1;
   this->energy = 100.0;
 
   this->bestLapTime = -1;
@@ -127,12 +127,12 @@ void Vehicle::step(double amount) {
   if(distance > 0.00001) {
     do {
       tempTime += 0.0000025;
-      tempTime = tempTime > 1 ? tempTime-1:tempTime;
+      //tempTime = tempTime > 1 ? tempTime-1:tempTime;
       tempDist += (sweep->sample(tempTime).point - tempPos).length();
 
       tempPos = sweep->sample(tempTime).point;
     } while (tempDist < distance);
-    if(tempTime < pos[0]) {
+    if(pos[0] >= lap) {
       ++lap;
       int newTime = glutGet(GLUT_ELAPSED_TIME);
       int curLapTime = newTime - lapStartTime;
@@ -144,7 +144,7 @@ void Vehicle::step(double amount) {
   } else if(distance < -0.00001) {
     do {
       tempTime -= 0.0000025;
-      tempTime = tempTime <0  ? tempTime+1:tempTime;
+      //tempTime = tempTime <0  ? tempTime+1:tempTime;
       tempDist -= (sweep->sample(tempTime).point - tempPos).length();
 
       tempPos = sweep->sample(tempTime).point;
