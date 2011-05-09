@@ -263,10 +263,14 @@ void SetListenerValues()
 
 void KillALData()
 {
-    alDeleteBuffers(2, &noiseBuffer);
-    alDeleteSources(2, &noiseSource);
+    alDeleteBuffers(1, &noiseBuffer);
+    alDeleteSources(1, &noiseSource);
     alDeleteBuffers(1, &musicBuffer);
     alDeleteSources(1, &musicSource);
+	alDeleteSources(1, &musicSource2);
+	alDeleteBuffers(1, &musicBuffer2);
+	alDeleteSources(1, &noiseSource2);
+	alDeleteBuffers(1, &noiseBuffer2);
     alutExit();
 }
 
