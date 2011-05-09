@@ -152,7 +152,7 @@ ALboolean LoadALData2()
     if (alGetError() != AL_NO_ERROR)
         return AL_FALSE;
 
-    alutLoadWAVFile("White_Noise.wav", &format, &data, &size, &freq, &loop);
+    alutLoadWAVFile("Engine.wav", &format, &data, &size, &freq, &loop);
     alBufferData(noiseBuffer, format, data, size, freq);
     alutUnloadWAV(format, data, size, freq);
     // Bind buffer with a source.
