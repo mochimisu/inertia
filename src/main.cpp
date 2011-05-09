@@ -1032,10 +1032,35 @@ namespace titleScene {
     std::ostringstream buff;
     glTranslated(0,0,-5);
 
+    glColor4f(1,1,1,0.75);
+    glBegin(GL_QUADS);
+    glTexCoord2d(0,0);glVertex3f(-20,-renderHeight/6,0);
+    glTexCoord2d(1,0);glVertex3f(renderWidth*0.45,-renderHeight/6,0);
+    glTexCoord2d(1,1);glVertex3f(renderWidth*0.45,renderHeight/6,0);
+    glTexCoord2d(0,1);glVertex3f(-20,renderHeight/6,0);
+    glEnd();
+
     buff.str("");
     buff << "INERTIA";
     glColor4f(.188235294,.474509804,1,0.9);
-    drawString(evolutionBufferFont, buff.str(),0,0); 
+   
+    
+    evolutionFont->FaceSize(150);
+    drawString(evolutionFont, buff.str(),0,0); 
+    evolutionFont->FaceSize(36);
+    
+    accidentalPresidencyFont->FaceSize(36);
+    buff.str("");
+    buff << "CS184Sp11 Final Project";
+    drawString(accidentalPresidencyFont, buff.str(),0,-50); 
+    accidentalPresidencyFont->FaceSize(20);
+    buff.str("");
+    buff << "Brandon Wang, Andrew Lee, Chris Tandiono";
+    drawString(accidentalPresidencyFont, buff.str(),0,-75); 
+
+
+
+
 
     //Name 
     buff.str("");
