@@ -89,7 +89,7 @@ private:
   int lengthRepeats, widthRepeats;
 
   // --- internal helper functions
-  void renderSweep(GeometryShader &shade, vector<PathPoint> &pts, vector<vec2> &profile, double crossSectionScale);
+  void renderSweep(GeometryShader &shade, vector<PathPoint> &pts, vector<pair<vec2, double> > &profile, double crossSectionScale);
   vec3 getFirstUp(); // helper to get initial frame (default to frenet, fallback to 'up=+Y')
   // rotates vector from RMF to account for twist, azimuth, etc:
   void orientVectorInFrame(const vec3 &dir, double percent, double localAz, vec3 &inFrame);

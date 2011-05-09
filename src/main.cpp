@@ -1002,6 +1002,8 @@ void stepVehicle(int x) {
  * Main
  */
 int main(int argc,char** argv) {
+  srand(time(NULL));
+
   //Initialize OpenGL
   glutInit(&argc, argv);
 
