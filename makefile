@@ -20,7 +20,8 @@ ifeq ($(shell sw_vers 2>/dev/null | grep Mac | awk '{ print $$2}'),Mac)
 		-I"freealut-1.1.0-bin/include/AL"
 	LIBRARY := -L./lib/mac/ \
     	-L"/System/Library/Frameworks/OpenGL.framework/Libraries" \
-    	-lGL -lGLU -lm -lstdc++ -lfreetype2
+	-L"/usr/lib" -L"/usr/local/lib" \
+    	-lGL -lGLU -lm -lstdc++ -lfreetype -lftgl
 	FRAMEWORK := -framework GLUT -framework OpenGL -framework OpenAL -framework Cocoa
 	MACROS := -DOSX
 	PLATFORM := Mac
@@ -30,9 +31,10 @@ else
 	INCLUDE := -I./include/ -I/usr/X11R6/include -I/sw/include \
 		-I/usr/sww/include -I/usr/sww/pkg/Mesa/include \
 		-I./lib/mac/OpenAL.framework/Headers/AL -I./freealut-1.1.0-bin/include/AL \
-		-I./freealut-1.1.0-bin/include -I./lib/mac/OpenAL.framework/Headers
+		-I./freealut-1.1.0-bin/include -I./lib/mac/OpenAL.framework/Headers \
+		-I./ftgl-2.1.3~rc5/src
 	LIBRARY := -L./lib/nix -L/usr/X11R6/lib -L/sw/lib -L/usr/sww/lib \
-		-L/usr/sww/bin -L/usr/sww/pkg/Mesa/lib -L/usr/lib -lglut -lGLU -lGL -lX11 -lGLEW -lopenal -lalut -lfreetype2
+		-L/usr/sww/bin -L/usr/sww/pkg/Mesa/lib -L/usr/lib -lglut -lGLU -lGL -lX11 -lGLEW -lopenal -lalut -lfreetype -lftgl
 	FRAMEWORK := 
 	MACROS := 
 	PLATFORM := *Nix
