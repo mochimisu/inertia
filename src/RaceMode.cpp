@@ -70,8 +70,8 @@ int lapStartTime;
 
 //draw text (temporarily here until i figure out sdl
 void drawString(string str, float x, float y) {
-  glRasterPos2f(x,y);
-  font.Render(str.c_str());
+  FTPoint pos(x,y);
+  font.Render(str.c_str(), -1, pos);
         /*
 		for (string::iterator i = (&str)->begin(); i != (&str)->end(); ++i){
 			char c = *i;
