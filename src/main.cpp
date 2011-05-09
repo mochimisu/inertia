@@ -29,7 +29,7 @@ ALfloat ListenerOri[] = { 0.0, 0.0, -1.0,  0.0, 1.0, 0.0 };
 
 //===WINDOW PROPERTIES
 Viewport viewport;
-FTGLPixmapFont font("impact.ttf");
+FTGLTextureFont font("Evolution.ttf");
 
 ALboolean LoadALData()
 {

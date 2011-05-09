@@ -14,7 +14,7 @@ const float lightScatterHeight = renderHeight * lightScatteringCoef;
 
 extern Viewport viewport;
 extern ALuint noiseSource;
-extern FTGLPixmapFont font;
+extern FTGLTextureFont font;
 
 //===SCENE DESCRIPTORS
 //Camera position
@@ -491,7 +491,9 @@ void drawHud() {
     glVertex3f(renderWidth/8,-renderHeight*3.7/8,0); //top left
     glEnd();
   }
-  
+ 
+  font.Render("I CAN HAZ TEXT?");
+ 
 
   //Lap Time
   buff.str("");
@@ -559,9 +561,7 @@ void drawObjects(GeometryShader * curShade) {
                         translation3D(vehLoc).transpose();
 
   pushMat4(transformation);
-
-  font.Render("I CAN HAZ TEXT?");
-  vehicle->draw(curShade);
+  vehicle->draw(curShade); 
   popTransform();
 }
 
@@ -870,6 +870,7 @@ void initialize() {
   generateShadowFBO();
   generateBlurFBO();
   generateLightFBO();
+
 
   //Load Shaders
   shade = new ShadowShader("shaders/MainVertexShader.c", "shaders/MainFragmentShader.c");
