@@ -96,7 +96,10 @@ GLuint scatterFboId;
 //==USER INTERACTION/GAMEPLAY
 int lastTimeStep;
 int lapStartTime;
+int gameMode;
 void (*drawObjectTarget)(GeometryShader *);
+void (*drawOverlayTarget)();
+enum { MODE_RACE, MODE_TRACK_SELECT, MODE_TITLE };
 
 
 ALboolean LoadALData()
@@ -193,6 +196,8 @@ void drawString(FTFont *font, string str, float x, float y) {
   FTPoint pos(x,y);
   font->Render(str.c_str(), -1, pos);
 }
+
+void setMode(int mode);
 
 /*
  * Light Scattering stuff.
@@ -483,10 +488,7 @@ void popTransform() {
 
 
 
-/*
- * Race Render Scene
- */
-
+//Render stuff
 void drawDebugBuffer(int option) {
   glUseProgramObjectARB(0);
   glMatrixMode(GL_PROJECTION);
@@ -520,198 +522,6 @@ void drawDebugBuffer(int option) {
   glEnd();
   glDisable(GL_TEXTURE_2D);
 }
-
-void drawHud() {
-//fudging this...
-  const float maxVelocityWidth = renderWidth * 2.5/8 /20;
-
-  glEnable (GL_BLEND);
-  glDisable(GL_DEPTH_TEST);
-  glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-  glUseProgramObjectARB(0);
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  glOrtho(-renderWidth/2,renderWidth/2,-renderHeight/2,renderHeight/2,1,20);
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-
-  //==Actual HUD stuff
-  std::ostringstream buff;
-  glTranslated(0,0,-5);
-
-  //backdrops 
-  
-  //header
-  glColor4f(.250980392,.458823529,.631372549,0.95);
-  glBegin(GL_QUADS);
-  glVertex3f(-renderWidth/2,renderHeight * 3.8/8,0);
-  glVertex3f(renderWidth/2,renderHeight * 3.8/8,0);
-  glVertex3f(renderWidth/2,renderHeight/2,0);
-  glVertex3f(-renderWidth/2,renderHeight/2,0);
-
-  glColor4f(.250980392,.458823529,.631372549,0.1);
-
-  //Lap
-  glVertex3f(-renderWidth/2,renderHeight * 3.0/8,0);
-  glVertex3f(-renderWidth * 3.4/8,renderHeight * 3.0/8,0);
-  glVertex3f(-renderWidth * 3.4/8,renderHeight * 3.8/8,0);
-  glVertex3f(-renderWidth/2,renderHeight * 3.8/8,0);
-
-  //Record (with record to have less branches)
-  /*
-  glBegin(GL_QUADS);
-  glVertex3f(renderWidth * 2.2/8,renderHeight * 3.0/8,0);
-  glVertex3f(renderWidth/2,renderHeight * 3.0/8,0);
-  glVertex3f(renderWidth/2,renderHeight * 3.8/8,0);
-  glVertex3f(renderWidth * 2.2/8,renderHeight * 3.8/8,0);
-  */glEnd();
-  
-  
-  //Energy
-  glVertex3f(-65,renderHeight * 3.0/8,0);
-  glVertex3f(65,renderHeight * 3.0/8,0);
-  glVertex3f(65,renderHeight * 3.8/8,0);
-  glVertex3f(-65,renderHeight * 3.8/8,0);
-
-  //Lap Time
-  glVertex3f(-renderWidth/2, -renderHeight*4.0/8,0);
-  glVertex3f(-renderWidth*2.5/8, -renderHeight*4.0/8,0);
-  glVertex3f(-renderWidth*2.5/8, -renderHeight*3.0/8,0);
-  glVertex3f(-renderWidth/2, -renderHeight*3.0/8,0);
-
-  //Velocity
-  glVertex3f(renderWidth*2/8, -renderHeight*4.0/8,0);
-  glVertex3f(renderWidth/2, -renderHeight*4.0/8,0);
-  glVertex3f(renderWidth/2, -renderHeight*3.0/8,0);
-  glVertex3f(renderWidth*2/8, -renderHeight*3.0/8,0);
-  glEnd();
-
-  //Actual stuff
-
-  //Velocity
-  buff.str("");
-  buff << "Velocity";
-  glColor4f(.188235294,.474509804,1,0.9);
-  drawString(evolutionBufferFont, buff.str(),renderWidth*2.3/8,-renderHeight*3.4/8 + 5); 
-
-  //Velocity Bar
-  glColor4f(.188235294,.474509804,1,0.5);
-  glBegin(GL_QUADS);
-  glVertex3f(renderWidth*2.1/8,-renderHeight*3.8/8,0); // bottom left
-  glVertex3f(renderWidth*2.1/8 + vehicle->getVelocityScalar() * maxVelocityWidth,-renderHeight*3.8/8,0); //bottom right
-  glVertex3f(renderWidth*2.1/8 + vehicle->getVelocityScalar() * maxVelocityWidth,-renderHeight*3.4/8,0); //top right
-  glVertex3f(renderWidth*2.1/8,-renderHeight*3.4/8,0); //top left
-  glEnd();
-
-  //Velocity Text
-  buff.str("");
-  buff << vehicle->getVelocityScalar();
-  glColor4f(.9,.9,1,0.8);
-  drawString(digitalNinjaFont, buff.str(),renderWidth*2.3/8,-renderHeight*3.3/8 - 44); 
-
-  //Air Break Bar
-  if(vehicle->isAirBrake()) {
-
-    glColor4f(.901960784,.160784314,.160784314,0.5);  
-
-    glBegin(GL_QUADS);
-    glVertex3f(renderWidth*2.1/8,-renderHeight*3.9/8,0); // bottom left
-    glVertex3f(renderWidth*3.8/8 ,-renderHeight*3.9/8,0); //bottom right
-    glVertex3f(renderWidth*3.8/8,-renderHeight*3.8/8,0); //top right
-    glVertex3f(renderWidth*2.1/8,-renderHeight*3.8/8,0); //top left
-    glEnd();
-  } 
-
-  //Lap Time
-  buff.str("");
-  buff << "Lap Time";
-  glColor4f(1,1,1,0.75);
-  drawString(evolutionBufferFont, buff.str(),-renderWidth*3.8/8,-renderHeight*3.4/8); 
-
-  buff.str("");
-  int msTime = glutGet(GLUT_ELAPSED_TIME) - vehicle->getLapStartTime();
-  int sTime = msTime/1000;
-  int mTime  = sTime/60;
-  buff << mTime << ".";
-  buff << (sTime%60) << ".";
-  buff << (msTime%1000);
-  glColor4f(1,1,1,0.75);
-  drawString(digitalNinjaFont, buff.str(),-renderWidth*3.8/8,-renderHeight*3.7/8); 
-
-  //Lap Number
-  buff.str("");
-  buff << "Lap"; // << vehicle->getLap();
-  glColor4f(1,1,1,0.75);
-  drawString(evolutionBufferFont, buff.str(),-renderWidth*3.9/8,renderHeight*3.5/8); 
-
-  buff.str("");
-  buff << vehicle->getLap();
-  drawString(digitalNinjaFont, buff.str(), -renderWidth * 3.9/8, renderHeight*3.2/8);
-
-  //Record
-  buff.str("");
-  msTime = vehicle->getBestLapTime();
-  if(msTime != -1) {
-    //backdrop
-    glColor4f(.250980392,.458823529,.631372549,0.3);
-    glBegin(GL_QUADS);
-    glVertex3f(renderWidth * 2.2/8,renderHeight * 3.0/8,0);
-    glVertex3f(renderWidth*2/2,renderHeight * 3.0/8,0);
-    glVertex3f(renderWidth*2/2,renderHeight * 3.8/8,0);
-    glVertex3f(renderWidth * 2.2/8,renderHeight * 3.8/8,0);
-    glEnd();
-
-    sTime = msTime/1000;
-    mTime  = sTime/60;
-    buff << "Lap Record:";
-    drawString(evolutionBufferFont, buff.str(),renderWidth*2.4/8, renderHeight*3.5/8);
-
-    buff.str("");
-    buff << mTime << ".";
-    buff << (sTime%60) << ".";
-    buff << (msTime%1000);
-    glColor4f(1,1,1,0.75);
-    drawString(digitalNinjaFont, buff.str(),renderWidth*2.4/8, renderHeight*3.2/8);
-
-  }
-
-  //Name 
-  buff.str("");
-  buff << "cs184sp11 final project: inertia. pre-submission version. brandon wang, andrew lee, chris tandiono";
-  drawString(accidentalPresidencyBufferFont, buff.str(), -renderWidth*3.9/8, renderHeight*3.85/8);
-
-  //Energy
-  buff.str("");
-  buff << "Energy: ";
-  //buff << vehicle->getEnergy();
-  drawString(evolutionBufferFont, buff.str(), -55,renderHeight*3.5/8);
-
-  buff.str("");
-  buff << vehicle->getEnergy();
-  drawString(digitalNinjaFont, buff.str(), -45,renderHeight*3.2/8);
-
-
-  glDisable(GL_BLEND);
-  glEnable(GL_DEPTH_TEST);
-}
-
-void drawObjects(GeometryShader * curShade) {
-  //Track/City
-  sweep->renderWithDisplayList(*curShade,20,0.3,20);
-
-  //Vehicle Location
-  vec3 vehLoc = vehicle->worldSpacePos();
-
-  //Put matrices together for smaller stack size
-  mat4 transformation = vehicle->orientationBasis() *
-                        translation3D(vehLoc).transpose();
-
-  pushMat4(transformation);
-  vehicle->draw(curShade); 
-  popTransform();
-}
-
 
 /*
  * The main display function. (Where all the magic happens).
@@ -780,7 +590,9 @@ void renderScene() {
 
   //Draw objects in black
   glColor4f(0.0f,0.0f,0.0f,1);
-  drawObjects(darkShade);
+  //drawObjects(darkShade);
+  drawObjectTarget(darkShade);
+
     
   //==FOURTH RENDER: MAIN RENDER (without light scattering)
   // Now rendering from the camera POV, using the FBO to generate shadows
@@ -850,7 +662,7 @@ void renderScene() {
   glPopMatrix();
   glDisable(GL_BLEND);
   
-  drawHud();
+  drawOverlayTarget();
  
   
   if(renderOpt.isDepthBuffer())
@@ -860,143 +672,552 @@ void renderScene() {
   glutSwapBuffers();    
 }
 
+
+
+
+
 /*
- * Interface Stuff
+ * Race Render Scene
  */
-void processNormalKeys(unsigned char key, int x, int y) {
-  switch (key) {
-  case 'Q':
-  case 'q':
-  case 27:	
-    exit(0);
-    break;
-  case 'B':
-  case 'b':
-    renderOpt.toggleDispDepthBuffer();
-    break;
-  case 'G':
-  case 'g':
-    renderOpt.toggleDispGround();
-    break;
-  case ' ':
-    vehicle->setAirBrake(0.00008);
-    break;          
-  }
-}
 
-void processNormalKeysUp(unsigned char key, int x, int y) {
-  switch(key) {
-  case ' ':
-    vehicle->setAirBrake(0);
-    break;
-  }
-}
+namespace raceScene {
+  void drawHud() {
+  //fudging this...
+    const float maxVelocityWidth = renderWidth * 2.5/8 /20;
 
-void processSpecialKeys(int key, int x, int y) {
-  switch(key) {
-    case GLUT_KEY_UP:
-      alSourcePlay(noiseSource);
+    glEnable (GL_BLEND);
+    glDisable(GL_DEPTH_TEST);
+    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glUseProgramObjectARB(0);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(-renderWidth/2,renderWidth/2,-renderHeight/2,renderHeight/2,1,20);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    //==Actual HUD stuff
+    std::ostringstream buff;
+    glTranslated(0,0,-5);
+
+    //backdrops 
+    
+    //header
+    glColor4f(.250980392,.458823529,.631372549,0.95);
+    glBegin(GL_QUADS);
+    glVertex3f(-renderWidth/2,renderHeight * 3.8/8,0);
+    glVertex3f(renderWidth/2,renderHeight * 3.8/8,0);
+    glVertex3f(renderWidth/2,renderHeight/2,0);
+    glVertex3f(-renderWidth/2,renderHeight/2,0);
+
+    glColor4f(.250980392,.458823529,.631372549,0.1);
+
+    //Lap
+    glVertex3f(-renderWidth/2,renderHeight * 3.0/8,0);
+    glVertex3f(-renderWidth * 3.4/8,renderHeight * 3.0/8,0);
+    glVertex3f(-renderWidth * 3.4/8,renderHeight * 3.8/8,0);
+    glVertex3f(-renderWidth/2,renderHeight * 3.8/8,0);
+
+    //Record (with record to have less branches)
+    /*
+    glBegin(GL_QUADS);
+    glVertex3f(renderWidth * 2.2/8,renderHeight * 3.0/8,0);
+    glVertex3f(renderWidth/2,renderHeight * 3.0/8,0);
+    glVertex3f(renderWidth/2,renderHeight * 3.8/8,0);
+    glVertex3f(renderWidth * 2.2/8,renderHeight * 3.8/8,0);
+    */glEnd();
+    
+    
+    //Energy
+    glVertex3f(-65,renderHeight * 3.0/8,0);
+    glVertex3f(65,renderHeight * 3.0/8,0);
+    glVertex3f(65,renderHeight * 3.8/8,0);
+    glVertex3f(-65,renderHeight * 3.8/8,0);
+
+    //Lap Time
+    glVertex3f(-renderWidth/2, -renderHeight*4.0/8,0);
+    glVertex3f(-renderWidth*2.5/8, -renderHeight*4.0/8,0);
+    glVertex3f(-renderWidth*2.5/8, -renderHeight*3.0/8,0);
+    glVertex3f(-renderWidth/2, -renderHeight*3.0/8,0);
+
+    //Velocity
+    glVertex3f(renderWidth*2/8, -renderHeight*4.0/8,0);
+    glVertex3f(renderWidth/2, -renderHeight*4.0/8,0);
+    glVertex3f(renderWidth/2, -renderHeight*3.0/8,0);
+    glVertex3f(renderWidth*2/8, -renderHeight*3.0/8,0);
+    glEnd();
+
+    //Actual stuff
+
+    //Velocity
+    buff.str("");
+    buff << "Velocity";
+    glColor4f(.188235294,.474509804,1,0.9);
+    drawString(evolutionBufferFont, buff.str(),renderWidth*2.3/8,-renderHeight*3.4/8 + 5); 
+
+    //Velocity Bar
+    glColor4f(.188235294,.474509804,1,0.5);
+    glBegin(GL_QUADS);
+    glVertex3f(renderWidth*2.1/8,-renderHeight*3.8/8,0); // bottom left
+    glVertex3f(renderWidth*2.1/8 + vehicle->getVelocityScalar() * maxVelocityWidth,-renderHeight*3.8/8,0); //bottom right
+    glVertex3f(renderWidth*2.1/8 + vehicle->getVelocityScalar() * maxVelocityWidth,-renderHeight*3.4/8,0); //top right
+    glVertex3f(renderWidth*2.1/8,-renderHeight*3.4/8,0); //top left
+    glEnd();
+
+    //Velocity Text
+    buff.str("");
+    buff << vehicle->getVelocityScalar();
+    glColor4f(.9,.9,1,0.8);
+    drawString(digitalNinjaFont, buff.str(),renderWidth*2.3/8,-renderHeight*3.3/8 - 44); 
+
+    //Air Break Bar
+    if(vehicle->isAirBrake()) {
+
+      glColor4f(.901960784,.160784314,.160784314,0.5);  
+
+      glBegin(GL_QUADS);
+      glVertex3f(renderWidth*2.1/8,-renderHeight*3.9/8,0); // bottom left
+      glVertex3f(renderWidth*3.8/8 ,-renderHeight*3.9/8,0); //bottom right
+      glVertex3f(renderWidth*3.8/8,-renderHeight*3.8/8,0); //top right
+      glVertex3f(renderWidth*2.1/8,-renderHeight*3.8/8,0); //top left
+      glEnd();
+    } 
+
+    //Lap Time
+    buff.str("");
+    buff << "Lap Time";
+    glColor4f(1,1,1,0.75);
+    drawString(evolutionBufferFont, buff.str(),-renderWidth*3.8/8,-renderHeight*3.4/8); 
+
+    buff.str("");
+    int msTime = glutGet(GLUT_ELAPSED_TIME) - vehicle->getLapStartTime();
+    int sTime = msTime/1000;
+    int mTime  = sTime/60;
+    buff << mTime << ".";
+    buff << (sTime%60) << ".";
+    buff << (msTime%1000);
+    glColor4f(1,1,1,0.75);
+    drawString(digitalNinjaFont, buff.str(),-renderWidth*3.8/8,-renderHeight*3.7/8); 
+
+    //Lap Number
+    buff.str("");
+    buff << "Lap"; // << vehicle->getLap();
+    glColor4f(1,1,1,0.75);
+    drawString(evolutionBufferFont, buff.str(),-renderWidth*3.9/8,renderHeight*3.5/8); 
+
+    buff.str("");
+    buff << vehicle->getLap();
+    drawString(digitalNinjaFont, buff.str(), -renderWidth * 3.9/8, renderHeight*3.2/8);
+
+    //Record
+    buff.str("");
+    msTime = vehicle->getBestLapTime();
+    if(msTime != -1) {
+      //backdrop
+      glColor4f(.250980392,.458823529,.631372549,0.3);
+      glBegin(GL_QUADS);
+      glVertex3f(renderWidth * 2.2/8,renderHeight * 3.0/8,0);
+      glVertex3f(renderWidth*2/2,renderHeight * 3.0/8,0);
+      glVertex3f(renderWidth*2/2,renderHeight * 3.8/8,0);
+      glVertex3f(renderWidth * 2.2/8,renderHeight * 3.8/8,0);
+      glEnd();
+
+      sTime = msTime/1000;
+      mTime  = sTime/60;
+      buff << "Lap Record:";
+      drawString(evolutionBufferFont, buff.str(),renderWidth*2.4/8, renderHeight*3.5/8);
+
+      buff.str("");
+      buff << mTime << ".";
+      buff << (sTime%60) << ".";
+      buff << (msTime%1000);
+      glColor4f(1,1,1,0.75);
+      drawString(digitalNinjaFont, buff.str(),renderWidth*2.4/8, renderHeight*3.2/8);
+
+    }
+
+    //Name 
+    buff.str("");
+    buff << "cs184sp11 final project: inertia. pre-submission version. brandon wang, andrew lee, chris tandiono";
+    drawString(accidentalPresidencyBufferFont, buff.str(), -renderWidth*3.9/8, renderHeight*3.85/8);
+
+    //Energy
+    buff.str("");
+    buff << "Energy: ";
+    //buff << vehicle->getEnergy();
+    drawString(evolutionBufferFont, buff.str(), -55,renderHeight*3.5/8);
+
+    buff.str("");
+    buff << vehicle->getEnergy();
+    drawString(digitalNinjaFont, buff.str(), -45,renderHeight*3.2/8);
+
+
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+  }
+
+  void drawObjects(GeometryShader * curShade) {
+    //Track/City
+    sweep->renderWithDisplayList(*curShade,20,0.3,20);
+
+    //Vehicle Location
+    vec3 vehLoc = vehicle->worldSpacePos();
+
+    //Put matrices together for smaller stack size
+    mat4 transformation = vehicle->orientationBasis() *
+                          translation3D(vehLoc).transpose();
+
+    pushMat4(transformation);
+    vehicle->draw(curShade); 
+    popTransform();
+  }
+
+  void processNormalKeys(unsigned char key, int x, int y) {
+    switch (key) {
+    case 'Q':
+    case 'q':
+    case 27:	
+      setMode(MODE_TITLE);
+      break;
+    case 'B':
+    case 'b':
+      renderOpt.toggleDispDepthBuffer();
+      break;
+    case 'G':
+    case 'g':
+      renderOpt.toggleDispGround();
+      break;
+
+    case ' ':
+      vehicle->setAirBrake(0.00008);
+      break;
+    }
+  }
+
+  void processNormalKeysUp(unsigned char key, int x, int y) {
+    switch(key) {
+    case ' ':
+      vehicle->setAirBrake(0);
+      break;
+    }
+  }
+
+  void processSpecialKeys(int key, int x, int y) {
+    switch(key) {
+      case GLUT_KEY_UP:
+        alSourcePlay(noiseSource);
+        vehicle->setAccel(0.2);
+        break;
+      case GLUT_KEY_DOWN:
+        alSourcePlay(noiseSource);
+        vehicle->setAccel(-0.1);
+        break;
+      case GLUT_KEY_LEFT:
+        vehicle->turnLeft(3);
+        break;
+      case GLUT_KEY_RIGHT:
+        vehicle->turnRight(3);
+        break;
+    }
+  }
+
+  void joystickFunc(unsigned int buttonMask, int x, int y, int z) {
+    //cout << (buttonMask) << endl;
+    //cout << (buttonMask & 16384) << endl;
+    if(buttonMask & 16384) { //button 14: X on DualShock3
       vehicle->setAccel(0.2);
-      break;
-    case GLUT_KEY_DOWN:
       alSourcePlay(noiseSource);
+    } else if(buttonMask & 8192) { //button 13: O on DualShock3
       vehicle->setAccel(-0.1);
-      break;
-    case GLUT_KEY_LEFT:
-      vehicle->turnLeft(3);
-      break;
-    case GLUT_KEY_RIGHT:
-      vehicle->turnRight(3);
-      break;
-  }
-}
-
-void joystickFunc(unsigned int buttonMask, int x, int y, int z) {
-  //cout << (buttonMask) << endl;
-  //cout << (buttonMask & 16384) << endl;
-  if(buttonMask & 16384) { //button 14: X on DualShock3
-    vehicle->setAccel(0.2);
-    alSourcePlay(noiseSource);
-  } else if(buttonMask & 8192) { //button 13: O on DualShock3
-    vehicle->setAccel(-0.1);
-    alSourcePlay(noiseSource);
-  } else {
-    alSourceStop(noiseSource);
-    vehicle->setAccel(0.0);
-  }
-  if(buttonMask & 256 && buttonMask & 512) { //256:L2, 512: R2
-    vehicle->setAirBrake(0.0001);
-  } else if(buttonMask & 256) { //TODO: left and right airbrake
-    vehicle->setAirBrake(0.00005);
-  } else if(buttonMask & 512) {
-    vehicle->setAirBrake(0.00005);
-  } else {
-    vehicle->setAirBrake(0.0);
-  }
-    //cout << x << endl;
-  vehicle->turnRight(x/500);
-}
-
-
-void processSpecialKeysUp(int key, int x, int y) {
-  switch(key) {
-    case GLUT_KEY_UP:
-    case GLUT_KEY_DOWN:
+      alSourcePlay(noiseSource);
+    } else {
       alSourceStop(noiseSource);
       vehicle->setAccel(0.0);
-      break;
-    case GLUT_KEY_LEFT:
-    case GLUT_KEY_RIGHT:
-      vehicle->turnLeft(0.0);
-      break;
-  }
-}
-        
-
-void myActiveMotionFunc(int x, int y) {
-
-  // Rotate viewport orientation proportional to mouse motion
-  vec2 newMouse = vec2((double)x / glutGet(GLUT_WINDOW_WIDTH),(double)y / glutGet(GLUT_WINDOW_HEIGHT));
-  vec2 diff = (newMouse - viewport.mousePos);
-  double len = diff.length();
-  if (len > .001) {
-    vec3 axis = vec3(diff[1]/len, diff[0]/len, 0);
-    viewport.orientation = viewport.orientation * rotation3D(axis, -180 * len);
+    }
+    if(buttonMask & 256 && buttonMask & 512) { //256:L2, 512: R2
+      vehicle->setAirBrake(0.0001);
+    } else if(buttonMask & 256) { //TODO: left and right airbrake
+      vehicle->setAirBrake(0.00005);
+    } else if(buttonMask & 512) {
+      vehicle->setAirBrake(0.00005);
+    } else {
+      vehicle->setAirBrake(0.0);
+    }
+      //cout << x << endl;
+    vehicle->turnRight(x/500);
   }
 
-  //Record the mouse location for drawing crosshairs
-  viewport.mousePos = newMouse;
 
-  //Force a redraw of the window.
-  glutPostRedisplay();
+  void processSpecialKeysUp(int key, int x, int y) {
+    switch(key) {
+      case GLUT_KEY_UP:
+      case GLUT_KEY_DOWN:
+        alSourceStop(noiseSource);
+        vehicle->setAccel(0.0);
+        break;
+      case GLUT_KEY_LEFT:
+      case GLUT_KEY_RIGHT:
+        vehicle->turnLeft(0.0);
+        break;
+    }
+  }
+          
+
+  void myActiveMotionFunc(int x, int y) {
+
+    // Rotate viewport orientation proportional to mouse motion
+    vec2 newMouse = vec2((double)x / glutGet(GLUT_WINDOW_WIDTH),(double)y / glutGet(GLUT_WINDOW_HEIGHT));
+    vec2 diff = (newMouse - viewport.mousePos);
+    double len = diff.length();
+    if (len > .001) {
+      vec3 axis = vec3(diff[1]/len, diff[0]/len, 0);
+      viewport.orientation = viewport.orientation * rotation3D(axis, -180 * len);
+    }
+
+    //Record the mouse location for drawing crosshairs
+    viewport.mousePos = newMouse;
+
+    //Force a redraw of the window.
+    glutPostRedisplay();
+  }
+
+  void myPassiveMotionFunc(int x, int y) {
+    //Record the mouse location for drawing crosshairs
+    viewport.mousePos = vec2((double)x / glutGet(GLUT_WINDOW_WIDTH),(double)y / glutGet(GLUT_WINDOW_HEIGHT));
+
+    //Force a redraw of the window.
+    glutPostRedisplay();
+  }
+
 }
 
-void myPassiveMotionFunc(int x, int y) {
-  //Record the mouse location for drawing crosshairs
-  viewport.mousePos = vec2((double)x / glutGet(GLUT_WINDOW_WIDTH),(double)y / glutGet(GLUT_WINDOW_HEIGHT));
 
-  //Force a redraw of the window.
-  glutPostRedisplay();
+
+
+
+
+
+//======TITLE SCENE
+//sorry about the code mess but its glut's fault and we dont have enough time to make something complex to make it look nice
+namespace titleScene {
+
+  void drawObjects(GeometryShader * curShade) {
+    Mesh * veh = vehicle->mesh;
+
+    vec3 rotAxis(0.3,0.9,0);
+
+    mat4 transformation = rotation3D(rotAxis, glutGet(GLUT_ELAPSED_TIME)/200.0);
+    pushMat4(transformation);
+    veh->draw(*curShade); 
+    popTransform();
+  }
+
+
+  void drawTitleOverlay() {
+  //fudging this...
+    const float maxVelocityWidth = renderWidth * 2.5/8 /20;
+
+    glEnable (GL_BLEND);
+    glDisable(GL_DEPTH_TEST);
+    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glUseProgramObjectARB(0);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(-renderWidth/2,renderWidth/2,-renderHeight/2,renderHeight/2,1,20);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    //==Actual HUD stuff
+    std::ostringstream buff;
+    glTranslated(0,0,-5);
+
+    buff.str("");
+    buff << "INERTIA";
+    glColor4f(.188235294,.474509804,1,0.9);
+    drawString(evolutionBufferFont, buff.str(),0,0); 
+
+    //Name 
+    buff.str("");
+    buff << "cs184sp11 final project: inertia. pre-submission version. brandon wang, andrew lee, chris tandiono";
+    drawString(accidentalPresidencyBufferFont, buff.str(), -renderWidth*3.9/8, renderHeight*3.85/8);
+
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+  }
+
+  void processNormalKeys(unsigned char key, int x, int y) {
+    switch (key) {
+    case 'Q':
+    case 'q':
+    case 27:	
+      exit(0);
+      break;
+    case 'B':
+    case 'b':
+      renderOpt.toggleDispDepthBuffer();
+      break;
+    case 'G':
+    case 'g':
+      renderOpt.toggleDispGround();
+      break;
+
+      //temp keys for debugging
+    case ' ':
+      setMode(MODE_RACE);
+      break;
+    }
+  }
+
+  void processNormalKeysUp(unsigned char key, int x, int y) {
+    switch(key) {
+    case ' ':
+      vehicle->setAirBrake(0);
+      break;
+    }
+  }
+
+  void processSpecialKeys(int key, int x, int y) {
+    switch(key) {
+    default:
+      break;
+    }
+  }
+
+  void joystickFunc(unsigned int buttonMask, int x, int y, int z) {
+    //cout << (buttonMask) << endl;
+    //cout << (buttonMask & 16384) << endl;
+    if(buttonMask & 16384) { //button 14: X on DualShock3
+    } else if(buttonMask & 8192) { //button 13: O on DualShock3
+    } else {
+    }
+    if(buttonMask & 256 && buttonMask & 512) { //256:L2, 512: R2
+    } else if(buttonMask & 256) { //TODO: left and right airbrake
+    } else if(buttonMask & 512) {
+    } else {  
+    }
+      //cout << x << endl
+  }
+
+
+  void processSpecialKeysUp(int key, int x, int y) {
+    switch(key) {
+      case GLUT_KEY_UP:
+      case GLUT_KEY_DOWN:
+        break;
+      case GLUT_KEY_LEFT:
+      case GLUT_KEY_RIGHT:
+        break;
+    }
+  }
+          
+
+  void activeMotionFunc(int x, int y) {
+
+    // Rotate viewport orientation proportional to mouse motion
+    vec2 newMouse = vec2((double)x / glutGet(GLUT_WINDOW_WIDTH),(double)y / glutGet(GLUT_WINDOW_HEIGHT));
+    vec2 diff = (newMouse - viewport.mousePos);
+    double len = diff.length();
+    if (len > .001) {
+      vec3 axis = vec3(diff[1]/len, diff[0]/len, 0);
+      viewport.orientation = viewport.orientation * rotation3D(axis, -180 * len);
+    }
+
+    //Record the mouse location for drawing crosshairs
+    viewport.mousePos = newMouse;
+
+    //Force a redraw of the window.
+    glutPostRedisplay();
+  }
+
+  void passiveMotionFunc(int x, int y) {
+    //Record the mouse location for drawing crosshairs
+    viewport.mousePos = vec2((double)x / glutGet(GLUT_WINDOW_WIDTH),(double)y / glutGet(GLUT_WINDOW_HEIGHT));
+
+    //Force a redraw of the window.
+    glutPostRedisplay();
+  }
 }
 
+
+
+
+//Steps a vehicle 
+//because of glut's callback limitation in the fact that we can't interrupt, we have to keep polling if we're in the right mode........
 void stepVehicle(int x) {
   //call at beginning for consistency..
   int newTime =glutGet(GLUT_ELAPSED_TIME);
-  int timeDif = newTime - lastTimeStep;
-  vehicle->step(0.01 * timeDif/10.0);
+  if(gameMode == MODE_RACE) {
+    int timeDif = newTime - lastTimeStep;
+    vehicle->step(0.01 * timeDif/10.0);
   
-  p_camera = vehicle->cameraPos();
-  l_camera = vehicle->cameraLookAt();
-  u_camera = vehicle->getUp();
+    p_camera = vehicle->cameraPos();
+    l_camera = vehicle->cameraLookAt();
+    u_camera = vehicle->getUp();
 
-  //p_light = vehicle->lightPos();
-  l_light = vehicle->worldSpacePos();
-  
-  //redo this every 10ms
+    //p_light = vehicle->lightPos();
+    l_light = vehicle->worldSpacePos();
+  }
+  //redo this every 20ms
   lastTimeStep = newTime;
   glutTimerFunc(20,stepVehicle, 0);
 
 }
+
+void setMode(int newMode) {
+  switch(newMode) {
+    case MODE_RACE:
+        gameMode = MODE_RACE;
+        vehicle->mesh->centerAndScale(0.8);
+        drawObjectTarget = raceScene::drawObjects;
+        drawOverlayTarget = raceScene::drawHud;
+        glutKeyboardFunc(raceScene::processNormalKeys);
+        glutKeyboardUpFunc(raceScene::processNormalKeysUp);
+        glutMotionFunc(raceScene::myActiveMotionFunc);
+        glutPassiveMotionFunc(raceScene::myPassiveMotionFunc);
+
+        glutSpecialFunc(raceScene::processSpecialKeys);
+        glutSpecialUpFunc(raceScene::processSpecialKeysUp);
+        glutJoystickFunc(raceScene::joystickFunc,10);
+            
+        //Lap time 
+        vehicle->setLapStartTime(glutGet(GLUT_ELAPSED_TIME));
+
+        //Step Vehicle once (and it will recurse on timer)
+        lastTimeStep = glutGet(GLUT_ELAPSED_TIME);
+        stepVehicle(0);
+
+
+        break;
+
+    case MODE_TITLE:
+        gameMode = MODE_TITLE;
+
+        alSourceStop(noiseSource);
+
+        vehicle->mesh->centerAndScale(40);
+        drawObjectTarget = titleScene::drawObjects;
+        drawOverlayTarget = titleScene::drawTitleOverlay;
+
+        glutKeyboardFunc(titleScene::processNormalKeys);
+        glutKeyboardUpFunc(titleScene::processNormalKeysUp);
+        glutMotionFunc(titleScene::activeMotionFunc);
+        glutPassiveMotionFunc(titleScene::passiveMotionFunc);
+
+        glutSpecialFunc(titleScene::processSpecialKeys);
+        glutSpecialUpFunc(titleScene::processSpecialKeysUp);
+        glutJoystickFunc(titleScene::joystickFunc,10);
+
+        p_camera = vec3(0,10,16);
+        l_camera = vec3(0,0,0);
+        u_camera = vec3(0,1,0);
+
+        p_light = vec3(0,30,6);
+        l_light = vec3(0,0,0);
+        break;
+  }
+}
+
 
 /*
  * Main
@@ -1047,18 +1268,10 @@ int main(int argc,char** argv) {
   glEnable(GL_CULL_FACE);
   glFrontFace(GL_CCW);
   glHint(GL_PERSPECTIVE_CORRECTION_HINT,GL_NICEST);
-        
+
   glutDisplayFunc(renderScene);
-  glutIdleFunc(renderScene);
-  glutKeyboardFunc(processNormalKeys);
-  glutKeyboardUpFunc(processNormalKeysUp);
-  glutMotionFunc(myActiveMotionFunc);
-  glutPassiveMotionFunc(myPassiveMotionFunc);
-
-  glutSpecialFunc(processSpecialKeys);
-  glutSpecialUpFunc(processSpecialKeysUp);
-  glutJoystickFunc(joystickFunc,10);
-
+  glutIdleFunc(renderScene);  
+        
 
   glewInit();
 
@@ -1098,7 +1311,8 @@ int main(int argc,char** argv) {
 
   
   //// If something went wrong, bail out.
-  if(evolutionFont->Error())
+  if(evolutionFont->Error() || digitalNinjaFont->Error() || accidentalPresidencyFont->Error() ||
+      evolutionBufferFont->Error() || accidentalPresidencyBufferFont->Error())
           return -1;
 
 
@@ -1116,16 +1330,8 @@ int main(int argc,char** argv) {
   vehicle = new Vehicle(sweep);
   vehicle->mesh->loadFile("test.obj");
   vehicle->mesh->loadTextures("test.png","test.png");
-  vehicle->mesh->centerAndScale(0.8);
 
-  drawObjectTarget = drawObjects;
-
-  //Lap time 
-  lapStartTime = glutGet(GLUT_ELAPSED_TIME);
-
-  //Step Vehicle once (and it will recurse on timer)
-  lastTimeStep = glutGet(GLUT_ELAPSED_TIME);
-  stepVehicle(0);
+    setMode(MODE_TITLE);
 
   //And Go!
   alSourcePlay(musicSource);

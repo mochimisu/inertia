@@ -62,6 +62,8 @@ class Vehicle {
   int getBestLapTime() { return bestLapTime; };
   int getLapStartTime() { return lapStartTime; };
 
+  void setLapStartTime(int time) { lapStartTime = time; }
+
  private:
 
   vec3 resistanceAccel();
