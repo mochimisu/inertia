@@ -922,7 +922,7 @@ namespace {
     scatterShade = new ScatterShader("shaders/ScatteringVertexShader.c", "shaders/ScatteringFragmentShader.c");
     darkShade = new GeometryShader("shaders/SimpleDarkVertexShader.c", "shaders/SimpleDarkFragmentShader.c");
     
-    sweep = new Sweep("sweep.trk");
+    sweep = new Sweep();
     
     //load the default render options
     renderOpt = RenderOptions();

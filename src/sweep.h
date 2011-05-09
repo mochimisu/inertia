@@ -41,7 +41,7 @@ Pt sampleBSpline(const vector<Pt>& cps, double t, bool closed = true, int degree
 // class to render and sample track
 class Sweep {
  public:
-  Sweep(string filename);
+  Sweep();
 
 
 
