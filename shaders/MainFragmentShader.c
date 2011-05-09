@@ -71,7 +71,7 @@ void main()
 
   // set the output color to what we've computed
   gl_FragColor = shadow * color;
-  gl_FragColor = texture2D(shadowMap,shadowCoordPostW.xy);
+  //gl_FragColor = texture2D(shadowMap,shadowCoordPostW.xy);
 
 
 }

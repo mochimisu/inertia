@@ -168,6 +168,8 @@ void GeometryShader::setUniformValues() {
 void ShadowShader::setUniformValues() {
   GeometryShader::setUniformValues();
   glUniform1iARB(glGetUniformLocationARB(program, "textureMap"), 0);
+
+  glUniform1iARB(glGetUniformLocationARB(program, "shadowMap"), 7);
 }
 
 void BlurShader::setUniformValues() {
