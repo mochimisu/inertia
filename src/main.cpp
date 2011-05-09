@@ -3,10 +3,17 @@
 // Buffers hold sound data.
 ALuint noiseBuffer;
 ALuint musicBuffer;
+ALuint noiseBuffer2;
+ALuint musicBuffer2;
 
 // Sources are points emitting sound.
 ALuint noiseSource;
 ALuint musicSource;
+ALuint noiseSource2;
+ALuint musicSource2;
+
+ALuint currentMusic;
+ALuint currentNoise;
 
 // Position of the source sound.
 ALfloat SourcePos[] = { 0.0, 0.0, 0.0 };
@@ -168,6 +175,78 @@ ALboolean LoadALData2()
     alSourcefv(noiseSource, AL_POSITION, SourcePos);
     alSourcefv(noiseSource, AL_VELOCITY, SourceVel);
     alSourcei (noiseSource, AL_LOOPING,  AL_TRUE     );
+    // Do another error check and return.
+    if (alGetError() == AL_NO_ERROR)
+        return AL_TRUE;
+
+    return AL_FALSE;
+}
+
+ALboolean LoadALData3()
+{
+    // Variables to load into.
+
+    ALenum format;
+    ALsizei size;
+    ALvoid* data;
+    ALsizei freq;
+    ALboolean loop;
+    // Load wav data into a buffer.
+    alGenBuffers(1, &musicBuffer2);
+    if (alGetError() != AL_NO_ERROR)
+        return AL_FALSE;
+
+    alutLoadWAVFile("pacman.wav", &format, &data, &size, &freq, &loop);
+    alBufferData(musicBuffer2, format, data, size, freq);
+    alutUnloadWAV(format, data, size, freq);
+    // Bind buffer with a source.
+    alGenSources(1, &musicSource2);
+
+    if (alGetError() != AL_NO_ERROR)
+        return AL_FALSE;
+
+    alSourcei (musicSource2, AL_BUFFER,   musicBuffer2   );
+    alSourcef (musicSource2, AL_PITCH,    1.0f     );
+    alSourcef (musicSource2, AL_GAIN,     1.0f     );
+    alSourcefv(musicSource2, AL_POSITION, SourcePos);
+    alSourcefv(musicSource2, AL_VELOCITY, SourceVel);
+    alSourcei (musicSource2, AL_LOOPING,  AL_FALSE     );
+    // Do another error check and return.
+    if (alGetError() == AL_NO_ERROR)
+        return AL_TRUE;
+
+    return AL_FALSE;
+}
+
+ALboolean LoadALData4()
+{
+    // Variables to load into.
+
+    ALenum format;
+    ALsizei size;
+    ALvoid* data;
+    ALsizei freq;
+    ALboolean loop;
+    // Load wav data into a buffer.
+    alGenBuffers(1, &noiseBuffer2);
+    if (alGetError() != AL_NO_ERROR)
+        return AL_FALSE;
+
+    alutLoadWAVFile("wakka.wav", &format, &data, &size, &freq, &loop);
+    alBufferData(noiseBuffer2, format, data, size, freq);
+    alutUnloadWAV(format, data, size, freq);
+    // Bind buffer with a source.
+    alGenSources(1, &noiseSource2);
+
+    if (alGetError() != AL_NO_ERROR)
+        return AL_FALSE;
+
+    alSourcei (noiseSource2, AL_BUFFER,   noiseBuffer2   );
+    alSourcef (noiseSource2, AL_PITCH,    1.0f     );
+    alSourcef (noiseSource2, AL_GAIN,     1.0f     );
+    alSourcefv(noiseSource2, AL_POSITION, SourcePos);
+    alSourcefv(noiseSource2, AL_VELOCITY, SourceVel);
+    alSourcei (noiseSource2, AL_LOOPING,  AL_TRUE     );
     // Do another error check and return.
     if (alGetError() == AL_NO_ERROR)
         return AL_TRUE;
@@ -887,7 +966,19 @@ namespace raceScene {
     case 'g':
       renderOpt.toggleDispGround();
       break;
-
+    case '1':
+      alSourceStop(currentMusic);
+      alSourceStop(currentNoise);
+      currentMusic = musicSource;
+      currentNoise = noiseSource;
+      alSourcePlay(currentMusic);
+    case '2':
+      alSourceStop(currentMusic);
+      alSourceStop(currentNoise);
+      currentMusic = musicSource2;
+      currentNoise = noiseSource2;
+      alSourcePlay(currentMusic);
+      break;
     case ' ':
       vehicle->setAirBrake(0.00008);
       break;
@@ -903,13 +994,21 @@ namespace raceScene {
   }
 
   void processSpecialKeys(int key, int x, int y) {
+
+    ALint sourceState;
     switch(key) {
       case GLUT_KEY_UP:
-        alSourcePlay(noiseSource);
+        alGetSourcei(currentNoise, AL_SOURCE_STATE, &sourceState);
+        if (sourceState != AL_PLAYING) {
+          alSourcePlay(currentNoise);
+        }
         vehicle->setAccel(0.2);
         break;
       case GLUT_KEY_DOWN:
-        alSourcePlay(noiseSource);
+        alGetSourcei(currentNoise, AL_SOURCE_STATE, &sourceState);
+        if (sourceState != AL_PLAYING) {
+          alSourcePlay(currentNoise);
+        }
         vehicle->setAccel(-0.1);
         break;
       case GLUT_KEY_LEFT:
@@ -952,7 +1051,7 @@ namespace raceScene {
     switch(key) {
       case GLUT_KEY_UP:
       case GLUT_KEY_DOWN:
-        alSourceStop(noiseSource);
+        alSourceStop(currentNoise);
         vehicle->setAccel(0.0);
         break;
       case GLUT_KEY_LEFT:
@@ -1085,6 +1184,19 @@ namespace titleScene {
     case 'G':
     case 'g':
       renderOpt.toggleDispGround();
+      break;
+    case '1':
+      alSourceStop(currentMusic);
+      alSourceStop(currentNoise);
+      currentMusic = musicSource;
+      currentNoise = noiseSource;
+      alSourcePlay(currentMusic);
+    case '2':
+      alSourceStop(currentMusic);
+      alSourceStop(currentNoise);
+      currentMusic = musicSource2;
+      currentNoise = noiseSource2;
+      alSourcePlay(currentMusic);
       break;
 
       //temp keys for debugging
@@ -1259,7 +1371,12 @@ int main(int argc,char** argv) {
   SetListenerValues();
   if (LoadALData2() == AL_FALSE)
     return -2;
-
+  SetListenerValues();
+  if (LoadALData3() == AL_FALSE)
+    return -3;
+  SetListenerValues();
+  if (LoadALData4() == AL_FALSE)
+    return -4;
   SetListenerValues();
 
   // Setup an exit procedure.
@@ -1358,6 +1475,8 @@ int main(int argc,char** argv) {
     setMode(MODE_TITLE);
 
   //And Go!
+  currentMusic = musicSource;
+  currentNoise = noiseSource;
   alSourcePlay(musicSource);
   glutMainLoop();
 }
