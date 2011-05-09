@@ -10,11 +10,6 @@ varying vec3 t;
 varying vec3 b;
 varying vec3 n;
 
-uniform bool phongEnabled;
-uniform bool displacementEnabled;
-
-varying vec2 uv;
-
 void main()
 {
 
@@ -28,8 +23,7 @@ void main()
   // pass down the texture coords
   gl_TexCoord[0] = gl_MultiTexCoord0;
 
-  
-    gl_Position =  gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
+  gl_Position =  ftransform(); //gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
 
   shadowCoord= gl_TextureMatrix[7] * gl_Vertex;
 }

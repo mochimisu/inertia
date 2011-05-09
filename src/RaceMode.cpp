@@ -2,8 +2,8 @@
 
 // Constants (some issues with aspect ratio; and i think defines will speed some stuff up. keep it?)
 const float shadowMapCoef = 0.5;
-const float blurCoef = 0.25;
-const float lightScatteringCoef = 0.5;
+const float blurCoef = 0.5;
+const float lightScatteringCoef = 1.0;
 
 const float shadowMapWidth = renderWidth * shadowMapCoef;
 const float shadowMapHeight = renderHeight * shadowMapCoef;
@@ -26,24 +26,7 @@ vec3 u_camera(0,1,0);
 //Light position
 vec3 p_light(110,60,0);
 //Light lookAt
-vec3 l_light(0,0,0);
-
-/* scattering + shadow demo
-//Camera position
-vec3 p_camera(-5,10,30);
-//Camera lookAt
-vec3 l_camera(0,0,0);
-//Camera up
-vec3 u_camera(0,1,0);
-//Light position
-//vec3 p_light(4,30,0);
-vec3 p_light(3,4,-7);
-//Light lookAt
-vec3 l_light(0,0,0);
-*/
-
-                                                                                                                
-
+vec3 l_light(0,0,0);                                                                                                                
 //===DEBUG STUFF 
 //background texture
 enum { DISPLAY_DEPTH_BUFFER,
@@ -87,12 +70,13 @@ int lapStartTime;
 
 //draw text (temporarily here until i figure out sdl
 void drawString(string str, float x, float y) {
-	void * font = GLUT_BITMAP_HELVETICA_10;
-		glRasterPos2f(x,y);
+  glRasterPos2f(x,y);
+  font.Render(str.c_str());
+        /*
 		for (string::iterator i = (&str)->begin(); i != (&str)->end(); ++i){
 			char c = *i;
 			glutBitmapCharacter(font, c);
-		}
+		}*/
 	}
 
 /* 
@@ -695,9 +679,11 @@ void renderScene() {
   glDisable(GL_BLEND);
   
   drawHud();
-  
+ 
+  /*
   if(renderOpt.isDepthBuffer())
     drawDebugBuffer(renderOpt.getDepthBufferOption());
+*/
 
   glutSwapBuffers();    
 }
