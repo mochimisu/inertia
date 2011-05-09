@@ -591,9 +591,7 @@ namespace {
     vec3 vehLoc = vehicle->worldSpacePos();
 
     //Put matrices together for smaller stack size
-    const mat4 vehScale = scaling3D(vec3(0.2,0.2,0.2));
-    mat4 transformation = vehScale *
-                          vehicle->orientationBasis() *
+    mat4 transformation = vehicle->orientationBasis() *
                           translation3D(vehLoc).transpose();
 
     pushMat4(transformation);
@@ -933,7 +931,7 @@ namespace {
     vehicle = new Vehicle(sweep);
     vehicle->mesh->loadFile("test.obj");
     vehicle->mesh->loadTextures("test.png","test.png");
-    vehicle->mesh->centerAndScale(4);
+    vehicle->mesh->centerAndScale(0.8);
 
     //Lap time 
     lapStartTime = glutGet(GLUT_ELAPSED_TIME);
