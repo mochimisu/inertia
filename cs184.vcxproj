@@ -120,7 +120,6 @@
     <ClCompile Include="src\LoadImage.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\mesh.cpp" />
-    <ClCompile Include="src\RaceMode.cpp" />
     <ClCompile Include="src\shaders.cpp" />
     <ClCompile Include="src\sweep.cpp" />
     <ClCompile Include="src\TrackGenerator.cpp" />

@@ -123,7 +123,6 @@ GeometryShader::GeometryShader(string vertProg, string fragProg) : Shader(vertPr
 
   tangentAttrib = glGetAttribLocationARB(program, "tangent");
   bitangentAttrib = glGetAttribLocationARB(program, "bitangent");
-  displacementEnabledUniform = glGetUniformLocationARB(program, "displacementEnabled");
 }
 
 ShadowShader::ShadowShader(string vertProg, string fragProg) : GeometryShader(vertProg, fragProg) {
@@ -169,6 +168,8 @@ void GeometryShader::setUniformValues() {
 void ShadowShader::setUniformValues() {
   GeometryShader::setUniformValues();
   glUniform1iARB(glGetUniformLocationARB(program, "textureMap"), 0);
+
+  glUniform1iARB(glGetUniformLocationARB(program, "shadowMap"), 7);
 }
 
 void BlurShader::setUniformValues() {

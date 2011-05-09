@@ -1,5 +1,8 @@
 #include "Cityscape.h"
 
+bool loadTexture(string filename, GLuint &texture);
+bool loadHeightAndNormalMaps(string filename, GLuint &heightmap, GLuint &normalmap, double zScale);
+
 BuildingSubdivision::BuildingSubdivision(int setXMin, int setXMax, int setZMin, int setZMax, double setHeight, int area) {
 	xMin = setXMin;
 	xMax = setXMax;
@@ -38,6 +41,9 @@ Cityscape::Cityscape(int xWidth, int zWidth, int area) {
 	hasDL = false;
     this->xWidth = xWidth;
     this->zWidth = zWidth;
+
+	loadTexture("building.png", this->myTexture);
+	loadHeightAndNormalMaps("building_height.png", this->myHeightTexture, this->myNormalTexture, 0.1);
 }
 
 void Cityscape::render() {
@@ -54,6 +60,12 @@ void Cityscape::render() {
 void Cityscape::renderBuildingSubdivision(BuildingSubdivision* bsd) {
 	if (bsd->leaf) {
       if (bsd->draw) {
+		    glActiveTexture(GL_TEXTURE0);
+		    glBindTexture(GL_TEXTURE_2D, myTexture);
+		    glActiveTexture(GL_TEXTURE1);
+		    glBindTexture(GL_TEXTURE_2D, myHeightTexture);
+			glActiveTexture(GL_TEXTURE2);
+		    glBindTexture(GL_TEXTURE_2D, myNormalTexture);
 			glBegin(GL_QUADS);
 			
             //top
@@ -65,30 +77,46 @@ void Cityscape::renderBuildingSubdivision(BuildingSubdivision* bsd) {
 
             //back
 			glNormal3d(0, 0, -1);
+			glTexCoord2f(1,0);
             glVertex3d(bsd->xMax, 0, bsd->zMin);
+			glTexCoord2f(0,0);
             glVertex3d(bsd->xMin, 0, bsd->zMin);
+			glTexCoord2f(0, bsd->height);
             glVertex3d(bsd->xMin, bsd->height, bsd->zMin);
+			glTexCoord2f(1, bsd->height);
             glVertex3d(bsd->xMax, bsd->height, bsd->zMin);
 
             //left side
 			glNormal3d(-1, 0, 0);
+			glTexCoord2f(0,0);
             glVertex3d(bsd->xMin, 0, bsd->zMin);
+			glTexCoord2f(1,0);
             glVertex3d(bsd->xMin, 0, bsd->zMax);
+			glTexCoord2f(1,bsd->height);
             glVertex3d(bsd->xMin, bsd->height, bsd->zMax);
+			glTexCoord2f(0,bsd->height);
             glVertex3d(bsd->xMin, bsd->height, bsd->zMin);
 
             //right side
 			glNormal3d(1, 0, 0);
+			glTexCoord2f(0,0);
             glVertex3d(bsd->xMax, 0, bsd->zMin);
+			glTexCoord2f(0,bsd->height);
             glVertex3d(bsd->xMax, bsd->height, bsd->zMin);
+			glTexCoord2f(1,bsd->height);
             glVertex3d(bsd->xMax, bsd->height, bsd->zMax);
+			glTexCoord2f(1,0);
             glVertex3d(bsd->xMax, 0, bsd->zMax);
 
             //front
 			glNormal3d(0, 0, 1);
+			glTexCoord2f(0,0);
             glVertex3d(bsd->xMax, 0, bsd->zMax);
+			glTexCoord2f(0,bsd->height);
             glVertex3d(bsd->xMax, bsd->height, bsd->zMax);
+			glTexCoord2f(1,bsd->height);
             glVertex3d(bsd->xMin, bsd->height, bsd->zMax);
+			glTexCoord2f(1,0);
             glVertex3d(bsd->xMin, 0, bsd->zMax);
             
             glEnd();

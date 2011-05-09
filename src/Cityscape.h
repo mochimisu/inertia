@@ -48,10 +48,14 @@ private:
 
 	BuildingSubdivision* rootBSD;
     GLuint DLid;
+	GLuint myTexture; // for now, all buildings look the same
+	GLuint myHeightTexture;
+	GLuint myNormalTexture;
     bool hasDL;
 
     float xWidth;
     float zWidth;
+
 };
 
 #endif

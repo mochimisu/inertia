@@ -2,6 +2,7 @@ Debug
 Release
 cscope.out
 sweep
+.DS_Store
 
 syntax: glob
 *.o

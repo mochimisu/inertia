@@ -133,55 +133,16 @@ void sampleBSpline(const vector<Pt> &pathPts, vector<Pt> &polyline, int totalSam
   }
 }
 
-Sweep::Sweep(string filename) : globalTwist(0), globalAzimuth(0) {
-  // Load the track file
-  ifstream f(filename.c_str());
-  if (!f) {
-    UCBPrint("Sweep", "Couldn't load file " << filename);
-    return;
-  }
-  string line;
-  while (getline(f,line)) {
-    stringstream linestream(line);
-    string op;
-    linestream >> op;
-    if (op.empty() || op[0] == '#') // comments are marked by # at the start of a line
-      continue;
-    if (op == "p") { // p marks profile points (2d cross section vertices)
-      vec2 v(0);
-      linestream >> v;
-      profilePts.push_back(v);
-    } else if (op == "v") { // v marks bspline control points with optional azimuth info
-      vec3 v(0);
-      linestream >> v;
-      double az;
-      if (linestream >> az) {
-	double s;
-	if (linestream >> s) {
-	  pathPts.push_back(PathPoint(v, az, s));
-	} else {
-	  pathPts.push_back(PathPoint(v, az));
-	}
-      } else {
-	pathPts.push_back(PathPoint(v));
-      }
-    } else if (op == "twist") {
-      //linestream >> globalTwist;
-    } else if (op == "azimuth") {
-      //linestream >> globalAzimuth;
-    } else if (op == "texture") {
-      string textureFile = getQuoted(linestream);
-      loadTexture(textureFile, texture);
-      getValue(linestream, lengthRepeats);
-      getValue(linestream, widthRepeats);
-    } else if (op == "bump") {
-      string bumpFile = getQuoted(linestream);
-      loadHeightAndNormalMaps(bumpFile, heightMap, normalMap, .2);
-    }
-  }
+Sweep::Sweep() : globalTwist(0), globalAzimuth(0), widthRepeats(1) {
+
+  loadTexture("road.png", texture);
+  //getValue(linestream, lengthRepeats);
+  lengthRepeats = 50;
+
+  //string bumpFile = getQuoted(linestream);
+  //loadHeightAndNormalMaps("roadbumpmap.png", heightMap, normalMap, .2);
   
-  // Procedurally generated now
-  pathPts.clear();
+  // Procedurally generated
   TrackGenerator trkGen;
   vector<vec3> controlPts = trkGen.getControlPts();
   for (unsigned int i = 0; i < controlPts.size(); i++) {
@@ -191,7 +152,7 @@ Sweep::Sweep(string filename) : globalTwist(0), globalAzimuth(0) {
 
   cscape = new Cityscape(trkGen.getXWidth() + 20, trkGen.getZWidth() + 20, 64);
   
-  vector<vec2>::iterator fwd = profilePts.begin();
+  /*vector<vec2>::iterator fwd = profilePts.begin();
   vector<vec2>::iterator bkwd = profilePts.end();
   bkwd--;
   while(fwd < bkwd) {
@@ -200,7 +161,7 @@ Sweep::Sweep(string filename) : globalTwist(0), globalAzimuth(0) {
     *bkwd = tmpfw;
     fwd++;
     bkwd--;
-  }
+  }*/
 
 
 }
@@ -276,148 +237,101 @@ vec3 Sweep::getFirstUp() {
   return sampleUp(0);
 }
 
-
-
 // sweep the cross section along the curve (helper for the big render function)
-void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vector<vec2> &profile, double crossSectionScale) {
-  PathPoint pts[3]; // pts[1] is us, pts[0] and pts[3] surround us
-  vector<vec2> & crossSection = profile;
-  int size = (int) polyline.size();
-  vec3 * newSlice = new vec3[crossSection.size()];
-  vec3 * oldSlice = new vec3[crossSection.size()];
-  vec3 oldDir(0), right(0), up(0);
-  bool firstDir = true;
-  for (int i = 1; i < size-1; i++) {
-    double percent = double(i % size) / (double(size-3));
-    double deltaPercent = 1.0 / (double(size-3));
-    for (int c = -1; c <= 1; c++) { // populate local pts
-      pts[c+1] = polyline[ (i + size + c) %  size ];
-    }
+void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vector<pair<vec2, double> > &profile, double crossSectionScale) {
+  vector<pair<vec2, double> > & crossSection = profile;
+  vec3 * stripCurr = new vec3[polyline.size()];
+  vec3 * stripPrev = new vec3[polyline.size()];
+  
+  GLint tangentAttrib = shader.getTangentAttrib();
+  GLint bitangentAttrib = shader.getBitangentAttrib();
+  
+  vector<vec3> forwards;
+  vector<vec3> ups;
+  vector<vec3> rights;
 
-    vec3 leg1 = (pts[0].point - pts[1].point).normalize();
-    vec3 leg2 = (pts[2].point - pts[1].point).normalize();
-    vec3 dir = (leg2 - leg1);
-    if (dir.length2() < .0001)
-      dir = pts[2].point - pts[1].point;
-    dir.normalize();
+  // Precompute the coordinate axes for each PathPoint
+  for (unsigned int j = 0; j < polyline.size(); j++) {
+    double percentageAlongTrack = double(j) / polyline.size();
+    PathPoint pathPtCurr = polyline[j];
+
+    // Create the coordinate axes
+    vec3 forward = sampleForward(percentageAlongTrack).normalize();
+    vec3 up = sampleUp(percentageAlongTrack);
+    vec3 right = (forward ^ up).normalize();
+    up = (right ^ forward).normalize();
+
+    double rot = pathPtCurr.azimuth;
+    mat4 rotMatrix = rotation3D(forward, rot);
     
-	up = sampleUp(percent);
-    right = dir ^ up;
-    up = right ^ dir;
-    up.normalize(); right.normalize();
+    right = crossSectionScale * (rotMatrix * right);
+    up = crossSectionScale * (rotMatrix * up);
 
-
-    double rot = pts[1].azimuth;
-
-    vec3 bisect = leg1 + leg2;
-    double len = bisect.length();
-    bool scaleSect = false;
-    double scaleTrans = 0;
-    if (len > .0001) { // only scale if not going straight already
-      scaleSect = true;
-      bisect = bisect/len;
-      double dot = -leg1*leg2;
-      double angle = acos(CLAMP(dot,-1.0,1.0));
-      double scale = 1.0 / MAX(cos(.5*angle ),.1);
-      scaleTrans = scale - 1.0;
+    forwards.push_back(forward);
+    ups.push_back(up);
+    rights.push_back(right);
+  }
+  
+  // FOR loop for going AROUND track
+  for (unsigned int i = 0; i <= crossSection.size(); i++) {
+    int aroundIndexCurr = (i) % crossSection.size();
+    int aroundIndexPrev = (i - 1 + crossSection.size()) % crossSection.size();
+    double percentageAroundTrackCurr = i != crossSection.size() ? crossSection[aroundIndexCurr].second : 1.0;
+    double percentageAroundTrackPrev = i != 0 ? crossSection[aroundIndexPrev].second : 0.0;
+    vec2 csPtCurr = crossSection[aroundIndexCurr].first;
+    vec2 csPtPrev = crossSection[aroundIndexPrev].first;
+    
+    // FOR loop for going ALONG track
+    // Populating stripCurr
+    for (unsigned int j = 0; j < polyline.size(); j++) {
+      vec3 pt = rights[j] * csPtCurr[0] + ups[j] * csPtCurr[1];
+      stripCurr[j] = polyline[j].point + pt;
     }
-
-    double s = crossSectionScale;
-    int ind = 0;
-    for (vector<vec2>::iterator it = crossSection.begin(); it != crossSection.end(); ++it, ++ind) {
-      vec2 pos2d = rotation2D(vec2(0,0),rot) * (*it);
-      vec3 pt = right * pos2d[0] * s + up * pos2d[1] * s;
-      if (scaleSect) {
-	pt = pt + scaleTrans * (pt * bisect) * bisect;
-      }
-      pt *= pts[1].scale;
-      newSlice[ind] = pts[1].point + pt;
-    }
-
-    if (i > 1) {
+    
+    if (i > 0) {
+      // FOR loop for going ALONG track
+      // Drawing the QUAD_STRIP
       glBegin(GL_QUAD_STRIP);
-      int csize = (int) crossSection.size();
-      for (int v = 0; v <= csize; v++) {
+      for (unsigned int j = 0; j <= (polyline.size() - 3); j++) {
+        int alongIndexCurr = (j) % (polyline.size() - 3);
+        double percentageAlongTrack = double(alongIndexCurr) / (polyline.size() - 3);
+      
+        PathPoint pathPtCurr = polyline[alongIndexCurr];
+      
+        vec3 quadBitangent = (stripCurr[alongIndexCurr] - stripPrev[alongIndexCurr]).normalize();
+        vec3 quadTangent = (forwards[alongIndexCurr]).normalize();
+        vec3 quadNormal = (quadBitangent ^ quadTangent).normalize();
 
-	GLint tangentAttrib = shader.getTangentAttrib();
-	GLint bitangentAttrib = shader.getBitangentAttrib();
+        glNormal3dv(&quadNormal[0]);
+        glVertexAttrib3fARB(tangentAttrib, quadTangent[0], quadTangent[1], quadTangent[2]);
+        glVertexAttrib3fARB(bitangentAttrib, quadBitangent[0], quadBitangent[1], quadBitangent[2]);
 
-	int vn = v % csize;
-	vec3 tan0 = oldSlice[(vn+1)%csize]-oldSlice[vn]; tan0.normalize();
-	vec3 tan1 = newSlice[(vn+1)%csize]-newSlice[vn]; tan1.normalize();
+        double texS, texT;
+        
+        texS = lengthRepeats * percentageAlongTrack;
+        
+        texT = percentageAroundTrackCurr;
+        glTexCoord2d(texS, texT);
+        glVertex3dv(&stripCurr[alongIndexCurr][0]);
 
-	//glColor3f(v%4!=0,v%4!=1,v%4!=2);
-	double percentAround = v / double(csize); // the percent around the cross section
+        texT = percentageAroundTrackPrev;
+        glTexCoord2d(texS, texT);
+        glVertex3dv(&stripPrev[alongIndexCurr][0]);
 
-	//vec3 n = (tan0^oldDir);
-	vec3 n = -(tan0^oldDir);
-	n.normalize();
-	glNormal3dv(&n[0]);
-	/*
-	cout << "dp: " << deltaPercent << endl;
-	cout << percent << "," << percentAround << endl;
-	cout << lengthRepeats << ";" << widthRepeats << endl;
-	*/
-
-	// @TODO: SET TEXTURE COORDINATE
-	// HINT: use percent, deltaPercent, percentAround to determine where on the curves you are
-	// HINT: use lengthRepeats and widthRepeats to determine how much to repeat
-	double vcoord = (percent-deltaPercent)*lengthRepeats;
-	while(vcoord > 1)
-	  vcoord--;
-	double ucoord = percentAround*widthRepeats;
-	while(ucoord > 1)
-	  ucoord--;
-	//cout << percentAround << "," << ucoord << endl;
-	//glTexCoord2d(ucoord,vcoord);
-	glTexCoord2d(vcoord,1-ucoord);
-		       	
-	// @TODO: SET TANGENT AND BITANGENT
-	// HINT: Use the glVertexAttrib3fARB, like:
-	// glVertexAttrib3dARBv(tangentAttrib, x=?, y=?, z=?);
-	// glVertexAttrib3dARBv(bitangentAttrib, x=?, y=?, z=?);
-	glVertexAttrib3fARB(tangentAttrib,tan0[0],tan0[1],tan0[2]);
-	vec3 bit0 = tan0 ^ n;
-	glVertexAttrib3fARB(bitangentAttrib,bit0[0],bit0[1],bit0[2]);
-
-	glVertex3dv(&oldSlice[vn][0]);
-                
-	//vec3 n2 = (tan1^dir);
-	vec3 n2 = -(tan1^dir);
-	n2.normalize();
-	glNormal3dv(&n2[0]);
-                
-	// @TODO: SET TEXTURE COORDINATE
-	// HINT: use percent, deltaPercent, percentAround to determine where on the curves you are
-	// HINT: use lengthRepeats and widthRepeats to determine how much to repeat
-	//glTexCoord2d(ucoord,vcoord + lengthRepeats*deltaPercent);
-	  glTexCoord2d((vcoord + lengthRepeats*deltaPercent),1-ucoord);
-				
-	// @TODO: SET TANGENT AND BITANGENT
-	// HINT: Use the glVertexAttrib3fARB, like:
-	// glVertexAttrib3dARBv(tangentAttrib, x=?, y=?, z=?);
-	// glVertexAttrib3dARBv(bitangentAttrib, x=?, y=?, z=?);
-	glVertexAttrib3fARB(tangentAttrib,tan1[0],tan1[1],tan1[2]);
-	vec3 bit1 = tan1 ^ n2;
-	glVertexAttrib3fARB(bitangentAttrib,bit1[0],bit1[1],bit1[2]);
-                
-	glVertex3dv(&newSlice[vn][0]);
-
-	cscape->cull(newSlice[vn][0], newSlice[vn][2]);
-                
+        // Cull ?????????????????????????????????????????????????????????????????????????????? I need to do a better version of this.....
+        cscape->cull(stripCurr[alongIndexCurr][0], stripCurr[alongIndexCurr][2]);
       }
       glEnd();
     }
-
-    // swap new and old lists
-    vec3 *temp = newSlice;
-    newSlice = oldSlice;
-    oldSlice = temp;
-
-    oldDir = dir;
+    
+    // Advance the strips (by swap)
+    vec3* stripTemp = stripPrev;
+    stripPrev = stripCurr;
+    stripCurr = stripTemp;
   }
-  delete [] newSlice;
-  delete [] oldSlice;
+
+  delete [] stripCurr;
+  delete [] stripPrev;
 }
 
 // the big render function
@@ -439,10 +353,17 @@ void Sweep::render(GeometryShader &shader, int pathSamplesPerPt, double crossSec
 
   vector<PathPoint> polyline;
   sampleBSpline(pathPts, polyline, totalSamples);
-  //createPolyline(polyline, totalSamples);
 
-  vector<vec2> profile;
-  sampleBSpline(profilePts, profile, xsectSamplesPerPt * int(profilePts.size()));
+  vector<pair<vec2, double> > profile;
+  profile.push_back(pair<vec2, double>(vec2(0, -1), 0.0));
+  profile.push_back(pair<vec2, double>(vec2(7, -1), 0.10));
+  profile.push_back(pair<vec2, double>(vec2(7, 1), 0.15));
+  profile.push_back(pair<vec2, double>(vec2(6, 1), 0.20));
+  profile.push_back(pair<vec2, double>(vec2(6, 0), 0.25));
+  profile.push_back(pair<vec2, double>(vec2(-6, 0), 0.75));
+  profile.push_back(pair<vec2, double>(vec2(-6, 1), 0.80));
+  profile.push_back(pair<vec2, double>(vec2(-7, 1), 0.85));
+  profile.push_back(pair<vec2, double>(vec2(-7, -1), 0.90));
 
   int size = (int) polyline.size();
   if (size <= 1) { // a polyline with only one point is pretty lame!
