@@ -14,7 +14,9 @@ const float lightScatterHeight = renderHeight * lightScatteringCoef;
 
 extern Viewport viewport;
 extern ALuint noiseSource;
-extern FTGLTextureFont font;
+extern FTGLTextureFont * evolutionFont;
+extern FTGLTextureFont * digitalNinjaFont;
+extern FTGLTextureFont * accidentalPresidencyFont;
 
 //===SCENE DESCRIPTORS
 //Camera position
@@ -68,21 +70,17 @@ GLuint scatterFboId;
 int lastTimeStep;
 int lapStartTime;
 
-//draw text (temporarily here until i figure out sdl
-void drawString(string str, float x, float y) {
+//Draw Text
+void drawString(FTFont *font, string str, float x, float y) {
   FTPoint pos(x,y);
-  font.Render(str.c_str(), -1, pos);
-        /*
-		for (string::iterator i = (&str)->begin(); i != (&str)->end(); ++i){
-			char c = *i;
-			glutBitmapCharacter(font, c);
-		}*/
-	}
+  font->Render(str.c_str(), -1, pos);
+}
 
-/* 
- * light scattering stuff. testingg!!!!!
+/*
+ * Light Scattering stuff.
  */
 
+//Grab the screen space location of the light
 vec2 getLightScreenCoor() {
   double modelView[16];
   double projection[16];
@@ -98,24 +96,42 @@ vec2 getLightScreenCoor() {
   GLdouble winY=0;
   GLdouble winZ=0;
 
-  gluProject(	p_light[0],
-		p_light[1],
-		p_light[2],
-		modelView,
-		projection,
-		viewport,
-		&winX,
-		&winY,
-		&winZ);
-	
+  gluProject(p_light[0], p_light[1], p_light[2],
+             modelView, projection, viewport,
+            &winX, &winY, &winZ);
 	
   return vec2(winX/renderWidth,  winY/renderHeight);
 }
+
+//Generate the FBO the light scatter shader will write to
+void generateLightFBO() {
+  GLenum FBOstatus;
+  glGenFramebuffersEXT(1, &scatterFboId);
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, scatterFboId);
+  
+  glGenTextures(1, &scatterTextureId);
+  glBindTexture(GL_TEXTURE_2D, scatterTextureId);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
+  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F_ARB, lightScatterWidth, lightScatterHeight, 0 , GL_RGB, GL_FLOAT, 0);
+
+  glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, scatterTextureId, 0);
+
+  FBOstatus = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+  if(FBOstatus != GL_FRAMEBUFFER_COMPLETE_EXT)
+    printf("GL_FRAMEBUFFER_COMPLETE_EXT failed for light FBO, CANNOT use FBO\n");
+
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+}
+
 
 
 /*
  * Shadow stuff. Will probably move somewhere else.
  */
+//Generate the FBO the depth shader will write to
 void generateShadowFBO() {
 	
   GLenum FBOstatus;
@@ -168,6 +184,7 @@ void generateShadowFBO() {
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 }
 
+//Generate the FBO the gaussian blur shader will write to
 void generateBlurFBO() {
 	
   GLenum FBOstatus;
@@ -192,146 +209,7 @@ void generateBlurFBO() {
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 }
 
-void generateLightFBO() {
-  GLenum FBOstatus;
-  glGenFramebuffersEXT(1, &scatterFboId);
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, scatterFboId);
-  
-  glGenTextures(1, &scatterTextureId);
-  glBindTexture(GL_TEXTURE_2D, scatterTextureId);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F_ARB, lightScatterWidth, lightScatterHeight, 0 , GL_RGB, GL_FLOAT, 0);
-
-  glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, scatterTextureId, 0);
-
-  FBOstatus = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-  if(FBOstatus != GL_FRAMEBUFFER_COMPLETE_EXT)
-    printf("GL_FRAMEBUFFER_COMPLETE_EXT failed for light FBO, CANNOT use FBO\n");
-
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-}
-
-void setupMatrices(float position_x,float position_y,float position_z,float lookAt_x,float lookAt_y,float lookAt_z,float up_x,float up_y,float up_z, float zNear, float zFar, float fovy)
-{
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  //gluPerspective(45,renderWidth/renderHeight,zNear,zFar);
-  gluPerspective(fovy,renderWidth/renderHeight,zNear,zFar);
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-  gluLookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,up_x,up_y,up_z);
-}
-
-void setTextureMatrix() {
-  static double modelView[16];
-  static double projection[16];
-	
-  // This is matrix transform every coordinate x,y,z
-  // x = x* 0.5 + 0.5 
-  // y = y* 0.5 + 0.5 
-  // z = z* 0.5 + 0.5 
-  // Moving from unit cube [-1,1] to [0,1]  
-  const GLdouble bias[16] = {	
-    0.5, 0.0, 0.0, 0.0, 
-    0.0, 0.5, 0.0, 0.0,
-    0.0, 0.0, 0.5, 0.0,
-    0.5, 0.5, 0.5, 1.0};
-	
-  // Grab modelview and transformation matrices
-  glGetDoublev(GL_MODELVIEW_MATRIX, modelView);
-  glGetDoublev(GL_PROJECTION_MATRIX, projection);
-	
-	
-  glMatrixMode(GL_TEXTURE);
-  glActiveTextureARB(GL_TEXTURE7);
-	
-  glLoadIdentity();	
-  glLoadMatrixd(bias);
-	
-  // concatating all matrice into one.
-  glMultMatrixd (projection);
-  glMultMatrixd (modelView);
-	
-  // Go back to normal matrix mode
-  glMatrixMode(GL_MODELVIEW);
-}
-
-
-
-// During translation, we also have to maintain the GL_TEXTURE7, used in the shadow shader
-// to determine if a vertex is in the shadow.
-void pushTranslate(float x,float y,float z) {
-
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  glTranslatef(x,y,z);
-	
-  glMatrixMode(GL_TEXTURE);
-  glActiveTextureARB(GL_TEXTURE7);
-
-  glPushMatrix();
-  glTranslatef(x,y,z);
-}
-
-void pushViewportOrientation() {
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  applyMat4(viewport.orientation);
-	
-  glMatrixMode(GL_TEXTURE);
-  glActiveTextureARB(GL_TEXTURE7);
-
-  glPushMatrix();
-  applyMat4(viewport.orientation);
-}
-
-void pushMat4(mat4 xform) {
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  applyMat4(xform);
-	
-  glMatrixMode(GL_TEXTURE);
-  glActiveTextureARB(GL_TEXTURE7);
-
-  glPushMatrix();
-  applyMat4(xform);
-}
-
-void pushXformd(const GLdouble* m) {
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  glMultMatrixd(m);
-	
-  glMatrixMode(GL_TEXTURE);
-  glActiveTextureARB(GL_TEXTURE7);
-
-  glPushMatrix();
-  glMultMatrixd(m);
-}
-
-void pushXformf(const GLfloat* m) {
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  glMultMatrixf(m);
-	
-  glMatrixMode(GL_TEXTURE);
-  glActiveTextureARB(GL_TEXTURE7);
-
-  glPushMatrix();
-  glMultMatrixf(m);
-}
-
-void popTransform() {
-  glMatrixMode(GL_TEXTURE);
-  glActiveTextureARB(GL_TEXTURE7);
-  glPopMatrix();
-  glMatrixMode(GL_MODELVIEW);
-  glPopMatrix();
-}
-
+//Take the depth texture and blur it.
 void blurShadowMap() {
   //glDisable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE);
@@ -381,6 +259,108 @@ void blurShadowMap() {
   glEnd();
 		 
   glEnable(GL_CULL_FACE);
+}
+
+void setupMatrices(float position_x,float position_y,float position_z,float lookAt_x,float lookAt_y,float lookAt_z,float up_x,float up_y,float up_z, float zNear, float zFar, float fovy)
+{
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  //gluPerspective(45,renderWidth/renderHeight,zNear,zFar);
+  gluPerspective(fovy,renderWidth/renderHeight,zNear,zFar);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  gluLookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,up_x,up_y,up_z);
+}
+
+void setTextureMatrix() {
+  static double modelView[16];
+  static double projection[16];
+	
+  // This is matrix transform every coordinate x,y,z
+  // x = x* 0.5 + 0.5 
+  // y = y* 0.5 + 0.5 
+  // z = z* 0.5 + 0.5 
+  // Moving from unit cube [-1,1] to [0,1]  
+  const GLdouble bias[16] = {	
+    0.5, 0.0, 0.0, 0.0, 
+    0.0, 0.5, 0.0, 0.0,
+    0.0, 0.0, 0.5, 0.0,
+    0.5, 0.5, 0.5, 1.0};
+	
+  // Grab modelview and transformation matrices
+  glGetDoublev(GL_MODELVIEW_MATRIX, modelView);
+  glGetDoublev(GL_PROJECTION_MATRIX, projection);
+
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE7);
+	
+  glLoadIdentity();	
+  glLoadMatrixd(bias);
+	
+  // concatating all matrice into one.
+  glMultMatrixd (projection);
+  glMultMatrixd (modelView);
+	
+  // Go back to normal matrix mode
+  glMatrixMode(GL_MODELVIEW);
+}
+
+// Use these instead of pushMatrix() and popMatrix(). These maintain the orientations of the depth buffer in transformed objects.
+void pushTranslate(float x,float y,float z) {
+
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glTranslatef(x,y,z);
+	
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE7);
+
+  glPushMatrix();
+  glTranslatef(x,y,z);
+}
+
+void pushMat4(mat4 xform) {
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  applyMat4(xform);
+	
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE7);
+
+  glPushMatrix();
+  applyMat4(xform);
+}
+
+void pushXformd(const GLdouble* m) {
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glMultMatrixd(m);
+	
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE7);
+
+  glPushMatrix();
+  glMultMatrixd(m);
+}
+
+void pushXformf(const GLfloat* m) {
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glMultMatrixf(m);
+	
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE7);
+
+  glPushMatrix();
+  glMultMatrixf(m);
+}
+
+void popTransform() {
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE7);
+  glPopMatrix();
+  glMatrixMode(GL_MODELVIEW);
+  glPopMatrix();
 }
 
 
@@ -440,50 +420,106 @@ void drawHud() {
 
   //==Actual HUD stuff
   std::ostringstream buff;
-  glPushMatrix();
   glTranslated(0,0,-5);
 
- 
+  //backdrops 
+  
+  //header
+  glColor4f(.250980392,.458823529,.631372549,0.95);
+  glBegin(GL_QUADS);
+  glVertex3f(-renderWidth/2,renderHeight * 3.8/8,0);
+  glVertex3f(renderWidth/2,renderHeight * 3.8/8,0);
+  glVertex3f(renderWidth/2,renderHeight/2,0);
+  glVertex3f(-renderWidth/2,renderHeight/2,0);
+  glEnd();
+
+  glColor4f(.250980392,.458823529,.631372549,0.1);
+
+  //Lap
+  glBegin(GL_QUADS);
+  glVertex3f(-renderWidth/2,renderHeight * 3.0/8,0);
+  glVertex3f(-renderWidth * 3.4/8,renderHeight * 3.0/8,0);
+  glVertex3f(-renderWidth * 3.4/8,renderHeight * 3.8/8,0);
+  glVertex3f(-renderWidth/2,renderHeight * 3.8/8,0);
+  glEnd();
+
+  //Record (with record to have less branches)
+  /*
+  glBegin(GL_QUADS);
+  glVertex3f(renderWidth * 2.2/8,renderHeight * 3.0/8,0);
+  glVertex3f(renderWidth/2,renderHeight * 3.0/8,0);
+  glVertex3f(renderWidth/2,renderHeight * 3.8/8,0);
+  glVertex3f(renderWidth * 2.2/8,renderHeight * 3.8/8,0);
+  glEnd();
+  */
+  
+  //Energy
+  glBegin(GL_QUADS);
+  glVertex3f(-65,renderHeight * 3.0/8,0);
+  glVertex3f(65,renderHeight * 3.0/8,0);
+  glVertex3f(65,renderHeight * 3.8/8,0);
+  glVertex3f(-65,renderHeight * 3.8/8,0);
+  glEnd();
+
+  //Lap Time
+  glBegin(GL_QUADS);
+  glVertex3f(-renderWidth/2, -renderHeight*4.0/8,0);
+  glVertex3f(-renderWidth*2.5/8, -renderHeight*4.0/8,0);
+  glVertex3f(-renderWidth*2.5/8, -renderHeight*3.0/8,0);
+  glVertex3f(-renderWidth/2, -renderHeight*3.0/8,0);
+  glEnd();
+
+  //Velocity
+  glBegin(GL_QUADS);
+  glVertex3f(renderWidth*2/8, -renderHeight*4.0/8,0);
+  glVertex3f(renderWidth/2, -renderHeight*4.0/8,0);
+  glVertex3f(renderWidth/2, -renderHeight*3.0/8,0);
+  glVertex3f(renderWidth*2/8, -renderHeight*3.0/8,0);
+  glEnd();
+
+
+
+  //Actual stuff
+
   //Velocity
   buff.str("");
   buff << "Velocity";
   glColor4f(.188235294,.474509804,1,0.9);
-  drawString(buff.str(),renderWidth/8,-renderHeight*3.2/8 + 5); 
-
-  buff.str("");
-  buff << vehicle->getVelocityScalar();
-  glColor4f(.9,.9,1,0.8);
-  drawString(buff.str(),renderWidth/8,-renderHeight*3.2/8 - 10); 
+  drawString(evolutionFont, buff.str(),renderWidth*2.3/8,-renderHeight*3.4/8 + 5); 
 
   //Velocity Bar
   glColor4f(.188235294,.474509804,1,0.5);
   glBegin(GL_QUADS);
-  glVertex3f(renderWidth/8,-renderHeight*3.7/8,0); // bottom left
-  glVertex3f(renderWidth/8 + vehicle->getVelocityScalar() * maxVelocityWidth,-renderHeight*3.7/8,0); //bottom right
-  glVertex3f(renderWidth/8 + vehicle->getVelocityScalar() * maxVelocityWidth,-renderHeight*3.2/8,0); //top right
-  glVertex3f(renderWidth/8,-renderHeight*3.2/8,0); //top left
+  glVertex3f(renderWidth*2.1/8,-renderHeight*3.8/8,0); // bottom left
+  glVertex3f(renderWidth*2.1/8 + vehicle->getVelocityScalar() * maxVelocityWidth,-renderHeight*3.8/8,0); //bottom right
+  glVertex3f(renderWidth*2.1/8 + vehicle->getVelocityScalar() * maxVelocityWidth,-renderHeight*3.4/8,0); //top right
+  glVertex3f(renderWidth*2.1/8,-renderHeight*3.4/8,0); //top left
   glEnd();
+
+  //Velocity Text
+  buff.str("");
+  buff << vehicle->getVelocityScalar();
+  glColor4f(.9,.9,1,0.8);
+  drawString(digitalNinjaFont, buff.str(),renderWidth*2.3/8,-renderHeight*3.3/8 - 44); 
 
   //Air Break Bar
   if(vehicle->isAirBrake()) {
+
     glColor4f(.901960784,.160784314,.160784314,0.5);  
 
     glBegin(GL_QUADS);
-    glVertex3f(renderWidth/8,-renderHeight*3.8/8,0); // bottom left
-    glVertex3f(renderWidth*3.5/8 ,-renderHeight*3.8/8,0); //bottom right
-    glVertex3f(renderWidth*3.5/8,-renderHeight*3.7/8,0); //top right
-    glVertex3f(renderWidth/8,-renderHeight*3.7/8,0); //top left
+    glVertex3f(renderWidth*2.1/8,-renderHeight*3.9/8,0); // bottom left
+    glVertex3f(renderWidth*3.8/8 ,-renderHeight*3.9/8,0); //bottom right
+    glVertex3f(renderWidth*3.8/8,-renderHeight*3.8/8,0); //top right
+    glVertex3f(renderWidth*2.1/8,-renderHeight*3.8/8,0); //top left
     glEnd();
-  }
- 
-  font.Render("I CAN HAZ TEXT?");
- 
+  } 
 
   //Lap Time
   buff.str("");
   buff << "Lap Time";
   glColor4f(1,1,1,0.75);
-  drawString(buff.str(),-renderWidth*3.8/8,-renderHeight*3.3/8); 
+  drawString(evolutionFont, buff.str(),-renderWidth*3.8/8,-renderHeight*3.4/8); 
 
   buff.str("");
   int msTime = glutGet(GLUT_ELAPSED_TIME) - vehicle->getLapStartTime();
@@ -493,41 +529,61 @@ void drawHud() {
   buff << (sTime%60) << ".";
   buff << (msTime%1000);
   glColor4f(1,1,1,0.75);
-  drawString(buff.str(),-renderWidth*3.8/8,-renderHeight*3.3/8 - 10); 
+  drawString(digitalNinjaFont, buff.str(),-renderWidth*3.8/8,-renderHeight*3.7/8); 
 
-  //Lap Number [TODO: LAPS]
+  //Lap Number
   buff.str("");
-  buff << "Lap" << vehicle->getLap();
+  buff << "Lap"; // << vehicle->getLap();
   glColor4f(1,1,1,0.75);
-  drawString(buff.str(),-renderWidth*3.8/8,renderHeight*3.5/8); 
+  drawString(evolutionFont, buff.str(),-renderWidth*3.9/8,renderHeight*3.5/8); 
 
-  //Record [TODO: RECORD]
+  buff.str("");
+  buff << vehicle->getLap();
+  drawString(digitalNinjaFont, buff.str(), -renderWidth * 3.9/8, renderHeight*3.2/8);
+
+  //Record
   buff.str("");
   msTime = vehicle->getBestLapTime();
   if(msTime != -1) {
+    //backdrop
+    glColor4f(.250980392,.458823529,.631372549,0.3);
+    glBegin(GL_QUADS);
+    glVertex3f(renderWidth * 2.2/8,renderHeight * 3.0/8,0);
+    glVertex3f(renderWidth*2/2,renderHeight * 3.0/8,0);
+    glVertex3f(renderWidth*2/2,renderHeight * 3.8/8,0);
+    glVertex3f(renderWidth * 2.2/8,renderHeight * 3.8/8,0);
+    glEnd();
+
     sTime = msTime/1000;
     mTime  = sTime/60;
     buff << "Lap Record:";
+    drawString(evolutionFont, buff.str(),renderWidth*2.4/8, renderHeight*3.5/8);
+
+    buff.str("");
     buff << mTime << ".";
     buff << (sTime%60) << ".";
     buff << (msTime%1000);
     glColor4f(1,1,1,0.75);
-    drawString(buff.str(),renderWidth*3.2/8,renderHeight*3.5/8);
+    drawString(digitalNinjaFont, buff.str(),renderWidth*2.4/8, renderHeight*3.2/8);
+
   }
 
-  //Name [TODO: CENTER]
+  //Name 
   buff.str("");
-  buff << "INERTIA ALPHA";
-  drawString(buff.str(), -10,renderHeight*3.8/8);
+  buff << "cs184sp11 final project: inertia. pre-submission version. brandon wang, andrew lee, chris tandiono";
+  drawString(accidentalPresidencyFont, buff.str(), -renderWidth*3.9/8, renderHeight*3.85/8);
 
   //Energy
   buff.str("");
   buff << "Energy: ";
+  //buff << vehicle->getEnergy();
+  drawString(evolutionFont, buff.str(), -55,renderHeight*3.5/8);
+
+  buff.str("");
   buff << vehicle->getEnergy();
-  drawString(buff.str(), -10,renderHeight*3.7/8);
+  drawString(digitalNinjaFont, buff.str(), -45,renderHeight*3.2/8);
 
 
-  glPopMatrix();
   glDisable(GL_BLEND);
   glEnable(GL_DEPTH_TEST);
 }
@@ -540,7 +596,8 @@ void drawObjects(GeometryShader * curShade) {
   vec3 vehLoc = vehicle->worldSpacePos();
 
   //Put matrices together for smaller stack size
-  mat4 transformation = scaling3D(vec3(0.2,0.2,0.2)) *
+  const mat4 vehScale = scaling3D(vec3(0.2,0.2,0.2));
+  mat4 transformation = vehScale *
                         vehicle->orientationBasis() *
                         translation3D(vehLoc).transpose();
 
@@ -549,10 +606,18 @@ void drawObjects(GeometryShader * curShade) {
   popTransform();
 }
 
+
+/*
+ * The main display function. (Where all the magic happens).
+ * Five renders done here.
+ * 1) Depth render. Stores depth and depth squared for VSM
+ * 2) Gaussian Blur render. Blurs depth render's output
+ * 3) Light Path Tracing render. Path traces light rays for light scattering effect
+ * 4) Main render. Rendered with shadows and without light scattering. Has phong illumination and shading, bump map.
+ * 5) Light Scattering Overlay render. Overlays the output of the Light Path Tracing render as an additive overlay over the current scene.
+ *
+ */
 void renderScene() {
-
-  //==CAMERA
-
   //==FIRST RENDER: DEPTH BUFFER
   //Render from the light POV to a FBO, store depth and square depth in a 32F frameBuffer
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,shadowFboId);
@@ -579,8 +644,7 @@ void renderScene() {
   setTextureMatrix();
 
   //==SECOND (and a half) RENDER: DOUBLE PASS GAUSSIAN BLUR
-  blurShadowMap();
-    
+  blurShadowMap(); 
 
   //==THIRD RENDER: PATH TRACED LIGHT SCATTERING EFFECT (CREPUSCULAR RAYS)
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,scatterFboId);
@@ -833,7 +897,7 @@ void initialize() {
     float ambient[4] = { .5f, .5f, .5f, 1.f };
     float diffuse[4] = { 1.0f, 1.0f, 1.0f, 1.f };
     float pos[4] = { p_light[0], p_light[1], p_light[2], 0 };
-    //glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
     glLightfv(GL_LIGHT0, GL_POSITION, pos);
     glEnable(GL_LIGHT0);
@@ -856,7 +920,6 @@ void initialize() {
   generateShadowFBO();
   generateBlurFBO();
   generateLightFBO();
-
 
   //Load Shaders
   shade = new ShadowShader("shaders/MainVertexShader.c", "shaders/MainFragmentShader.c");
