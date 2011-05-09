@@ -10,7 +10,7 @@ Vehicle::Vehicle(Sweep * sw) {
   this->velocity = this->sweep->sampleForward(0,0.01);
   this->velocity.normalize();
   this->pos = vec3(0,0,0);
-  this->acceleration = this->sweep->sampleForward(0,0.1);
+  this->acceleration = this->sweep->sampleForward(0,0.01);
   this->up = this->sweep->sampleUp(0);
   this->up.normalize();
 
