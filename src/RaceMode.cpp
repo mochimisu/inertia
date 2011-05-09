@@ -2,8 +2,8 @@
 
 // Constants (some issues with aspect ratio; and i think defines will speed some stuff up. keep it?)
 const float shadowMapCoef = 0.5;
-const float blurCoef = 0.5;
-const float lightScatteringCoef = 1.0;
+const float blurCoef = 0.25;
+const float lightScatteringCoef = 0.5;
 
 const float shadowMapWidth = renderWidth * shadowMapCoef;
 const float shadowMapHeight = renderHeight * shadowMapCoef;
@@ -24,7 +24,7 @@ vec3 l_camera(0,0,0);
 //Camera up
 vec3 u_camera(0,1,0);
 //Light position
-vec3 p_light(60,45,0);
+vec3 p_light(110,60,0);
 //Light lookAt
 vec3 l_light(0,0,0);
 
