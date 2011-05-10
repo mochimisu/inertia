@@ -243,8 +243,8 @@ void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vec
   vector<vec3> rights;
 
   // Precompute the coordinate axes for each PathPoint
-  for (unsigned int j = 0; j < polyline.size(); j++) {
-    double percentageAlongTrack = double(j) / polyline.size();
+  for (unsigned int j = 0; j < polyline.size() - 3; j++) {
+    double percentageAlongTrack = double(j) / (polyline.size() - 3);
     PathPoint pathPtCurr = polyline[j];
 
     // Create the coordinate axes
