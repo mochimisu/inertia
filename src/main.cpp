@@ -94,6 +94,7 @@ GeometryShader *darkShade;
 //==OBJECTS
 Sweep *sweep;
 Vehicle *vehicle;
+Mesh * vehMesh;
 //for the sake of cleanliness
 RenderOptions renderOpt;
 
@@ -946,7 +947,7 @@ namespace raceScene {
 
   void drawObjects(GeometryShader * curShade) {
     //Track/City
-    sweep->renderWithDisplayList(*curShade,20,0.3,20);
+    sweep->renderWithDisplayList(*curShade,50,0.3,20);
 
     //Vehicle Location
     vec3 vehLoc = vehicle->worldSpacePos();
@@ -1116,17 +1117,190 @@ namespace raceScene {
 namespace titleScene {
 
   void drawObjects(GeometryShader * curShade) {
-    Mesh * veh = vehicle->mesh;
 
     vec3 rotAxis(0.3,0.9,0);
 
     mat4 transformation = rotation3D(rotAxis, glutGet(GLUT_ELAPSED_TIME)/200.0);
     pushMat4(transformation);
-    veh->draw(*curShade); 
+    vehMesh->draw(*curShade); 
     popTransform();
+  }
+  void drawTitleOverlay() {
+  //fudging this...
+    //const float maxVelocityWidth = renderWidth * 2.5/8 /20;
+
+    glEnable (GL_BLEND);
+    glDisable(GL_DEPTH_TEST);
+    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glUseProgramObjectARB(0);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(-renderWidth/2,renderWidth/2,-renderHeight/2,renderHeight/2,1,20);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    //==Actual HUD stuff
+    std::ostringstream buff;
+    glTranslated(0,0,-5);
+
+    glColor4f(1,1,1,0.75);
+    glBegin(GL_QUADS);
+    glTexCoord2d(0,0);glVertex3f(-20,-renderHeight/6,0);
+    glTexCoord2d(1,0);glVertex3f(renderWidth*0.45,-renderHeight/6,0);
+    glTexCoord2d(1,1);glVertex3f(renderWidth*0.45,renderHeight/6,0);
+    glTexCoord2d(0,1);glVertex3f(-20,renderHeight/6,0);
+    glEnd();
+
+    buff.str("");
+    buff << "INERTIA";
+    glColor4f(.188235294,.474509804,1,0.9);
+   
+    
+    evolutionFont->FaceSize(150);
+    drawString(evolutionFont, buff.str(),0,0); 
+    evolutionFont->FaceSize(36);
+    
+    accidentalPresidencyFont->FaceSize(36);
+    buff.str("");
+    buff << "CS184Sp11 Final Project";
+    drawString(accidentalPresidencyFont, buff.str(),0,-50); 
+    accidentalPresidencyFont->FaceSize(20);
+    buff.str("");
+    buff << "Brandon Wang, Andrew Lee, Chris Tandiono";
+    drawString(accidentalPresidencyFont, buff.str(),0,-75); 
+
+
+
+
+
+    //Name 
+    buff.str("");
+    buff << "cs184sp11 final project: inertia. pre-submission version. brandon wang, andrew lee, chris tandiono";
+    drawString(accidentalPresidencyBufferFont, buff.str(), -renderWidth*3.9/8, renderHeight*3.85/8);
+
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+  }
+
+  void processNormalKeys(unsigned char key, int x, int y) {
+    switch (key) {
+    case 'Q':
+    case 'q':
+    case 27:	
+      exit(0);
+      break;
+    case 'B':
+    case 'b':
+      renderOpt.toggleDispDepthBuffer();
+      break;
+    case 'G':
+    case 'g':
+      renderOpt.toggleDispGround();
+      break;
+    case '1':
+      alSourceStop(currentMusic);
+      alSourceStop(currentNoise);
+      currentMusic = musicSource;
+      currentNoise = noiseSource;
+      alSourcePlay(currentMusic);
+	  break;
+    case '2':
+      alSourceStop(currentMusic);
+      alSourceStop(currentNoise);
+      currentMusic = musicSource2;
+      currentNoise = noiseSource2;
+      alSourcePlay(currentMusic);
+      break;
+
+      //temp keys for debugging
+    case ' ':
+      setMode(MODE_TRACK_SELECT);
+      break;
+    }
+  }
+
+  void processNormalKeysUp(unsigned char key, int x, int y) {
+    switch(key) {
+    case ' ':
+      vehicle->setAirBrake(0);
+      break;
+    }
+  }
+
+  void processSpecialKeys(int key, int x, int y) {
+    return;
+  }
+
+  void joystickFunc(unsigned int buttonMask, int x, int y, int z) {
+    //cout << (buttonMask) << endl;
+    //cout << (buttonMask & 16384) << endl;
+    if(buttonMask & 8 && (glutGet(GLUT_ELAPSED_TIME) - lastStartPress > 1000)) { //start button
+	  lastStartPress = glutGet(GLUT_ELAPSED_TIME);
+	  setMode(MODE_RACE);
+	}
+  
+//		cout << buttonMask << endl;
   }
 
 
+  void processSpecialKeysUp(int key, int x, int y) {
+    switch(key) {
+      case GLUT_KEY_UP:
+      case GLUT_KEY_DOWN:
+        break;
+      case GLUT_KEY_LEFT:
+      case GLUT_KEY_RIGHT:
+        break;
+    }
+  }
+          
+
+  void activeMotionFunc(int x, int y) {
+
+    // Rotate viewport orientation proportional to mouse motion
+    vec2 newMouse = vec2((double)x / glutGet(GLUT_WINDOW_WIDTH),(double)y / glutGet(GLUT_WINDOW_HEIGHT));
+    vec2 diff = (newMouse - viewport.mousePos);
+    double len = diff.length();
+    if (len > .001) {
+      vec3 axis = vec3(diff[1]/len, diff[0]/len, 0);
+      viewport.orientation = viewport.orientation * rotation3D(axis, -180 * len);
+    }
+
+    //Record the mouse location for drawing crosshairs
+    viewport.mousePos = newMouse;
+
+    //Force a redraw of the window.
+    glutPostRedisplay();
+  }
+
+  void passiveMotionFunc(int x, int y) {
+    //Record the mouse location for drawing crosshairs
+    viewport.mousePos = vec2((double)x / glutGet(GLUT_WINDOW_WIDTH),(double)y / glutGet(GLUT_WINDOW_HEIGHT));
+
+    //Force a redraw of the window.
+    glutPostRedisplay();
+  }
+}
+
+
+
+
+
+
+//======TRACK SELECTION SCREEN
+////sorry about the code mess but its glut's fault and we dont have enough time to make something complex to make it look nice
+namespace trackSelectScene {
+
+  void drawObjects(GeometryShader * curShade) {
+
+    vec3 rotAxis(0.3,0.9,0);
+
+    mat4 transformation = rotation3D(rotAxis, glutGet(GLUT_ELAPSED_TIME)/200.0);
+    pushMat4(transformation);
+    sweep->renderWithDisplayList(*curShade,50,0.3,20);
+    popTransform();
+  }
   void drawTitleOverlay() {
   //fudging this...
     //const float maxVelocityWidth = renderWidth * 2.5/8 /20;
@@ -1314,7 +1488,7 @@ void setMode(int newMode) {
   switch(newMode) {
     case MODE_RACE:
         gameMode = MODE_RACE;
-        vehicle->mesh->centerAndScale(0.8);
+		vehMesh->centerAndScale(0.8);
         drawObjectTarget = raceScene::drawObjects;
         drawOverlayTarget = raceScene::drawHud;
         glutKeyboardFunc(raceScene::processNormalKeys);
@@ -1341,7 +1515,7 @@ void setMode(int newMode) {
 
         alSourceStop(currentNoise);
 
-        vehicle->mesh->centerAndScale(40);
+        vehMesh->centerAndScale(40);
         drawObjectTarget = titleScene::drawObjects;
         drawOverlayTarget = titleScene::drawTitleOverlay;
 
@@ -1361,6 +1535,33 @@ void setMode(int newMode) {
         p_light = vec3(0,30,6);
         l_light = vec3(0,0,0);
         break;
+	
+    case MODE_TRACK_SELECT:
+        gameMode = MODE_TRACK_SELECT;
+
+        alSourceStop(currentNoise);
+
+        vehMesh->centerAndScale(40);
+        drawObjectTarget = trackSelectScene::drawObjects;
+        drawOverlayTarget = trackSelectScene::drawTitleOverlay;
+
+        glutKeyboardFunc(trackSelectScene::processNormalKeys);
+        glutKeyboardUpFunc(trackSelectScene::processNormalKeysUp);
+        glutMotionFunc(trackSelectScene::activeMotionFunc);
+        glutPassiveMotionFunc(trackSelectScene::passiveMotionFunc);
+
+        glutSpecialFunc(trackSelectScene::processSpecialKeys);
+        glutSpecialUpFunc(trackSelectScene::processSpecialKeysUp);
+        glutJoystickFunc(trackSelectScene::joystickFunc,10);
+
+        p_camera = vec3(0,10,16);
+        l_camera = vec3(0,0,0);
+        u_camera = vec3(0,1,0);
+
+        p_light = vec3(0,30,6);
+        l_light = vec3(0,0,0);
+        break;
+
   }
 }
 
@@ -1481,8 +1682,10 @@ int main(int argc,char** argv) {
   
 
   vehicle = new Vehicle(sweep);
-  vehicle->mesh->loadFile("test.obj");
-  vehicle->mesh->loadTextures("test.png","test.png");
+  vehMesh = new Mesh();
+  vehicle->mesh = vehMesh;
+  vehMesh->loadFile("test.obj");
+  vehMesh->loadTextures("test.png","test.png");
 
     setMode(MODE_TITLE);
 
