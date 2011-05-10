@@ -344,15 +344,15 @@ void Sweep::render(GeometryShader &shader, int pathSamplesPerPt, double crossSec
   sampleBSpline(pathPts, polyline, totalSamples);
 
   vector<pair<vec2, double> > profile;
-  profile.push_back(pair<vec2, double>(vec2(0, -1), 0.0));
-  profile.push_back(pair<vec2, double>(vec2(7, -1), 0.10));
-  profile.push_back(pair<vec2, double>(vec2(7, 1), 0.15));
-  profile.push_back(pair<vec2, double>(vec2(6, 1), 0.20));
-  profile.push_back(pair<vec2, double>(vec2(6, 0), 0.25));
-  profile.push_back(pair<vec2, double>(vec2(-6, 0), 0.75));
-  profile.push_back(pair<vec2, double>(vec2(-6, 1), 0.80));
-  profile.push_back(pair<vec2, double>(vec2(-7, 1), 0.85));
-  profile.push_back(pair<vec2, double>(vec2(-7, -1), 0.90));
+  profile.push_back(pair<vec2, double>(vec2(0, 0), 0.0));
+  profile.push_back(pair<vec2, double>(vec2(7, 0), 0.10));
+  profile.push_back(pair<vec2, double>(vec2(7, 2), 0.15));
+  profile.push_back(pair<vec2, double>(vec2(6, 2), 0.20));
+  profile.push_back(pair<vec2, double>(vec2(6, 1), 0.25));
+  profile.push_back(pair<vec2, double>(vec2(-6, 1), 0.75));
+  profile.push_back(pair<vec2, double>(vec2(-6, 2), 0.80));
+  profile.push_back(pair<vec2, double>(vec2(-7, 2), 0.85));
+  profile.push_back(pair<vec2, double>(vec2(-7, 0), 0.90));
 
   int size = (int) polyline.size();
   if (size <= 1) { // a polyline with only one point is pretty lame!
