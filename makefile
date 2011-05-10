@@ -6,7 +6,7 @@
 #Code   -------------------------------
 
 ### YOU CAN CHANGE THESE VARIABLES AS YOU ADD CODE:
-TARGET := sweep
+TARGET := inertia
 SOURCES := $(wildcard ./src/UCB/*.cpp) $(wildcard ./src/*.cpp)
 
 #Libraries -------------------------------

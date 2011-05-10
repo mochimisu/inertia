@@ -31,9 +31,9 @@ ALfloat ListenerVel[] = { 0.0, 0.0, 0.0 };
 ALfloat ListenerOri[] = { 0.0, 0.0, -1.0,  0.0, 1.0, 0.0 };
 
 //===RENDER CONSTANTS
-const float shadowMapCoef = 1.0;
+const float shadowMapCoef = 0.5;
 const float blurCoef = 0.5;
-const float lightScatteringCoef = 1.0;
+const float lightScatteringCoef = 0.5;
 
 const float renderWidth = 1024.0;
 const float renderHeight = 768.0;
@@ -107,6 +107,7 @@ int gameMode;
 void (*drawObjectTarget)(GeometryShader *);
 void (*drawOverlayTarget)();
 enum { MODE_RACE, MODE_TRACK_SELECT, MODE_TITLE };
+int lastStartPress = 0;
 
 
 ALboolean LoadALData()
@@ -1050,6 +1051,11 @@ namespace raceScene {
     }
       //cout << x << endl;
     vehicle->turnRight(x/500);
+
+	if(buttonMask & 8 && (glutGet(GLUT_ELAPSED_TIME) - lastStartPress > 1000)){ //start button
+	  lastStartPress = glutGet(GLUT_ELAPSED_TIME);
+	  setMode(MODE_TITLE);
+	}
   }
 
 
@@ -1228,16 +1234,12 @@ namespace titleScene {
   void joystickFunc(unsigned int buttonMask, int x, int y, int z) {
     //cout << (buttonMask) << endl;
     //cout << (buttonMask & 16384) << endl;
-    if(buttonMask & 16384) { //button 14: X on DualShock3
-    } else if(buttonMask & 8192) { //button 13: O on DualShock3
-    } else {
-    }
-    if(buttonMask & 256 && buttonMask & 512) { //256:L2, 512: R2
-    } else if(buttonMask & 256) { //TODO: left and right airbrake
-    } else if(buttonMask & 512) {
-    } else {  
-    }
-      //cout << x << endl
+    if(buttonMask & 8 && (glutGet(GLUT_ELAPSED_TIME) - lastStartPress > 1000)) { //start button
+	  lastStartPress = glutGet(GLUT_ELAPSED_TIME);
+	  setMode(MODE_RACE);
+	}
+  
+//		cout << buttonMask << endl;
   }
 
 
