@@ -1124,6 +1124,8 @@ namespace titleScene {
     pushMat4(transformation);
     vehMesh->draw(*curShade); 
     popTransform();
+
+
   }
   void drawTitleOverlay() {
   //fudging this...
@@ -1298,13 +1300,16 @@ namespace trackSelectScene {
 
     mat4 transformation = rotation3D(rotAxis, glutGet(GLUT_ELAPSED_TIME)/200.0);
     pushMat4(transformation);
+    //sweep->renderWithDisplayList(*curShade,50,0.3,20);
+    popTransform();
+
+    pushMat4(scaling3D(vec3(0.1,0.1,0.1)).transpose() * transformation * translation3D(vec3(0,-3,0)).transpose());
     sweep->renderWithDisplayList(*curShade,50,0.3,20);
     popTransform();
   }
   void drawTitleOverlay() {
   //fudging this...
     //const float maxVelocityWidth = renderWidth * 2.5/8 /20;
-
     glEnable (GL_BLEND);
     glDisable(GL_DEPTH_TEST);
     glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1321,6 +1326,7 @@ namespace trackSelectScene {
     glTranslated(0,0,-5);
 
     glColor4f(1,1,1,0.75);
+/*
     glBegin(GL_QUADS);
     glTexCoord2d(0,0);glVertex3f(-20,-renderHeight/6,0);
     glTexCoord2d(1,0);glVertex3f(renderWidth*0.45,-renderHeight/6,0);
@@ -1345,6 +1351,8 @@ namespace trackSelectScene {
     buff.str("");
     buff << "Brandon Wang, Andrew Lee, Chris Tandiono";
     drawString(accidentalPresidencyFont, buff.str(),0,-75); 
+    */
+
 
 
 
@@ -1357,6 +1365,16 @@ namespace trackSelectScene {
 
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
+  }
+
+  void generateNewTrack() {
+      Sweep * oldSweep = sweep;
+      Vehicle * oldVehicle = vehicle;
+      sweep = new Sweep();
+      vehicle = new Vehicle(sweep, vehMesh);
+      delete oldSweep;
+      delete oldVehicle;
+
   }
 
   void processNormalKeys(unsigned char key, int x, int y) {
@@ -1372,7 +1390,7 @@ namespace trackSelectScene {
       break;
     case 'G':
     case 'g':
-      renderOpt.toggleDispGround();
+      generateNewTrack();
       break;
     case '1':
       alSourceStop(currentMusic);
@@ -1681,13 +1699,13 @@ int main(int argc,char** argv) {
 
   
 
-  vehicle = new Vehicle(sweep);
   vehMesh = new Mesh();
-  vehicle->mesh = vehMesh;
   vehMesh->loadFile("test.obj");
   vehMesh->loadTextures("test.png","test.png");
 
-    setMode(MODE_TITLE);
+  vehicle = new Vehicle(sweep, vehMesh);
+
+  setMode(MODE_TITLE);
 
   //And Go!
   currentMusic = musicSource;

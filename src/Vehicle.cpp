@@ -1,8 +1,8 @@
 #include "Vehicle.h"
 
-Vehicle::Vehicle(Sweep * sw) {
+Vehicle::Vehicle(Sweep * sw, Mesh * mesh) {
   this->sweep = sw;
-  this->mesh = new Mesh();
+  this->mesh = mesh;
 
   //todo: initial velocity and accel
   //initial pos
