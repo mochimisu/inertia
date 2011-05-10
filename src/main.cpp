@@ -1,4 +1,5 @@
 #include "main.h"
+#pragma GCC diagnostic ignored "-Wwrite-strings"
 
 // Buffers hold sound data.
 ALuint noiseBuffer;
@@ -1126,7 +1127,7 @@ namespace titleScene {
 
   void drawTitleOverlay() {
   //fudging this...
-    const float maxVelocityWidth = renderWidth * 2.5/8 /20;
+    //const float maxVelocityWidth = renderWidth * 2.5/8 /20;
 
     glEnable (GL_BLEND);
     glDisable(GL_DEPTH_TEST);
@@ -1404,7 +1405,7 @@ int main(int argc,char** argv) {
 
   // set some lights
   {
-    float ambient[4] = { .5f, .5f, .5f, 1.f };
+    //float ambient[4] = { .5f, .5f, .5f, 1.f };
     float diffuse[4] = { 1.0f, 1.0f, 1.0f, 1.f };
     float pos[4] = { p_light[0], p_light[1], p_light[2], 0 };
     //glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);

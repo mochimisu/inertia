@@ -2,6 +2,7 @@ Debug
 Release
 cscope.out
 sweep
+inertia
 .DS_Store
 
 syntax: glob
