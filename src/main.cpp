@@ -852,7 +852,9 @@ namespace raceScene {
 
     //Velocity Text
     buff.str("");
-    buff << vehicle->getVelocityScalar();
+    double velocity = vehicle->getVelocityScalar();
+    buff << setfill('0') << setw(3) << int(velocity * 10) << ".";
+    buff << setfill('0') << setw(3) << (int(velocity * 10000) % 1000);
     glColor4f(.9,.9,1,0.8);
     drawString(digitalNinjaFont, buff.str(),renderWidth*2.3/8,-renderHeight*3.3/8 - 44); 
 
@@ -879,9 +881,9 @@ namespace raceScene {
     int msTime = glutGet(GLUT_ELAPSED_TIME) - vehicle->getLapStartTime();
     int sTime = msTime/1000;
     int mTime  = sTime/60;
-    buff << mTime << ".";
-    buff << (sTime%60) << ".";
-    buff << (msTime%1000);
+    buff << setfill('0') << setw(2) << mTime << ".";
+    buff << setfill('0') << setw(2) << (sTime%60) << ".";
+    buff << setfill('0') << setw(3) << (msTime%1000);
     glColor4f(1,1,1,0.75);
     drawString(digitalNinjaFont, buff.str(),-renderWidth*3.8/8,-renderHeight*3.7/8); 
 

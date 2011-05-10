@@ -24,15 +24,6 @@
 using namespace std;
 
 
-// control point for the sweep defining the track
-struct PathPoint {
-  vec3 point;
-  double azimuth;
-  double scale;
-
-  PathPoint() {}
-  PathPoint(vec3 pt, double az = 0, double s = 1) : point(pt), azimuth(az), scale(s) {}
-};
 
 template<typename Pt> 
 Pt sampleBSpline(const vector<Pt>& cps, double t, bool closed = true, int degree = 3);

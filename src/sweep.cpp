@@ -136,19 +136,11 @@ void sampleBSpline(const vector<Pt> &pathPts, vector<Pt> &polyline, int totalSam
 Sweep::Sweep() : globalTwist(0), globalAzimuth(0), widthRepeats(1) {
 
   loadTexture("road.png", texture);
-  //getValue(linestream, lengthRepeats);
   lengthRepeats = 50;
-
-  //string bumpFile = getQuoted(linestream);
-  //loadHeightAndNormalMaps("roadbumpmap.png", heightMap, normalMap, .2);
   
   // Procedurally generated
   TrackGenerator trkGen;
-  vector<vec3> controlPts = trkGen.getControlPts();
-  for (unsigned int i = 0; i < controlPts.size(); i++) {
-	  PathPoint newPt(controlPts[i]);
-	  pathPts.push_back(newPt);
-  }
+  pathPts = trkGen.getControlPts();
 
   cscape = new Cityscape(trkGen.getXWidth() + 20, trkGen.getZWidth() + 20, 64);
   
@@ -261,11 +253,8 @@ void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vec
     vec3 right = (forward ^ up).normalize();
     up = (right ^ forward).normalize();
 
-    double rot = pathPtCurr.azimuth;
-    mat4 rotMatrix = rotation3D(forward, rot);
-    
-    right = crossSectionScale * (rotMatrix * right);
-    up = crossSectionScale * (rotMatrix * up);
+    right *= crossSectionScale;
+    up *= crossSectionScale;
 
     forwards.push_back(forward);
     ups.push_back(up);
@@ -382,7 +371,7 @@ void Sweep::renderWithDisplayList(GeometryShader &shader, int pathSamplesPerPt, 
     GLuint DLid = glGenLists(1);
     glNewList(DLid, GL_COMPILE);
     render(shader, pathSamplesPerPt, crossSectionScale, xsectSamplesPerPt);
-	cscape->render();
+	  cscape->render();
     glEndList();
     shaderDL[shadeId] = DLid;
   }
