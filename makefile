@@ -33,7 +33,7 @@ else
 		-I/usr/sww/include -I/usr/sww/pkg/Mesa/include \
 		-I./lib/mac/OpenAL.framework/Headers/AL -I./freealut-1.1.0-bin/include/AL \
 		-I./freealut-1.1.0-bin/include -I./lib/mac/OpenAL.framework/Headers \
-		-I./ftgl-2.1.3~rc5/src
+		-I./ftgl-2.1.3~rc5/src -I./lib/mac/OpenAL.framework/Versions/A/Headers
 	LIBRARY := -L./lib/nix -L/usr/X11R6/lib -L/sw/lib -L/usr/sww/lib \
 		-L/usr/sww/bin -L/usr/sww/pkg/Mesa/lib -L/usr/lib -lglut -lGLU -lGL -lX11 -lGLEW -lopenal -lalut -lfreetype -lftgl
 	FRAMEWORK := 
