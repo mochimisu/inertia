@@ -977,7 +977,7 @@ namespace raceScene {
       currentMusic = musicSource;
       currentNoise = noiseSource;
       alSourcePlay(currentMusic);
-	  break;
+	    break;
     case '2':
       alSourceStop(currentMusic);
       alSourceStop(currentNoise);

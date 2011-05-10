@@ -60,7 +60,8 @@ void Cityscape::render() {
 void Cityscape::renderBuildingSubdivision(BuildingSubdivision* bsd) {
 	if (bsd->leaf) {
       if (bsd->draw) {
-		    glActiveTexture(GL_TEXTURE0);
+
+		    glActiveTexture(GL_TEXTURE0);
 		    glBindTexture(GL_TEXTURE_2D, myTexture);
 		    glActiveTexture(GL_TEXTURE1);
 		    glBindTexture(GL_TEXTURE_2D, myHeightTexture);
