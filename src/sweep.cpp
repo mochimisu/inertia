@@ -283,7 +283,7 @@ void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vec
       glBegin(GL_QUAD_STRIP);
       for (unsigned int j = 0; j <= (polyline.size() - 3); j++) {
         int alongIndexCurr = (j) % (polyline.size() - 3);
-        double percentageAlongTrack = double(alongIndexCurr) / (polyline.size() - 3);
+        double percentageAlongTrack = double(j) / (polyline.size() - 3);
       
         PathPoint pathPtCurr = polyline[alongIndexCurr];
       
