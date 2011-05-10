@@ -172,7 +172,7 @@ double Cityscape::getAverageHeight(BuildingSubdivision* bsd) {
 
 void Cityscape::setHeights(BuildingSubdivision* bsd, double scale) {
   if (bsd->leaf) {
-    bsd->height *= scale;
+    bsd->height = min(scale * bsd->height, 55.0);
   }
   else {
     setHeights(bsd->one, scale);
