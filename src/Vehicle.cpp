@@ -17,10 +17,10 @@ void Vehicle::draw(GeometryShader * shade) {
 
 void Vehicle::reset() {
   worldPos = sweep->sample(0).point;
-  velocity = sweep->sampleForward(0,0.01);
+  velocity = sweep->sampleForward_nonzero(0,0.01);
   velocity.normalize();
   pos = vec3(0,0,0);
-  acceleration = sweep->sampleForward(0,0.01);
+  acceleration = sweep->sampleForward_nonzero(0,0.01);
   up = sweep->sampleUp(0);
   up.normalize();
 

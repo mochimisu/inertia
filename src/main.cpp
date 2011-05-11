@@ -69,7 +69,7 @@ vec3 p_light_scatter(110,60,0);
 //Sky Color
 vec4 skyColor(0,0,0,0);
 //Trippy Light Scattering Mode
-bool trippyMode = false;
+bool deathScatter = false;
 
 //===DEBUG STUFF 
 //background texture
@@ -113,7 +113,7 @@ int lapStartTime;
 int gameMode;
 void (*drawObjectTarget)(GeometryShader *);
 void (*drawOverlayTarget)();
-enum { MODE_RACE, MODE_TRACK_SELECT, MODE_TITLE };
+enum { MODE_RACE, MODE_TRACK_SELECT, MODE_TITLE , MODE_DEATH};
 int lastStartPress = 0;
 
 
@@ -660,7 +660,7 @@ void renderScene() {
   glViewport(0,0,lightScatterWidth,lightScatterHeight);
     
   // Clear previous frame values
-  if(trippyMode) {  
+  if(deathScatter) {  
     //glClearColor(1,1,1,1.0f);
     glClearColor(1,0,0,1.0f);
 
@@ -983,7 +983,7 @@ namespace raceScene {
       break;
     case 'A':
     case 'a':
-      trippyMode = !trippyMode;
+      deathScatter = !deathScatter;
       break;
     case '1':
       alSourceStop(currentMusic);
@@ -1249,7 +1249,7 @@ namespace titleScene {
       break;
     case 'A':
     case 'a':
-      trippyMode = !trippyMode;
+      deathScatter = !deathScatter;
       break;
     case '1':
       alSourceStop(currentMusic);
@@ -1423,7 +1423,7 @@ namespace trackSelectScene {
       break;
     case 'A':
     case 'a':
-      trippyMode = !trippyMode;
+      deathScatter = !deathScatter;
       break;
     case 'G':
     case 'g':
@@ -1519,7 +1519,51 @@ namespace trackSelectScene {
   }
 }
 
+namespace deathScene {
+  //just displays a YOU DIED message, everything else the same as title scene
+  void drawDeathOverlay() {
+    titleScene::drawTitleOverlay();
+   
 
+    
+    glEnable (GL_BLEND);
+    glDisable(GL_DEPTH_TEST);
+    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glUseProgramObjectARB(0);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(-renderWidth/2,renderWidth/2,-renderHeight/2,renderHeight/2,1,20);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    std::ostringstream buff;
+    glTranslated(0,0,-5);
+
+
+    glColor4f(1,1,1,0.75);
+    glBegin(GL_QUADS);
+    glTexCoord2d(0,0);glVertex3f(-renderWidth*0.45,-renderHeight*3/24,0);
+    glTexCoord2d(1,0);glVertex3f(-20,-renderHeight*3/24,0);
+    glTexCoord2d(1,1);glVertex3f(-20,renderHeight/6,0);
+    glTexCoord2d(0,1);glVertex3f(-renderWidth*0.45,renderHeight/6,0);
+    glEnd();
+
+
+    buff.str("");
+    buff << "YOU DIED!";
+    glColor4f(1,0,0,0.9);
+   
+    
+    evolutionFont->FaceSize(100);
+    drawString(evolutionFont, buff.str(),-renderWidth*0.45+20,0); 
+    evolutionFont->FaceSize(36);
+
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+
+  }
+}
 
 
 //Steps a vehicle 
@@ -1537,10 +1581,14 @@ void stepVehicle(int x) {
 
     //p_light = vehicle->lightPos();
     l_light = vehicle->worldSpacePos();
+
+    if(vehicle->getEnergy() < 0.0000001) {
+      setMode(MODE_DEATH);
+    }
   }
-  //redo this every 20ms
+  //redo this every 15ms
   lastTimeStep = newTime;
-  glutTimerFunc(20,stepVehicle, 0);
+  glutTimerFunc(15,stepVehicle, 0);
 
 }
 
@@ -1572,6 +1620,9 @@ void setMode(int newMode) {
         //Step Vehicle once (and it will recurse on timer)
         lastTimeStep = glutGet(GLUT_ELAPSED_TIME);
         stepVehicle(0);
+
+        deathScatter = false;
+
         break;
 
     case MODE_TITLE:
@@ -1601,7 +1652,42 @@ void setMode(int newMode) {
         p_light_scatter = vec3(0,-30,-40);
         l_light = vec3(0,0,0);        
         p_light = vec3(0,30,6);
+
+        deathScatter = false;
+
         break;
+
+    case MODE_DEATH:
+        gameMode = MODE_DEATH;  
+        alSourceStop(currentNoise);
+
+        vehMesh->centerAndScale(40);
+        drawObjectTarget = titleScene::drawObjects;
+        drawOverlayTarget = deathScene::drawDeathOverlay;
+
+        glutKeyboardFunc(titleScene::processNormalKeys);
+        glutKeyboardUpFunc(titleScene::processNormalKeysUp);
+        glutMotionFunc(titleScene::activeMotionFunc);
+        glutPassiveMotionFunc(titleScene::passiveMotionFunc);
+
+        glutSpecialFunc(titleScene::processSpecialKeys);
+        glutSpecialUpFunc(titleScene::processSpecialKeysUp);
+        glutJoystickFunc(titleScene::joystickFunc,10);
+
+        skyColor = vec4(0,.152941176,.282352941,1);
+
+        p_camera = vec3(0,10,16);
+        l_camera = vec3(0,0,0);
+        u_camera = vec3(0,1,0);
+
+        p_light_scatter = vec3(0,-30,-40);
+        l_light = vec3(0,0,0);        
+        p_light = vec3(0,30,6);
+
+        deathScatter = true;
+
+        break;
+
 	
     case MODE_TRACK_SELECT:
         gameMode = MODE_TRACK_SELECT;
@@ -1630,6 +1716,9 @@ void setMode(int newMode) {
         p_light = vec3(0,30,6);
         p_light_scatter = vec3(0,-50,-100);
         l_light = vec3(0,0,0);
+
+        deathScatter = false;
+
         break;
 
   }
