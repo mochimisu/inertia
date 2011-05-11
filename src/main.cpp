@@ -1136,6 +1136,7 @@ namespace raceScene {
   }
 
   void processNormalKeys(unsigned char key, int x, int y) {
+	ALint sourceState;
     switch (key) {
     case 'Q':
     case 'q':
@@ -1148,20 +1149,28 @@ namespace raceScene {
       deathScatter = !deathScatter;
       break;
     case '1':
+	  alGetSourcei(currentNoise, AL_SOURCE_STATE, &sourceState);
       alSourceStop(currentMusic);
       alSourceStop(currentNoise);
       currentMusic = musicSource;
       currentNoise = noiseSource;
 	  currentDeath = deathSource;
       alSourcePlay(currentMusic);
+	  if (sourceState == AL_PLAYING) {
+		alSourcePlay(currentNoise);
+	  }
 	    break;
     case '2':
+      alGetSourcei(currentNoise, AL_SOURCE_STATE, &sourceState);
       alSourceStop(currentMusic);
       alSourceStop(currentNoise);
       currentMusic = musicSource2;
       currentNoise = noiseSource2;
 	  currentDeath = deathSource2;
       alSourcePlay(currentMusic);
+      if (sourceState == AL_PLAYING) {
+        alSourcePlay(currentNoise);
+      }
       break;
     case ' ':
       vehicle->setAirBrake(0.00008);
@@ -1412,6 +1421,7 @@ namespace titleScene {
   }
 
   void processNormalKeys(unsigned char key, int x, int y) {
+
     switch (key) {
     case 'Q':
     case 'q':
