@@ -1148,10 +1148,16 @@ namespace titleScene {
 
     glColor4f(1,1,1,0.75);
     glBegin(GL_QUADS);
-    glTexCoord2d(0,0);glVertex3f(-20,-renderHeight/6,0);
-    glTexCoord2d(1,0);glVertex3f(renderWidth*0.45,-renderHeight/6,0);
+    glTexCoord2d(0,0);glVertex3f(-20,-renderHeight*3/24,0);
+    glTexCoord2d(1,0);glVertex3f(renderWidth*0.45,-renderHeight*3/24,0);
     glTexCoord2d(1,1);glVertex3f(renderWidth*0.45,renderHeight/6,0);
     glTexCoord2d(0,1);glVertex3f(-20,renderHeight/6,0);
+
+    
+    glTexCoord2d(0,0);glVertex3f(-renderWidth/2,-renderHeight/2,0);
+    glTexCoord2d(1,0);glVertex3f(-renderWidth*3/16,-renderHeight/2,0);
+    glTexCoord2d(1,1);glVertex3f(-renderWidth*3/16,-renderHeight*5/16,0);
+    glTexCoord2d(0,1);glVertex3f(-renderWidth/2,-renderHeight*5/16,0);
     glEnd();
 
     buff.str("");
@@ -1171,6 +1177,46 @@ namespace titleScene {
     buff.str("");
     buff << "Brandon Wang, Andrew Lee, Chris Tandiono";
     drawString(accidentalPresidencyFont, buff.str(),0,-75); 
+
+    if((glutGet(GLUT_ELAPSED_TIME)/500)%2) {
+      glColor4f(1,1,1,0.75);
+      glBegin(GL_QUADS);
+      glTexCoord2d(0,0);glVertex3f(-renderWidth*0.075,-renderHeight*3/8 - renderHeight/64,0);
+      glTexCoord2d(1,0);glVertex3f(renderWidth*0.075,-renderHeight*3/8 - renderHeight/64,0);
+      glTexCoord2d(1,1);glVertex3f(renderWidth*0.075,-renderHeight*3/8 + renderHeight/64,0);
+      glTexCoord2d(0,1);glVertex3f(-renderWidth*0.075,-renderHeight*3/8 + renderHeight/64,0);
+      glEnd();
+
+      glColor4f(.188235294,.474509804,1,0.9);
+      buff.str("");
+      buff << "Press Space or Start";
+      drawString(accidentalPresidencyFont, buff.str(),-renderWidth*0.065,-renderHeight*3/8 - 5); 
+    }
+
+    buff.str("");
+    buff << "Controls";
+    drawString(evolutionFont, buff.str(),-renderWidth/2 + 10, -renderHeight*2.85/8); 
+
+    buff.str("");
+    buff << "Left and Right Arrow/Analog Stick: Turn";
+    drawString(accidentalPresidencyFont, buff.str(),-renderWidth/2 + 10, -renderHeight*3.05/8);
+    
+    buff.str("");
+    buff << "Up Arrow/X Button: Accelerate";
+    drawString(accidentalPresidencyFont, buff.str(),-renderWidth/2 + 10, -renderHeight*3.25/8);
+
+    buff.str("");
+    buff << "Down Arrow/O Button: Decelerate";
+    drawString(accidentalPresidencyFont, buff.str(),-renderWidth/2 + 10, -renderHeight*3.45/8);  
+
+    buff.str("");
+    buff << "Space/L2 or R2: Air Brake";
+    drawString(accidentalPresidencyFont, buff.str(),-renderWidth/2 + 10, -renderHeight*3.65/8);  
+
+    buff.str("");
+    buff << "Esc/Start: Quit";
+    drawString(accidentalPresidencyFont, buff.str(),-renderWidth/2 + 10, -renderHeight*3.85/8);  
+
 
 
 
@@ -1307,7 +1353,7 @@ namespace trackSelectScene {
     sweep->renderWithDisplayList(*curShade,50,0.3,20);
     popTransform();
   }
-  void drawTitleOverlay() {
+  void drawTrackOverlay() {
   //fudging this...
     //const float maxVelocityWidth = renderWidth * 2.5/8 /20;
     glEnable (GL_BLEND);
@@ -1326,37 +1372,23 @@ namespace trackSelectScene {
     glTranslated(0,0,-5);
 
     glColor4f(1,1,1,0.75);
-/*
+
     glBegin(GL_QUADS);
-    glTexCoord2d(0,0);glVertex3f(-20,-renderHeight/6,0);
-    glTexCoord2d(1,0);glVertex3f(renderWidth*0.45,-renderHeight/6,0);
-    glTexCoord2d(1,1);glVertex3f(renderWidth*0.45,renderHeight/6,0);
-    glTexCoord2d(0,1);glVertex3f(-20,renderHeight/6,0);
+    glTexCoord2d(0,0);glVertex3f(-20,-renderHeight/2,0);
+    glTexCoord2d(1,0);glVertex3f(renderWidth*0.45,-renderHeight/2,0);
+    glTexCoord2d(1,1);glVertex3f(renderWidth*0.45,-renderHeight*25/64,0);
+    glTexCoord2d(0,1);glVertex3f(-20,-renderHeight*25/64,0);
     glEnd();
 
-    buff.str("");
-    buff << "INERTIA";
     glColor4f(.188235294,.474509804,1,0.9);
-   
-    
-    evolutionFont->FaceSize(150);
-    drawString(evolutionFont, buff.str(),0,0); 
-    evolutionFont->FaceSize(36);
-    
     accidentalPresidencyFont->FaceSize(36);
     buff.str("");
-    buff << "CS184Sp11 Final Project";
-    drawString(accidentalPresidencyFont, buff.str(),0,-50); 
-    accidentalPresidencyFont->FaceSize(20);
+    buff << "Press G/X to generate a new track";
+    drawString(accidentalPresidencyFont, buff.str(), 0, -renderHeight * 28/64);
+    
     buff.str("");
-    buff << "Brandon Wang, Andrew Lee, Chris Tandiono";
-    drawString(accidentalPresidencyFont, buff.str(),0,-75); 
-    */
-
-
-
-
-
+    buff << "Press Space/Start to start!";
+    drawString(accidentalPresidencyFont, buff.str(), 0, -renderHeight * 31/64);
 
     //Name 
     buff.str("");
@@ -1382,11 +1414,7 @@ namespace trackSelectScene {
     case 'Q':
     case 'q':
     case 27:	
-      exit(0);
-      break;
-    case 'B':
-    case 'b':
-      renderOpt.toggleDispDepthBuffer();
+      setMode(MODE_TITLE);
       break;
     case 'G':
     case 'g':
@@ -1417,7 +1445,6 @@ namespace trackSelectScene {
   void processNormalKeysUp(unsigned char key, int x, int y) {
     switch(key) {
     case ' ':
-      vehicle->setAirBrake(0);
       break;
     }
   }
@@ -1429,11 +1456,17 @@ namespace trackSelectScene {
   void joystickFunc(unsigned int buttonMask, int x, int y, int z) {
     //cout << (buttonMask) << endl;
     //cout << (buttonMask & 16384) << endl;
-    if(buttonMask & 8 && (glutGet(GLUT_ELAPSED_TIME) - lastStartPress > 1000)) { //start button
-	  lastStartPress = glutGet(GLUT_ELAPSED_TIME);
-	  setMode(MODE_RACE);
-	}
-  
+    if(lastStartPress > 1000) {
+      if(buttonMask & 16384) {
+        lastStartPress = glutGet(GLUT_ELAPSED_TIME);
+        generateNewTrack();
+      }
+      if(buttonMask & 8) { //start button
+        lastStartPress = glutGet(GLUT_ELAPSED_TIME);
+        setMode(MODE_RACE);
+      }
+
+    }  
 //		cout << buttonMask << endl;
   }
 
@@ -1524,8 +1557,6 @@ void setMode(int newMode) {
         //Step Vehicle once (and it will recurse on timer)
         lastTimeStep = glutGet(GLUT_ELAPSED_TIME);
         stepVehicle(0);
-
-
         break;
 
     case MODE_TITLE:
@@ -1561,7 +1592,7 @@ void setMode(int newMode) {
 
         vehMesh->centerAndScale(40);
         drawObjectTarget = trackSelectScene::drawObjects;
-        drawOverlayTarget = trackSelectScene::drawTitleOverlay;
+        drawOverlayTarget = trackSelectScene::drawTrackOverlay;
 
         glutKeyboardFunc(trackSelectScene::processNormalKeys);
         glutKeyboardUpFunc(trackSelectScene::processNormalKeysUp);
