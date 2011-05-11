@@ -4,17 +4,23 @@
 // Buffers hold sound data.
 ALuint noiseBuffer;
 ALuint musicBuffer;
+ALuint deathBuffer;
 ALuint noiseBuffer2;
 ALuint musicBuffer2;
+ALuint deathBuffer2;
 
 // Sources are points emitting sound.
 ALuint noiseSource;
 ALuint musicSource;
+ALuint deathSource;
 ALuint noiseSource2;
 ALuint musicSource2;
+ALuint deathSource2;
 
+// For switching soundtracks
 ALuint currentMusic;
 ALuint currentNoise;
+ALuint currentDeath;
 
 // Position of the source sound.
 ALfloat SourcePos[] = { 0.0, 0.0, 0.0 };
@@ -255,6 +261,78 @@ ALboolean LoadALData4()
     alSourcefv(noiseSource2, AL_POSITION, SourcePos);
     alSourcefv(noiseSource2, AL_VELOCITY, SourceVel);
     alSourcei (noiseSource2, AL_LOOPING,  AL_TRUE     );
+    // Do another error check and return.
+    if (alGetError() == AL_NO_ERROR)
+        return AL_TRUE;
+
+    return AL_FALSE;
+}
+ALboolean LoadALData5()
+{
+    // Variables to load into.
+
+    ALenum format;
+    ALsizei size;
+    ALvoid* data;
+    ALsizei freq;
+    ALboolean loop;
+    // Load wav data into a buffer.
+    alGenBuffers(1, &deathBuffer);
+    if (alGetError() != AL_NO_ERROR)
+        return AL_FALSE;
+	
+    alutLoadWAVFile("death.wav", &format, &data, &size, &freq, &loop);
+    alBufferData(deathBuffer, format, data, size, freq);
+    alutUnloadWAV(format, data, size, freq);
+    // Bind buffer with a source.
+    alGenSources(1, &deathSource);
+    if (alGetError() != AL_NO_ERROR) {
+        return AL_FALSE;
+	}
+
+    alSourcei (deathSource, AL_BUFFER,   deathBuffer   );
+    alSourcef (deathSource, AL_PITCH,    1.0f     );
+    alSourcef (deathSource, AL_GAIN,     1.0f     );
+    alSourcefv(deathSource, AL_POSITION, SourcePos);
+    alSourcefv(deathSource, AL_VELOCITY, SourceVel);
+    alSourcei (deathSource, AL_LOOPING,  AL_FALSE     );
+    // Do another error check and return.
+    if (alGetError() == AL_NO_ERROR) {
+        return AL_TRUE;
+		}
+
+    return AL_FALSE;
+}
+
+ALboolean LoadALData6()
+{
+    // Variables to load into.
+
+    ALenum format;
+    ALsizei size;
+    ALvoid* data;
+    ALsizei freq;
+    ALboolean loop;
+    // Load wav data into a buffer.
+    alGenBuffers(1, &deathBuffer2);
+    if (alGetError() != AL_NO_ERROR)
+        return AL_FALSE;
+
+    alutLoadWAVFile("pacdeath.wav", &format, &data, &size, &freq, &loop);
+    alBufferData(deathBuffer2, format, data, size, freq);
+    alutUnloadWAV(format, data, size, freq);
+    // Bind buffer with a source.
+    alGenSources(1, &deathSource2);
+
+    if (alGetError() != AL_NO_ERROR)
+        return AL_FALSE;
+
+    alSourcei (deathSource2, AL_BUFFER,   deathBuffer2   );
+    alSourcef (deathSource2, AL_PITCH,    1.0f     );
+    alSourcef (deathSource2, AL_GAIN,     1.0f     );
+    alSourcefv(deathSource2, AL_POSITION, SourcePos);
+    alSourcefv(deathSource2, AL_VELOCITY, SourceVel);
+    alSourcei (deathSource2, AL_LOOPING,  AL_FALSE     );
     // Do another error check and return.
     if (alGetError() == AL_NO_ERROR)
         return AL_TRUE;
@@ -990,6 +1068,7 @@ namespace raceScene {
       alSourceStop(currentNoise);
       currentMusic = musicSource;
       currentNoise = noiseSource;
+	  currentDeath = deathSource;
       alSourcePlay(currentMusic);
 	    break;
     case '2':
@@ -997,6 +1076,7 @@ namespace raceScene {
       alSourceStop(currentNoise);
       currentMusic = musicSource2;
       currentNoise = noiseSource2;
+	  currentDeath = deathSource2;
       alSourcePlay(currentMusic);
       break;
     case ' ':
@@ -1043,12 +1123,19 @@ namespace raceScene {
   void joystickFunc(unsigned int buttonMask, int x, int y, int z) {
     //cout << (buttonMask) << endl;
     //cout << (buttonMask & 16384) << endl;
-    if(buttonMask & 16384) { //button 14: X on DualShock3
+    ALint sourceState;
+    if(buttonMask & 16384 || buttonMask & 1) { //button 14: X on DualShock3, button 1 is trigger on Chris' joystick
       vehicle->setAccel(0.2);
-      alSourcePlay(currentNoise);
+	  alGetSourcei(currentNoise, AL_SOURCE_STATE, &sourceState);
+	  if (sourceState != AL_PLAYING) {
+		  alSourcePlay(currentNoise);
+	  }
     } else if(buttonMask & 8192) { //button 13: O on DualShock3
       vehicle->setAccel(-0.1);
-      alSourcePlay(currentNoise);
+	  alGetSourcei(currentNoise, AL_SOURCE_STATE, &sourceState);
+	  if (sourceState != AL_PLAYING) {
+		  alSourcePlay(currentNoise);
+	  }
     } else {
       alSourceStop(currentNoise);
       vehicle->setAccel(0.0);
@@ -1256,6 +1343,7 @@ namespace titleScene {
       alSourceStop(currentNoise);
       currentMusic = musicSource;
       currentNoise = noiseSource;
+	  currentDeath = deathSource;
       alSourcePlay(currentMusic);
 	  break;
     case '2':
@@ -1263,6 +1351,7 @@ namespace titleScene {
       alSourceStop(currentNoise);
       currentMusic = musicSource2;
       currentNoise = noiseSource2;
+	  currentDeath = deathSource2;
       alSourcePlay(currentMusic);
       break;
 
@@ -1434,6 +1523,7 @@ namespace trackSelectScene {
       alSourceStop(currentNoise);
       currentMusic = musicSource;
       currentNoise = noiseSource;
+	  currentDeath = deathSource;
       alSourcePlay(currentMusic);
 	  break;
     case '2':
@@ -1441,6 +1531,7 @@ namespace trackSelectScene {
       alSourceStop(currentNoise);
       currentMusic = musicSource2;
       currentNoise = noiseSource2;
+	  currentDeath = deathSource2;
       alSourcePlay(currentMusic);
       break;
 
@@ -1583,6 +1674,7 @@ void stepVehicle(int x) {
     l_light = vehicle->worldSpacePos();
 
     if(vehicle->getEnergy() < 0.0000001) {
+	  alSourcePlay(currentDeath);
       setMode(MODE_DEATH);
     }
   }
@@ -1750,6 +1842,12 @@ int main(int argc,char** argv) {
   if (LoadALData4() == AL_FALSE)
     return -4;
   SetListenerValues();
+  if (LoadALData6() == AL_FALSE)
+    return -6;
+  SetListenerValues();
+  if (LoadALData5() == AL_FALSE)
+    return -5;
+  SetListenerValues();
 
   // Setup an exit procedure.
   atexit(KillALData);
@@ -1794,7 +1892,7 @@ int main(int argc,char** argv) {
     printf("No GLSL support\n");
     exit(1);
   }
-
+  
   //Generate FBOs
   generateShadowFBO();
   generateBlurFBO();
@@ -1842,6 +1940,7 @@ int main(int argc,char** argv) {
   //And Go!
   currentMusic = musicSource;
   currentNoise = noiseSource;
+  currentDeath = deathSource;
   alSourcePlay(currentMusic);
   glutMainLoop();
 }

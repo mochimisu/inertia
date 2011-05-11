@@ -272,7 +272,7 @@ void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vec
     
     // FOR loop for going ALONG track
     // Populating stripCurr
-    for (unsigned int j = 0; j < polyline.size(); j++) {
+    for (unsigned int j = 0; j < polyline.size()-3; j++) {
       vec3 pt = rights[j] * csPtCurr[0] + ups[j] * csPtCurr[1];
       stripCurr[j] = polyline[j].point + pt;
     }
