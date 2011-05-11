@@ -4,17 +4,23 @@
 // Buffers hold sound data.
 ALuint noiseBuffer;
 ALuint musicBuffer;
+ALuint deathBuffer;
 ALuint noiseBuffer2;
 ALuint musicBuffer2;
+ALuint deathBuffer2;
 
 // Sources are points emitting sound.
 ALuint noiseSource;
 ALuint musicSource;
+ALuint deathSource;
 ALuint noiseSource2;
 ALuint musicSource2;
+ALuint deathSource2;
 
+// For switching soundtracks
 ALuint currentMusic;
 ALuint currentNoise;
+ALuint currentDeath;
 
 // Position of the source sound.
 ALfloat SourcePos[] = { 0.0, 0.0, 0.0 };
@@ -63,7 +69,14 @@ vec3 u_camera(0,1,0);
 //Light position
 vec3 p_light(110,60,0);
 //Light lookAt
-vec3 l_light(0,0,0);                                                                                                                
+vec3 l_light(0,0,0);
+//Light Scatter Physical Light Location (used for demonstrations like title screen, where illumination is not same place as physical light in light scatter render)
+vec3 p_light_scatter(110,60,0);
+//Sky Color
+vec4 skyColor(0,0,0,0);
+//Trippy Light Scattering Mode
+bool deathScatter = false;
+
 //===DEBUG STUFF 
 //background texture
 enum { DISPLAY_DEPTH_BUFFER,
@@ -95,8 +108,6 @@ GeometryShader *darkShade;
 Sweep *sweep;
 Vehicle *vehicle;
 Mesh * vehMesh;
-//for the sake of cleanliness
-RenderOptions renderOpt;
 
 //==LIGHT SCATTERING STUFF
 GLuint scatterTextureId;
@@ -108,7 +119,7 @@ int lapStartTime;
 int gameMode;
 void (*drawObjectTarget)(GeometryShader *);
 void (*drawOverlayTarget)();
-enum { MODE_RACE, MODE_TRACK_SELECT, MODE_TITLE };
+enum { MODE_RACE, MODE_TRACK_SELECT, MODE_TITLE , MODE_DEATH};
 int lastStartPress = 0;
 
 
@@ -257,6 +268,79 @@ ALboolean LoadALData4()
     return AL_FALSE;
 }
 
+ALboolean LoadALData5()
+{
+    // Variables to load into.
+
+    ALenum format;
+    ALsizei size;
+    ALvoid* data;
+    ALsizei freq;
+    ALboolean loop;
+    // Load wav data into a buffer.
+    alGenBuffers(1, &deathBuffer);
+    if (alGetError() != AL_NO_ERROR)
+        return AL_FALSE;
+	
+    alutLoadWAVFile("death.wav", &format, &data, &size, &freq, &loop);
+    alBufferData(deathBuffer, format, data, size, freq);
+    alutUnloadWAV(format, data, size, freq);
+    // Bind buffer with a source.
+    alGenSources(1, &deathSource);
+    if (alGetError() != AL_NO_ERROR) {
+        return AL_FALSE;
+	}
+
+    alSourcei (deathSource, AL_BUFFER,   deathBuffer   );
+    alSourcef (deathSource, AL_PITCH,    1.0f     );
+    alSourcef (deathSource, AL_GAIN,     1.0f     );
+    alSourcefv(deathSource, AL_POSITION, SourcePos);
+    alSourcefv(deathSource, AL_VELOCITY, SourceVel);
+    alSourcei (deathSource, AL_LOOPING,  AL_FALSE     );
+    // Do another error check and return.
+    if (alGetError() == AL_NO_ERROR) {
+        return AL_TRUE;
+		}
+
+    return AL_FALSE;
+}
+
+ALboolean LoadALData6()
+{
+    // Variables to load into.
+
+    ALenum format;
+    ALsizei size;
+    ALvoid* data;
+    ALsizei freq;
+    ALboolean loop;
+    // Load wav data into a buffer.
+    alGenBuffers(1, &deathBuffer2);
+    if (alGetError() != AL_NO_ERROR)
+        return AL_FALSE;
+
+    alutLoadWAVFile("pacdeath.wav", &format, &data, &size, &freq, &loop);
+    alBufferData(deathBuffer2, format, data, size, freq);
+    alutUnloadWAV(format, data, size, freq);
+    // Bind buffer with a source.
+    alGenSources(1, &deathSource2);
+
+    if (alGetError() != AL_NO_ERROR)
+        return AL_FALSE;
+
+    alSourcei (deathSource2, AL_BUFFER,   deathBuffer2   );
+    alSourcef (deathSource2, AL_PITCH,    1.0f     );
+    alSourcef (deathSource2, AL_GAIN,     1.0f     );
+    alSourcefv(deathSource2, AL_POSITION, SourcePos);
+    alSourcefv(deathSource2, AL_VELOCITY, SourceVel);
+    alSourcei (deathSource2, AL_LOOPING,  AL_FALSE     );
+    // Do another error check and return.
+    if (alGetError() == AL_NO_ERROR)
+        return AL_TRUE;
+
+    return AL_FALSE;
+}
+
 void SetListenerValues()
 {
     alListenerfv(AL_POSITION,    ListenerPos);
@@ -305,7 +389,7 @@ vec2 getLightScreenCoor() {
   GLdouble winY=0;
   GLdouble winZ=0;
 
-  gluProject(p_light[0], p_light[1], p_light[2],
+  gluProject(p_light_scatter[0], p_light_scatter[1], p_light_scatter[2],
              modelView, projection, viewport,
             &winX, &winY, &winZ);
     
@@ -655,7 +739,13 @@ void renderScene() {
   glViewport(0,0,lightScatterWidth,lightScatterHeight);
     
   // Clear previous frame values
-  glClearColor(0,0,0,1.0f);
+  if(deathScatter) {  
+    //glClearColor(1,1,1,1.0f);
+    glClearColor(1,0,0,1.0f);
+
+  } else {
+    glClearColor(0,0,0,1.0f);
+  }
   //glClearColor(1,1,1,1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
@@ -669,7 +759,7 @@ void renderScene() {
    
   //Draw light
   glPushMatrix();
-  glTranslatef(p_light[0],p_light[1],p_light[2]);
+  glTranslatef(p_light_scatter[0],p_light_scatter[1],p_light_scatter[2]);
   glColor4f(1.0,1.0,1.0,1.0);
   glutSolidSphere(30,20,20);
   glPopMatrix();
@@ -687,7 +777,9 @@ void renderScene() {
   glViewport(0,0,renderWidth,renderHeight);
     
   // Clear previous frame values
-  glClearColor(.764705882,.890196078,1,1.0f);
+  //glClearColor(.764705882,.890196078,1,1.0f);
+  glClearColor(skyColor[0], skyColor[1], skyColor[2], skyColor[3]);
+
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
   //Using the shadow shader
@@ -970,19 +1062,16 @@ namespace raceScene {
     case 27:	
       setMode(MODE_TITLE);
       break;
-    case 'B':
-    case 'b':
-      renderOpt.toggleDispDepthBuffer();
-      break;
-    case 'G':
-    case 'g':
-      renderOpt.toggleDispGround();
+    case 'A':
+    case 'a':
+      deathScatter = !deathScatter;
       break;
     case '1':
       alSourceStop(currentMusic);
       alSourceStop(currentNoise);
       currentMusic = musicSource;
       currentNoise = noiseSource;
+	  currentDeath = deathSource;
       alSourcePlay(currentMusic);
 	    break;
     case '2':
@@ -990,6 +1079,7 @@ namespace raceScene {
       alSourceStop(currentNoise);
       currentMusic = musicSource2;
       currentNoise = noiseSource2;
+	  currentDeath = deathSource2;
       alSourcePlay(currentMusic);
       break;
     case ' ':
@@ -1036,12 +1126,19 @@ namespace raceScene {
   void joystickFunc(unsigned int buttonMask, int x, int y, int z) {
     //cout << (buttonMask) << endl;
     //cout << (buttonMask & 16384) << endl;
-    if(buttonMask & 16384) { //button 14: X on DualShock3
+    ALint sourceState;
+    if(buttonMask & 16384 || buttonMask & 1) { //button 14: X on DualShock3, button 1 is trigger on Chris' joystick
       vehicle->setAccel(0.2);
-      alSourcePlay(currentNoise);
+	  alGetSourcei(currentNoise, AL_SOURCE_STATE, &sourceState);
+	  if (sourceState != AL_PLAYING) {
+		  alSourcePlay(currentNoise);
+	  }
     } else if(buttonMask & 8192) { //button 13: O on DualShock3
       vehicle->setAccel(-0.1);
-      alSourcePlay(currentNoise);
+	  alGetSourcei(currentNoise, AL_SOURCE_STATE, &sourceState);
+	  if (sourceState != AL_PLAYING) {
+		  alSourcePlay(currentNoise);
+	  }
     } else {
       alSourceStop(currentNoise);
       vehicle->setAccel(0.0);
@@ -1126,6 +1223,8 @@ namespace titleScene {
     pushMat4(transformation);
     vehMesh->draw(*curShade); 
     popTransform();
+
+
   }
   void drawTitleOverlay() {
   //fudging this...
@@ -1148,10 +1247,16 @@ namespace titleScene {
 
     glColor4f(1,1,1,0.75);
     glBegin(GL_QUADS);
-    glTexCoord2d(0,0);glVertex3f(-20,-renderHeight/6,0);
-    glTexCoord2d(1,0);glVertex3f(renderWidth*0.45,-renderHeight/6,0);
+    glTexCoord2d(0,0);glVertex3f(-20,-renderHeight*3/24,0);
+    glTexCoord2d(1,0);glVertex3f(renderWidth*0.45,-renderHeight*3/24,0);
     glTexCoord2d(1,1);glVertex3f(renderWidth*0.45,renderHeight/6,0);
     glTexCoord2d(0,1);glVertex3f(-20,renderHeight/6,0);
+
+    
+    glTexCoord2d(0,0);glVertex3f(-renderWidth/2,-renderHeight/2,0);
+    glTexCoord2d(1,0);glVertex3f(-renderWidth*3/16,-renderHeight/2,0);
+    glTexCoord2d(1,1);glVertex3f(-renderWidth*3/16,-renderHeight*5/16,0);
+    glTexCoord2d(0,1);glVertex3f(-renderWidth/2,-renderHeight*5/16,0);
     glEnd();
 
     buff.str("");
@@ -1171,6 +1276,46 @@ namespace titleScene {
     buff.str("");
     buff << "Brandon Wang, Andrew Lee, Chris Tandiono";
     drawString(accidentalPresidencyFont, buff.str(),0,-75); 
+
+    if((glutGet(GLUT_ELAPSED_TIME)/500)%2) {
+      glColor4f(1,1,1,0.75);
+      glBegin(GL_QUADS);
+      glTexCoord2d(0,0);glVertex3f(-renderWidth*0.075,-renderHeight*3/8 - renderHeight/64,0);
+      glTexCoord2d(1,0);glVertex3f(renderWidth*0.075,-renderHeight*3/8 - renderHeight/64,0);
+      glTexCoord2d(1,1);glVertex3f(renderWidth*0.075,-renderHeight*3/8 + renderHeight/64,0);
+      glTexCoord2d(0,1);glVertex3f(-renderWidth*0.075,-renderHeight*3/8 + renderHeight/64,0);
+      glEnd();
+
+      glColor4f(.188235294,.474509804,1,0.9);
+      buff.str("");
+      buff << "Press Space or Start";
+      drawString(accidentalPresidencyFont, buff.str(),-renderWidth*0.065,-renderHeight*3/8 - 5); 
+    }
+
+    buff.str("");
+    buff << "Controls";
+    drawString(evolutionFont, buff.str(),-renderWidth/2 + 10, -renderHeight*2.85/8); 
+
+    buff.str("");
+    buff << "Left and Right Arrow/Analog Stick: Turn";
+    drawString(accidentalPresidencyFont, buff.str(),-renderWidth/2 + 10, -renderHeight*3.05/8);
+    
+    buff.str("");
+    buff << "Up Arrow/X Button: Accelerate";
+    drawString(accidentalPresidencyFont, buff.str(),-renderWidth/2 + 10, -renderHeight*3.25/8);
+
+    buff.str("");
+    buff << "Down Arrow/O Button: Decelerate";
+    drawString(accidentalPresidencyFont, buff.str(),-renderWidth/2 + 10, -renderHeight*3.45/8);  
+
+    buff.str("");
+    buff << "Space/L2 or R2: Air Brake";
+    drawString(accidentalPresidencyFont, buff.str(),-renderWidth/2 + 10, -renderHeight*3.65/8);  
+
+    buff.str("");
+    buff << "Esc/Start: Quit";
+    drawString(accidentalPresidencyFont, buff.str(),-renderWidth/2 + 10, -renderHeight*3.85/8);  
+
 
 
 
@@ -1192,19 +1337,16 @@ namespace titleScene {
     case 27:	
       exit(0);
       break;
-    case 'B':
-    case 'b':
-      renderOpt.toggleDispDepthBuffer();
-      break;
-    case 'G':
-    case 'g':
-      renderOpt.toggleDispGround();
+    case 'A':
+    case 'a':
+      deathScatter = !deathScatter;
       break;
     case '1':
       alSourceStop(currentMusic);
       alSourceStop(currentNoise);
       currentMusic = musicSource;
       currentNoise = noiseSource;
+	  currentDeath = deathSource;
       alSourcePlay(currentMusic);
 	  break;
     case '2':
@@ -1212,6 +1354,7 @@ namespace titleScene {
       alSourceStop(currentNoise);
       currentMusic = musicSource2;
       currentNoise = noiseSource2;
+	  currentDeath = deathSource2;
       alSourcePlay(currentMusic);
       break;
 
@@ -1300,13 +1443,16 @@ namespace trackSelectScene {
 
     mat4 transformation = rotation3D(rotAxis, glutGet(GLUT_ELAPSED_TIME)/200.0);
     pushMat4(transformation);
+    //sweep->renderWithDisplayList(*curShade,50,0.3,20);
+    popTransform();
+
+    pushMat4(scaling3D(vec3(0.1,0.1,0.1)).transpose() * transformation * translation3D(vec3(0,-3,0)).transpose());
     sweep->renderWithDisplayList(*curShade,50,0.3,20);
     popTransform();
   }
-  void drawTitleOverlay() {
+  void drawTrackOverlay() {
   //fudging this...
     //const float maxVelocityWidth = renderWidth * 2.5/8 /20;
-
     glEnable (GL_BLEND);
     glDisable(GL_DEPTH_TEST);
     glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1323,34 +1469,23 @@ namespace trackSelectScene {
     glTranslated(0,0,-5);
 
     glColor4f(1,1,1,0.75);
+
     glBegin(GL_QUADS);
-    glTexCoord2d(0,0);glVertex3f(-20,-renderHeight/6,0);
-    glTexCoord2d(1,0);glVertex3f(renderWidth*0.45,-renderHeight/6,0);
-    glTexCoord2d(1,1);glVertex3f(renderWidth*0.45,renderHeight/6,0);
-    glTexCoord2d(0,1);glVertex3f(-20,renderHeight/6,0);
+    glTexCoord2d(0,0);glVertex3f(-20,-renderHeight/2,0);
+    glTexCoord2d(1,0);glVertex3f(renderWidth*0.45,-renderHeight/2,0);
+    glTexCoord2d(1,1);glVertex3f(renderWidth*0.45,-renderHeight*25/64,0);
+    glTexCoord2d(0,1);glVertex3f(-20,-renderHeight*25/64,0);
     glEnd();
 
-    buff.str("");
-    buff << "INERTIA";
     glColor4f(.188235294,.474509804,1,0.9);
-   
-    
-    evolutionFont->FaceSize(150);
-    drawString(evolutionFont, buff.str(),0,0); 
-    evolutionFont->FaceSize(36);
-    
     accidentalPresidencyFont->FaceSize(36);
     buff.str("");
-    buff << "CS184Sp11 Final Project";
-    drawString(accidentalPresidencyFont, buff.str(),0,-50); 
-    accidentalPresidencyFont->FaceSize(20);
+    buff << "Press G/X to generate a new track";
+    drawString(accidentalPresidencyFont, buff.str(), 0, -renderHeight * 28/64);
+    
     buff.str("");
-    buff << "Brandon Wang, Andrew Lee, Chris Tandiono";
-    drawString(accidentalPresidencyFont, buff.str(),0,-75); 
-
-
-
-
+    buff << "Press Space/Start to start!";
+    drawString(accidentalPresidencyFont, buff.str(), 0, -renderHeight * 31/64);
 
     //Name 
     buff.str("");
@@ -1361,26 +1496,37 @@ namespace trackSelectScene {
     glEnable(GL_DEPTH_TEST);
   }
 
+  void generateNewTrack() {
+      Sweep * oldSweep = sweep;
+      Vehicle * oldVehicle = vehicle;
+      sweep = new Sweep();
+      vehicle = new Vehicle(sweep, vehMesh);
+      delete oldSweep;
+      delete oldVehicle;
+
+  }
+
   void processNormalKeys(unsigned char key, int x, int y) {
     switch (key) {
     case 'Q':
     case 'q':
     case 27:	
-      exit(0);
+      setMode(MODE_TITLE);
       break;
-    case 'B':
-    case 'b':
-      renderOpt.toggleDispDepthBuffer();
+    case 'A':
+    case 'a':
+      deathScatter = !deathScatter;
       break;
     case 'G':
     case 'g':
-      renderOpt.toggleDispGround();
+      generateNewTrack();
       break;
     case '1':
       alSourceStop(currentMusic);
       alSourceStop(currentNoise);
       currentMusic = musicSource;
       currentNoise = noiseSource;
+	  currentDeath = deathSource;
       alSourcePlay(currentMusic);
 	  break;
     case '2':
@@ -1388,6 +1534,7 @@ namespace trackSelectScene {
       alSourceStop(currentNoise);
       currentMusic = musicSource2;
       currentNoise = noiseSource2;
+	  currentDeath = deathSource2;
       alSourcePlay(currentMusic);
       break;
 
@@ -1401,7 +1548,6 @@ namespace trackSelectScene {
   void processNormalKeysUp(unsigned char key, int x, int y) {
     switch(key) {
     case ' ':
-      vehicle->setAirBrake(0);
       break;
     }
   }
@@ -1413,11 +1559,17 @@ namespace trackSelectScene {
   void joystickFunc(unsigned int buttonMask, int x, int y, int z) {
     //cout << (buttonMask) << endl;
     //cout << (buttonMask & 16384) << endl;
-    if(buttonMask & 8 && (glutGet(GLUT_ELAPSED_TIME) - lastStartPress > 1000)) { //start button
-	  lastStartPress = glutGet(GLUT_ELAPSED_TIME);
-	  setMode(MODE_RACE);
-	}
-  
+    if(lastStartPress > 1000) {
+      if(buttonMask & 16384) {
+        lastStartPress = glutGet(GLUT_ELAPSED_TIME);
+        generateNewTrack();
+      }
+      if(buttonMask & 8) { //start button
+        lastStartPress = glutGet(GLUT_ELAPSED_TIME);
+        setMode(MODE_RACE);
+      }
+
+    }  
 //		cout << buttonMask << endl;
   }
 
@@ -1461,7 +1613,51 @@ namespace trackSelectScene {
   }
 }
 
+namespace deathScene {
+  //just displays a YOU DIED message, everything else the same as title scene
+  void drawDeathOverlay() {
+    titleScene::drawTitleOverlay();
+   
 
+    
+    glEnable (GL_BLEND);
+    glDisable(GL_DEPTH_TEST);
+    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glUseProgramObjectARB(0);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(-renderWidth/2,renderWidth/2,-renderHeight/2,renderHeight/2,1,20);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    std::ostringstream buff;
+    glTranslated(0,0,-5);
+
+
+    glColor4f(1,1,1,0.75);
+    glBegin(GL_QUADS);
+    glTexCoord2d(0,0);glVertex3f(-renderWidth*0.45,-renderHeight*3/24,0);
+    glTexCoord2d(1,0);glVertex3f(-20,-renderHeight*3/24,0);
+    glTexCoord2d(1,1);glVertex3f(-20,renderHeight/6,0);
+    glTexCoord2d(0,1);glVertex3f(-renderWidth*0.45,renderHeight/6,0);
+    glEnd();
+
+
+    buff.str("");
+    buff << "YOU DIED!";
+    glColor4f(1,0,0,0.9);
+   
+    
+    evolutionFont->FaceSize(100);
+    drawString(evolutionFont, buff.str(),-renderWidth*0.45+20,0); 
+    evolutionFont->FaceSize(36);
+
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+
+  }
+}
 
 
 //Steps a vehicle 
@@ -1479,10 +1675,15 @@ void stepVehicle(int x) {
 
     //p_light = vehicle->lightPos();
     l_light = vehicle->worldSpacePos();
+
+    if(vehicle->getEnergy() < 0.0000001) {
+	  alSourcePlay(currentDeath);
+      setMode(MODE_DEATH);
+    }
   }
-  //redo this every 20ms
+  //redo this every 15ms
   lastTimeStep = newTime;
-  glutTimerFunc(20,stepVehicle, 0);
+  glutTimerFunc(15,stepVehicle, 0);
 
 }
 
@@ -1502,6 +1703,12 @@ void setMode(int newMode) {
         glutSpecialUpFunc(raceScene::processSpecialKeysUp);
         glutJoystickFunc(raceScene::joystickFunc,10);
             
+        skyColor = vec4(.764705882,.890196078,1,1);
+        p_light = vec3(110,60,0);
+        p_light_scatter = vec3(110,60,0);
+
+
+        vehicle->reset();
         //Lap time 
         vehicle->setLapStartTime(glutGet(GLUT_ELAPSED_TIME));
 
@@ -1509,6 +1716,7 @@ void setMode(int newMode) {
         lastTimeStep = glutGet(GLUT_ELAPSED_TIME);
         stepVehicle(0);
 
+        deathScatter = false;
 
         break;
 
@@ -1530,13 +1738,51 @@ void setMode(int newMode) {
         glutSpecialUpFunc(titleScene::processSpecialKeysUp);
         glutJoystickFunc(titleScene::joystickFunc,10);
 
+        skyColor = vec4(0,.152941176,.282352941,1);
+
         p_camera = vec3(0,10,16);
         l_camera = vec3(0,0,0);
         u_camera = vec3(0,1,0);
 
+        p_light_scatter = vec3(0,-30,-40);
+        l_light = vec3(0,0,0);        
         p_light = vec3(0,30,6);
-        l_light = vec3(0,0,0);
+
+        deathScatter = false;
+
         break;
+
+    case MODE_DEATH:
+        gameMode = MODE_DEATH;  
+        alSourceStop(currentNoise);
+
+        vehMesh->centerAndScale(40);
+        drawObjectTarget = titleScene::drawObjects;
+        drawOverlayTarget = deathScene::drawDeathOverlay;
+
+        glutKeyboardFunc(titleScene::processNormalKeys);
+        glutKeyboardUpFunc(titleScene::processNormalKeysUp);
+        glutMotionFunc(titleScene::activeMotionFunc);
+        glutPassiveMotionFunc(titleScene::passiveMotionFunc);
+
+        glutSpecialFunc(titleScene::processSpecialKeys);
+        glutSpecialUpFunc(titleScene::processSpecialKeysUp);
+        glutJoystickFunc(titleScene::joystickFunc,10);
+
+        skyColor = vec4(0,.152941176,.282352941,1);
+
+        p_camera = vec3(0,10,16);
+        l_camera = vec3(0,0,0);
+        u_camera = vec3(0,1,0);
+
+        p_light_scatter = vec3(0,-30,-40);
+        l_light = vec3(0,0,0);        
+        p_light = vec3(0,30,6);
+
+        deathScatter = true;
+
+        break;
+
 	
     case MODE_TRACK_SELECT:
         gameMode = MODE_TRACK_SELECT;
@@ -1545,7 +1791,7 @@ void setMode(int newMode) {
 
         vehMesh->centerAndScale(40);
         drawObjectTarget = trackSelectScene::drawObjects;
-        drawOverlayTarget = trackSelectScene::drawTitleOverlay;
+        drawOverlayTarget = trackSelectScene::drawTrackOverlay;
 
         glutKeyboardFunc(trackSelectScene::processNormalKeys);
         glutKeyboardUpFunc(trackSelectScene::processNormalKeysUp);
@@ -1556,12 +1802,18 @@ void setMode(int newMode) {
         glutSpecialUpFunc(trackSelectScene::processSpecialKeysUp);
         glutJoystickFunc(trackSelectScene::joystickFunc,10);
 
+        skyColor = vec4(0,.152941176,.282352941,1);
+
         p_camera = vec3(0,10,16);
         l_camera = vec3(0,0,0);
         u_camera = vec3(0,1,0);
 
         p_light = vec3(0,30,6);
+        p_light_scatter = vec3(0,-50,-100);
         l_light = vec3(0,0,0);
+
+        deathScatter = false;
+
         break;
 
   }
@@ -1595,6 +1847,12 @@ int main(int argc,char** argv) {
   SetListenerValues();
   if (LoadALData4() == AL_FALSE)
     return -4;
+  SetListenerValues();
+  if (LoadALData6() == AL_FALSE)
+    return -6;
+  SetListenerValues();
+  if (LoadALData5() == AL_FALSE)
+    return -5;
   SetListenerValues();
 
   // Setup an exit procedure.
@@ -1640,7 +1898,7 @@ int main(int argc,char** argv) {
     printf("No GLSL support\n");
     exit(1);
   }
-
+  
   //Generate FBOs
   generateShadowFBO();
   generateBlurFBO();
@@ -1673,30 +1931,22 @@ int main(int argc,char** argv) {
   if(evolutionFont->Error() || digitalNinjaFont->Error() || accidentalPresidencyFont->Error() ||
       evolutionBufferFont->Error() || accidentalPresidencyBufferFont->Error())
           return -1;
-
-
-
+  
   sweep = new Sweep();
-  
-  //load the default render options
-  renderOpt = RenderOptions();
-  //but for the sake of coolness we'll display the blurred color depth buffer by default
-  renderOpt.setDepthBufferOption(DISPLAY_DEPTH_SQUARED_COMPLETE_BUFFER);
-  renderOpt.setDepthBufferOption(DISPLAY_DEPTH_SQUARED_COMPLETE_BUFFER);
 
-  
 
-  vehicle = new Vehicle(sweep);
   vehMesh = new Mesh();
-  vehicle->mesh = vehMesh;
   vehMesh->loadFile("test.obj");
   vehMesh->loadTextures("test.png","test.png");
 
-    setMode(MODE_TITLE);
+  vehicle = new Vehicle(sweep, vehMesh);
+
+  setMode(MODE_TITLE);
 
   //And Go!
   currentMusic = musicSource;
   currentNoise = noiseSource;
+  currentDeath = deathSource;
   alSourcePlay(currentMusic);
   glutMainLoop();
 }

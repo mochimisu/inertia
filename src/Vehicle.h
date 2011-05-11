@@ -15,7 +15,10 @@ class Mesh;
 
 class Vehicle {
  public:
-  Vehicle(Sweep * sweep);
+  Vehicle(Sweep * sweep, Mesh * mesh);
+
+  void reset();
+
   void draw(GeometryShader * shade);
 
   void setAccel(vec3 accel);

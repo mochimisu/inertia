@@ -1,32 +1,10 @@
 #include "Vehicle.h"
 
-Vehicle::Vehicle(Sweep * sw) {
+Vehicle::Vehicle(Sweep * sw, Mesh * mesh) {
   this->sweep = sw;
-  this->mesh = new Mesh();
+  this->mesh = mesh;
 
-  //todo: initial velocity and accel
-  //initial pos
-  this->worldPos = this->sweep->sample(0).point;
-  this->velocity = this->sweep->sampleForward(0,0.01);
-  this->velocity.normalize();
-  this->pos = vec3(0,0,0);
-  this->acceleration = this->sweep->sampleForward(0,0.01);
-  this->up = this->sweep->sampleUp(0);
-  this->up.normalize();
-
-  this->velocityScalar = 0;
-  this->accelerationScalar = 0;
-  this->tbn = this->sweep->tbnBasis(0);
-  this->turnCurrentValue = 0.0;
-  this->airBrake = 0.0;
-  this->lap = 1;
-  this->energy = 100.0;
-
-  this->bestLapTime = -1;
-  this->lapStartTime = 0;
-
-  this->turnTargetValue = 0;
-  this->turnCurrentValue = 0;
+  this->reset();
 }
 
 void Vehicle::draw(GeometryShader * shade) {
@@ -35,6 +13,30 @@ void Vehicle::draw(GeometryShader * shade) {
   mesh->draw(*shade);
   glCullFace(GL_BACK);
   shade->toggleDisplacement();
+}
+
+void Vehicle::reset() {
+  worldPos = sweep->sample(0).point;
+  velocity = sweep->sampleForward_nonzero(0,0.01);
+  velocity.normalize();
+  pos = vec3(0,0,0);
+  acceleration = sweep->sampleForward_nonzero(0,0.01);
+  up = sweep->sampleUp(0);
+  up.normalize();
+
+  velocityScalar = 0;
+  accelerationScalar = 0;
+  tbn = sweep->tbnBasis(0);
+  turnCurrentValue = 0.0;
+  airBrake = 0.0;
+  lap = 1;
+  energy = 100.0;
+
+  bestLapTime = -1;
+  lapStartTime = 0;
+
+  turnTargetValue = 0;
+  turnCurrentValue = 0;
 }
 
 void Vehicle::setAccel(vec3 accel) {
