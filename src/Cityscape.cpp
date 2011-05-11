@@ -187,7 +187,7 @@ void Cityscape::carveHelper(vec3 point, BuildingSubdivision* bsd) {
   if (xPt * xPt + zPt * zPt < CARVE_RADIUS * CARVE_RADIUS) {
     if (bsd->leaf) {
       if (bsd->height > point[1] - CARVE_RADIUS) {
-        bsd->height = fmod(rand(), point[1] - CARVE_RADIUS);
+        bsd->height = fmod(double(rand()), point[1] - CARVE_RADIUS);
       }
       return;
     }

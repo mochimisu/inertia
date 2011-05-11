@@ -30,6 +30,41 @@ int newBranches(int current_depth) {
 }
 
 /*
+* Returns 0 if the line segments are far enough apart.
+* Returns 1 if the first segment is on top.
+* Returns -1 if the second segment is on top.
+*/
+vec3 checkSegments(pair<vec3, vec3> seg1, pair<vec3, vec3> seg2) {
+  if (seg1.first == seg2.second ||
+      seg1.second == seg2.first) {
+      return vec3(0);
+  }
+
+  vec3 P0 = seg1.first;
+  vec3 Q0 = seg2.first;
+  vec3 u = seg1.second - P0;
+  vec3 v = seg2.second - Q0;
+  vec3 w0 = P0 - Q0;
+  double a = u * u;
+  double b = u * v;
+  double c = v * v;
+  double d = u * w0;
+  double e = v * w0;
+  
+  double s = (b*e - c*d) / (a*c - b*b);
+  double t = (a*e - b*d) / (a*c - b*b);
+
+  if (0.0 <= s && s <= 1.0 &&
+      0.0 <= t && t <= 1.0) {
+    vec3 dist = (P0 + s*u) - (Q0 + t*v);
+    if (dist.length() < MIN_DISTANCE) {
+      return (MIN_DISTANCE - dist.length()) * dist.normalize();
+    }
+  }
+  return vec3(0);
+}
+
+/*
 * The implementation of the TrackTreeComparator, so that the
 * neighbors of a TrackTreeNode can be sorted in clockwise order
 */
@@ -130,10 +165,10 @@ TrackGenerator::TrackGenerator() {
       vec2 offset(-direction[1], direction[0]);
 
       vec2 temp = current->xz + direction + offset;
-      vec3 v(temp[0], 0.0, temp[1]);
+      vec3 v(temp[0], RAND * 20 + 10, temp[1]);
       controlPts.push_back(v);
       temp = current->xz + direction - offset;
-      v = vec3(temp[0], 0.0, temp[1]);
+      v = vec3(temp[0], RAND * 20 + 10, temp[1]);
       controlPts.push_back(v);
     }
     else { // Otherwise, do the bisector thing
@@ -152,7 +187,8 @@ TrackGenerator::TrackGenerator() {
       newDir *= current->radius / cos(angle / 2);
       newDir += current->xz;
 
-      vec3 v(newDir[0], 0.0, newDir[1]);
+      // First, randomly assign heights
+      vec3 v(newDir[0], RAND * 20 + 10, newDir[1]);
       controlPts.push_back(v);
     }
 
@@ -160,75 +196,106 @@ TrackGenerator::TrackGenerator() {
     previous = current;
     current = next;
   } while (current != current_start || previous != previous_start);
+  
+  bool majorChange = true;
 
-  /*
-  * Phase 2 -
-  * Merge nearby control points and prune control points with angles
-  * that are too acute. Repeat until the track stops changing.
-  */
+  while (majorChange) {
+    majorChange = false;
 
-  bool changed = true;
-  while (changed) {
-    changed = false;
-    vector<vec3> tempControlPts;
+    /*
+    * Phase 2 -
+    * Merge nearby control points and prune control points with angles
+    * that are too acute. Repeat until the track stops changing.
+    */
 
-    // Merge close control points first
-    double threshold = 16;
-    int size = controlPts.size();
-    for (int i = 0; i < size; i++) {
-      vec3 current = controlPts[i];
-      vec3 previous = controlPts[(i + size - 1) % size];
-      vec3 next = controlPts[(i + 1) % size];
+    bool changed = true;
+    while (changed) {
+      changed = false;
+      vector<vec3> tempControlPts;
 
-      vec3 distvec1 = current - previous;
-      vec3 distvec2 = next - current;
-      double dist1 = distvec1.length();
-      double dist2 = distvec2.length();
-      if (dist1 > threshold && dist2 > threshold) {
-        tempControlPts.push_back(current);
+      // Merge close control points first
+      double threshold = 20.0;
+      int size = controlPts.size();
+      for (int i = 0; i < size; i++) {
+        vec3 current = controlPts[i];
+        vec3 previous = controlPts[(i + size - 1) % size];
+        vec3 next = controlPts[(i + 1) % size];
+
+        vec3 distvec1 = current - previous;
+        vec3 distvec2 = next - current;
+        distvec1[1] = 0.0;
+        distvec2[1] = 0.0;
+        double dist1 = distvec1.length();
+        double dist2 = distvec2.length();
+        if (dist1 > threshold && dist2 > threshold) {
+          tempControlPts.push_back(current);
+        }
+        else if (dist2 <= threshold) {
+          changed = true;
+          vec3 newPoint = (current + next) / 2;
+          tempControlPts.push_back(newPoint);
+        }
+        majorChange |= changed;
       }
-      else if (dist2 <= threshold) {
-        changed = true;
-        vec3 newPoint = (current + next) / 2;
-        tempControlPts.push_back(newPoint);
+      controlPts = tempControlPts;
+
+      // Next, prune sharply angled control points
+      tempControlPts.clear();
+      size = controlPts.size();
+      for (int i = 0; i < size; i++) {
+        vec3 current = controlPts[i];
+        vec3 previous = controlPts[(i + size - 1) % size];
+        vec3 next = controlPts[(i + 1) % size];
+
+        vec3 dir1 = current - previous;
+        vec3 dir2 = current - next;
+        dir1.normalize();
+        dir2.normalize();
+        if (acos(dir1 * dir2) < M_PI / 4) {
+          changed = true;
+        }
+        else {
+          tempControlPts.push_back(current);
+        }
+        majorChange |= changed;
       }
+      controlPts = tempControlPts;
     }
-    controlPts = tempControlPts;
 
-    // Next, prune sharply angled control points
-    tempControlPts.clear();
-    size = controlPts.size();
-    for (int i = 0; i < size; i++) {
-      vec3 current = controlPts[i];
-      vec3 previous = controlPts[(i + size - 1) % size];
-      vec3 next = controlPts[(i + 1) % size];
+    /*
+    * Phase 3 -
+    * Add height information and then adjust to make sure that
+    * the track will not overlap too closely.
+    */
 
-      vec3 dir1 = current - previous;
-      vec3 dir2 = current - next;
-      dir1.normalize();
-      dir2.normalize();
-      if (acos(dir1 * dir2) < M_PI / 4) {
-        changed = true;
+    // TODO - compare segment distances to make sure that they aren't overalapping too closely
+    changed = true;
+    while (changed) {
+      changed = false;
+
+      for (unsigned int i = 0; i < controlPts.size() - 1; i++) {
+        for (unsigned int j = i + 1; j < controlPts.size(); j++) {
+          unsigned int jn = (j+1)%controlPts.size();
+          pair<vec3, vec3> seg1(controlPts[i], controlPts[i+1]);
+          pair<vec3, vec3> seg2(controlPts[j], controlPts[jn]);
+          vec3 check = checkSegments(seg1, seg2);
+          if (check.length() > 0.01) {
+            changed = true;
+            controlPts[i] += check / 2;
+            controlPts[i+1] += check / 2;
+            controlPts[j] -= check / 2;
+            controlPts[jn] -= check / 2;
+            controlPts[i][1] = max(controlPts[i][1], 4.0);
+            controlPts[i+1][1] = max(controlPts[i+1][1], 4.0);
+            controlPts[j][1] = max(controlPts[j][1], 4.0);
+            controlPts[jn][1] = max(controlPts[jn][1], 4.0);
+          }
+        }
       }
-      else {
-        tempControlPts.push_back(current);
-      }
+      
+      majorChange |= changed;
     }
-    controlPts = tempControlPts;
   }
-
-  /*
-  * Phase 3 -
-  * Add height information and then adjust to make sure that
-  * the track will not overlap too closely.
-  */
-
-  // First, randomly assign heights
-  for (unsigned int i = 0; i < controlPts.size(); i++) {
-    controlPts[i][1] = RAND * 20 + 5;
-  }
-
-  // TODO - compare segment distances to make sure that they aren't overalapping too closely
 
   /*
   * Recenter the track

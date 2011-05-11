@@ -1893,19 +1893,10 @@ void setMode(int newMode) {
         l_camera = vec3(0,0,0);
         u_camera = vec3(0,1,0);
 
+        // Modify to not blind player?
         p_light = vec3(0,30,6);
-        p_light_scatter = vec3(0,-50,-100);
+        p_light_scatter = vec3(0,-90,-100);
         l_light = vec3(0,0,0);
-
-        /*//////////////////////////////////
-        p_camera = vec3(0,10,16);
-        l_camera = vec3(0,0,0);
-        u_camera = vec3(0,1,0);
-
-        p_light_scatter = vec3(0,-30,-40);
-        l_light = vec3(0,0,0);        
-        p_light = vec3(0,30,6);
-        //////////////////////////////////*/
 
         deathScatter = false;
 

@@ -17,6 +17,7 @@
 #include "algebra3.h"
 
 #define RAND (double(rand()) / double(RAND_MAX))
+#define MIN_DISTANCE 8.0
 
 /*
  * Misc declarations
