@@ -1564,6 +1564,8 @@ void setMode(int newMode) {
         p_light = vec3(110,60,0);
         p_light_scatter = vec3(110,60,0);
 
+
+        vehicle->reset();
         //Lap time 
         vehicle->setLapStartTime(glutGet(GLUT_ELAPSED_TIME));
 
