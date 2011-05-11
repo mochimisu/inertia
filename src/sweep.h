@@ -44,7 +44,7 @@ class Sweep {
   // renders the coaster
   void render(GeometryShader &shade, int pathSamplesPerPt, double crossSectionScale=.2, int xsectSamplesPerPt=3);
   // renders the coaster with a cache.  Ignores parameters after display list is set; use clearDisplayList() before updating parameters
-  void renderWithDisplayList(GeometryShader &shade, int pathSamplesPerPt, double crossSectionScale=.2, int xsectSamplesPerPt=3);
+  void renderWithDisplayList(GeometryShader &shade, int pathSamplesPerPt, bool renderCity, double crossSectionScale=.2, int xsectSamplesPerPt=3);
   void clearDisplayList();
 
   // --- these functions can provide a local frame along the track
@@ -75,6 +75,7 @@ private:
   // display list for caching sweep geometry
   //y hashmap not a c++ standard :<
   map<int, GLuint> shaderDL;
+  bool renderingCity;
 
   GLuint texture, normalMap, heightMap, skyMap; // texture data
   int lengthRepeats, widthRepeats;

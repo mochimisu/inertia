@@ -8,6 +8,8 @@ ALuint deathBuffer;
 ALuint noiseBuffer2;
 ALuint musicBuffer2;
 ALuint deathBuffer2;
+ALuint selectBuffer1;
+ALuint selectBuffer2;
 
 // Sources are points emitting sound.
 ALuint noiseSource;
@@ -16,6 +18,8 @@ ALuint deathSource;
 ALuint noiseSource2;
 ALuint musicSource2;
 ALuint deathSource2;
+ALuint selectSource1;
+ALuint selectSource2;
 
 // For switching soundtracks
 ALuint currentMusic;
@@ -341,6 +345,78 @@ ALboolean LoadALData6()
     return AL_FALSE;
 }
 
+ALboolean LoadALDataSelect1()
+{
+    // Variables to load into.
+
+    ALenum format;
+    ALsizei size;
+    ALvoid* data;
+    ALsizei freq;
+    ALboolean loop;
+    // Load wav data into a buffer.
+    alGenBuffers(1, &selectBuffer1);
+    if (alGetError() != AL_NO_ERROR)
+        return AL_FALSE;
+
+    alutLoadWAVFile("select1.wav", &format, &data, &size, &freq, &loop);
+    alBufferData(selectBuffer1, format, data, size, freq);
+    alutUnloadWAV(format, data, size, freq);
+    // Bind buffer with a source.
+    alGenSources(1, &selectSource1);
+
+    if (alGetError() != AL_NO_ERROR)
+        return AL_FALSE;
+
+    alSourcei (selectSource1, AL_BUFFER,   selectBuffer1   );
+    alSourcef (selectSource1, AL_PITCH,    1.0f     );
+    alSourcef (selectSource1, AL_GAIN,     1.0f     );
+    alSourcefv(selectSource1, AL_POSITION, SourcePos);
+    alSourcefv(selectSource1, AL_VELOCITY, SourceVel);
+    alSourcei (selectSource1, AL_LOOPING,  AL_FALSE     );
+    // Do another error check and return.
+    if (alGetError() == AL_NO_ERROR)
+        return AL_TRUE;
+
+    return AL_FALSE;
+}
+
+ALboolean LoadALDataSelect2()
+{
+    // Variables to load into.
+
+    ALenum format;
+    ALsizei size;
+    ALvoid* data;
+    ALsizei freq;
+    ALboolean loop;
+    // Load wav data into a buffer.
+    alGenBuffers(1, &selectBuffer2);
+    if (alGetError() != AL_NO_ERROR)
+        return AL_FALSE;
+
+    alutLoadWAVFile("select2.wav", &format, &data, &size, &freq, &loop);
+    alBufferData(selectBuffer2, format, data, size, freq);
+    alutUnloadWAV(format, data, size, freq);
+    // Bind buffer with a source.
+    alGenSources(1, &selectSource2);
+
+    if (alGetError() != AL_NO_ERROR)
+        return AL_FALSE;
+
+    alSourcei (selectSource2, AL_BUFFER,   selectBuffer2   );
+    alSourcef (selectSource2, AL_PITCH,    1.0f     );
+    alSourcef (selectSource2, AL_GAIN,     1.0f     );
+    alSourcefv(selectSource2, AL_POSITION, SourcePos);
+    alSourcefv(selectSource2, AL_VELOCITY, SourceVel);
+    alSourcei (selectSource2, AL_LOOPING,  AL_FALSE     );
+    // Do another error check and return.
+    if (alGetError() == AL_NO_ERROR)
+        return AL_TRUE;
+
+    return AL_FALSE;
+}
+
 void SetListenerValues()
 {
     alListenerfv(AL_POSITION,    ListenerPos);
@@ -358,6 +434,10 @@ void KillALData()
 	alDeleteBuffers(1, &musicBuffer2);
 	alDeleteSources(1, &noiseSource2);
 	alDeleteBuffers(1, &noiseBuffer2);
+	alDeleteSources(1, &selectSource1);
+	alDeleteBuffers(1, &selectBuffer1);
+	alDeleteSources(1, &selectSource2);
+	alDeleteBuffers(1, &selectBuffer2);
     alutExit();
 }
 
@@ -1041,7 +1121,7 @@ namespace raceScene {
 
   void drawObjects(GeometryShader * curShade) {
     //Track/City
-    sweep->renderWithDisplayList(*curShade,50,0.3,20);
+    sweep->renderWithDisplayList(*curShade,50, true, 0.3,20);
 
     //Vehicle Location
     vec3 vehLoc = vehicle->worldSpacePos();
@@ -1060,6 +1140,7 @@ namespace raceScene {
     case 'Q':
     case 'q':
     case 27:	
+      alSourcePlay(selectSource2);
       setMode(MODE_TITLE);
       break;
     case 'A':
@@ -1360,6 +1441,7 @@ namespace titleScene {
 
       //temp keys for debugging
     case ' ':
+      alSourcePlay(selectSource1);
       setMode(MODE_TRACK_SELECT);
       break;
     }
@@ -1447,7 +1529,7 @@ namespace trackSelectScene {
     popTransform();
 
     pushMat4(scaling3D(vec3(0.1,0.1,0.1)).transpose() * transformation * translation3D(vec3(0,-3,0)).transpose());
-    sweep->renderWithDisplayList(*curShade,50,0.3,20);
+    sweep->renderWithDisplayList(*curShade, 50, false, 0.3, 20);
     popTransform();
   }
   void drawTrackOverlay() {
@@ -1511,6 +1593,7 @@ namespace trackSelectScene {
     case 'Q':
     case 'q':
     case 27:	
+      alSourcePlay(selectSource2);
       setMode(MODE_TITLE);
       break;
     case 'A':
@@ -1519,6 +1602,7 @@ namespace trackSelectScene {
       break;
     case 'G':
     case 'g':
+      alSourcePlay(selectSource2);
       generateNewTrack();
       break;
     case '1':
@@ -1540,6 +1624,7 @@ namespace trackSelectScene {
 
       //temp keys for debugging
     case ' ':
+      alSourcePlay(selectSource1);
       setMode(MODE_RACE);
       break;
     }
@@ -1812,6 +1897,16 @@ void setMode(int newMode) {
         p_light_scatter = vec3(0,-50,-100);
         l_light = vec3(0,0,0);
 
+        /*//////////////////////////////////
+        p_camera = vec3(0,10,16);
+        l_camera = vec3(0,0,0);
+        u_camera = vec3(0,1,0);
+
+        p_light_scatter = vec3(0,-30,-40);
+        l_light = vec3(0,0,0);        
+        p_light = vec3(0,30,6);
+        //////////////////////////////////*/
+
         deathScatter = false;
 
         break;
@@ -1853,6 +1948,10 @@ int main(int argc,char** argv) {
   SetListenerValues();
   if (LoadALData5() == AL_FALSE)
     return -5;
+  if (LoadALDataSelect1() == AL_FALSE)
+    return -7;
+  if (LoadALDataSelect2() == AL_FALSE)
+    return -7;
   SetListenerValues();
 
   // Setup an exit procedure.

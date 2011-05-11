@@ -143,6 +143,8 @@ Sweep::Sweep() : globalTwist(0), globalAzimuth(0), widthRepeats(1) {
   pathPts = trkGen.getControlPts();
 
   cscape = new Cityscape(trkGen.getXWidth() + 20, trkGen.getZWidth() + 20, 64);
+
+  renderingCity = false;
   
   /*vector<vec2>::iterator fwd = profilePts.begin();
   vector<vec2>::iterator bkwd = profilePts.end();
@@ -180,7 +182,7 @@ vec3 Sweep::sampleUp(double t, double step) {
   t = fmod(t, 1.0);
   if (t < 0.0) t+=1.0;
   // orthonormalize the frame
-  vec3 dir = sampleForward(t, step);
+  vec3 dir = sampleForward_nonzero(t, step);
   double azimuth = sample(t).azimuth;
   vec3 up(0, 1, 0);
   dir.normalize();
@@ -260,9 +262,6 @@ void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vec
     ups.push_back(up);
     rights.push_back(right);
   }
-  
-  cout << rights.size() << endl;
-  cout << polyline.size() << endl;
   
   // FOR loop for going AROUND track
   for (unsigned int i = 0; i <= crossSection.size(); i++) {
@@ -372,7 +371,11 @@ void Sweep::render(GeometryShader &shader, int pathSamplesPerPt, double crossSec
   cscape->carve(carveAway);
 }
 
-void Sweep::renderWithDisplayList(GeometryShader &shader, int pathSamplesPerPt, double crossSectionScale, int xsectSamplesPerPt) {
+void Sweep::renderWithDisplayList(GeometryShader &shader, int pathSamplesPerPt, bool renderCity, double crossSectionScale, int xsectSamplesPerPt) {
+  if (renderingCity != renderCity) {
+    renderingCity = renderCity;
+    shaderDL.clear();
+  }
   
   int shadeId = shader.getId();
 
@@ -380,7 +383,9 @@ void Sweep::renderWithDisplayList(GeometryShader &shader, int pathSamplesPerPt, 
     GLuint DLid = glGenLists(1);
     glNewList(DLid, GL_COMPILE);
     render(shader, pathSamplesPerPt, crossSectionScale, xsectSamplesPerPt);
-	  cscape->render();
+    if (renderingCity) {
+	    cscape->render();
+    }
     glEndList();
     shaderDL[shadeId] = DLid;
   }
