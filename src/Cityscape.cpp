@@ -163,36 +163,37 @@ void Cityscape::carve(vector<vec3> carveAway) {
 }
 
 void Cityscape::carveHelper(vec3 point, BuildingSubdivision* bsd) {
-  if (bsd->leaf) {
-    double xPt = point[0];
-    double zPt = point[2];
+  double xPt = point[0];
+  double zPt = point[2];
     
-    double xBuilding = xPt;
-    double zBuilding = zPt;
-    if (xPt < bsd->xMin) {
-      xBuilding = bsd->xMin;
-    }
-    else if (xPt > bsd->xMax) {
-      xBuilding = bsd->xMax;
-    }
-    if (zPt < bsd->zMin) {
-      zBuilding = bsd->zMin;
-    }
-    else if (zPt > bsd->zMax) {
-      zBuilding = bsd->zMax;
-    }
+  double xBuilding = xPt;
+  double zBuilding = zPt;
+  if (xPt < bsd->xMin) {
+    xBuilding = bsd->xMin;
+  }
+  else if (xPt > bsd->xMax) {
+    xBuilding = bsd->xMax;
+  }
+  if (zPt < bsd->zMin) {
+    zBuilding = bsd->zMin;
+  }
+  else if (zPt > bsd->zMax) {
+    zBuilding = bsd->zMax;
+  }
     
-    xPt -= xBuilding;
-    zPt -= zBuilding;
+  xPt -= xBuilding;
+  zPt -= zBuilding;
 
-    if (xPt * xPt + zPt * zPt < CARVE_RADIUS * CARVE_RADIUS) {
+  if (xPt * xPt + zPt * zPt < CARVE_RADIUS * CARVE_RADIUS) {
+    if (bsd->leaf) {
       if (bsd->height > point[1] - CARVE_RADIUS) {
         bsd->height = fmod(rand(), point[1] - CARVE_RADIUS);
       }
+      return;
     }
-  }
-  else {
-    carveHelper(point, bsd->one);
-    carveHelper(point, bsd->two);
+    else {
+      carveHelper(point, bsd->one);
+      carveHelper(point, bsd->two);
+    }
   }
 }
