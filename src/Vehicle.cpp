@@ -239,13 +239,23 @@ mat4 Vehicle::orientationBasis() {
   vec3 side = up ^ forward;
   side.normalize();
   
-  vec3 uprime = forward ^ side;
+  /*vec3 uprime = forward ^ side;
   uprime.normalize();
 
   return mat4(vec4(forward,0),
 	      vec4(uprime,0),
 	      vec4(side,0),
+	      vec4(0,0,0,1));*/
+  
+  // Andrew's attempt at fixing the viewing issue
+  forward = side ^ up;
+  forward.normalize();
+
+  return mat4(vec4(forward,0),
+	      vec4(up,0),
+	      vec4(side,0),
 	      vec4(0,0,0,1));
+  // ends here
 }
 
 vec3 Vehicle::lightPos() {

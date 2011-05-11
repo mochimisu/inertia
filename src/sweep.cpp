@@ -250,7 +250,7 @@ void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vec
     PathPoint pathPtCurr = polyline[j];
 
     // Create the coordinate axes
-    vec3 forward = sampleForward(percentageAlongTrack).normalize();
+    /*vec3 forward = sampleForward(percentageAlongTrack).normalize();
     vec3 up = sampleUp(percentageAlongTrack);
     vec3 right = (forward ^ up).normalize();
     up = (right ^ forward).normalize();
@@ -260,7 +260,12 @@ void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vec
 
     forwards.push_back(forward);
     ups.push_back(up);
-    rights.push_back(right);
+    rights.push_back(right);*/
+
+    mat3 tbn = tbnBasis(percentageAlongTrack).transpose();
+    forwards.push_back(tbn[0]);
+    ups.push_back(tbn[1] * crossSectionScale);
+    rights.push_back(tbn[2] * crossSectionScale);
   }
   
   // FOR loop for going AROUND track
@@ -300,14 +305,14 @@ void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vec
         double texS, texT;
         
         texS = lengthRepeats * percentageAlongTrack;
-        
-        texT = percentageAroundTrackCurr;
-        glTexCoord2d(texS, texT);
-        glVertex3dv(&stripCurr[alongIndexCurr][0]);
 
         texT = percentageAroundTrackPrev;
         glTexCoord2d(texS, texT);
         glVertex3dv(&stripPrev[alongIndexCurr][0]);
+        
+        texT = percentageAroundTrackCurr;
+        glTexCoord2d(texS, texT);
+        glVertex3dv(&stripCurr[alongIndexCurr][0]);
       }
       glEnd();
     }
@@ -320,6 +325,16 @@ void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vec
 
   delete [] stripCurr;
   delete [] stripPrev;
+
+  /* // Stuff to be able to look at the raw b-spline
+  glBegin(GL_LINE_LOOP);
+  glLineWidth(10);
+  for (unsigned int i = 0; i < (polyline.size() - 3); i++) {
+    double t = double(i) / (polyline.size() - 3);
+    vec3 v = sample(t).point;
+    glVertex3d(v[0], v[1], v[2]);
+  }
+  glEnd();*/
 }
 
 // the big render function
