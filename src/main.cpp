@@ -63,7 +63,10 @@ vec3 u_camera(0,1,0);
 //Light position
 vec3 p_light(110,60,0);
 //Light lookAt
-vec3 l_light(0,0,0);                                                                                                                
+vec3 l_light(0,0,0);
+//Light Scatter Physical Light Location (used for demonstrations like title screen, where illumination is not same place as physical light in light scatter render)
+vec3 p_light_scatter(110,60,0);
+
 //===DEBUG STUFF 
 //background texture
 enum { DISPLAY_DEPTH_BUFFER,
@@ -305,7 +308,7 @@ vec2 getLightScreenCoor() {
   GLdouble winY=0;
   GLdouble winZ=0;
 
-  gluProject(p_light[0], p_light[1], p_light[2],
+  gluProject(p_light_scatter[0], p_light_scatter[1], p_light_scatter[2],
              modelView, projection, viewport,
             &winX, &winY, &winZ);
     
@@ -669,7 +672,7 @@ void renderScene() {
    
   //Draw light
   glPushMatrix();
-  glTranslatef(p_light[0],p_light[1],p_light[2]);
+  glTranslatef(p_light_scatter[0],p_light_scatter[1],p_light_scatter[2]);
   glColor4f(1.0,1.0,1.0,1.0);
   glutSolidSphere(30,20,20);
   glPopMatrix();
@@ -1551,6 +1554,11 @@ void setMode(int newMode) {
         glutSpecialUpFunc(raceScene::processSpecialKeysUp);
         glutJoystickFunc(raceScene::joystickFunc,10);
             
+        
+        p_light = vec3(110,60,0);
+        p_light_scatter = vec3(110,60,0);
+
+
         //Lap time 
         vehicle->setLapStartTime(glutGet(GLUT_ELAPSED_TIME));
 
@@ -1581,8 +1589,10 @@ void setMode(int newMode) {
         l_camera = vec3(0,0,0);
         u_camera = vec3(0,1,0);
 
+        p_light_scatter = vec3(0,-30,-40);
+        l_light = vec3(0,0,0);        
         p_light = vec3(0,30,6);
-        l_light = vec3(0,0,0);
+
         break;
 	
     case MODE_TRACK_SELECT:
@@ -1608,6 +1618,7 @@ void setMode(int newMode) {
         u_camera = vec3(0,1,0);
 
         p_light = vec3(0,30,6);
+        p_light_scatter = vec3(0,-50,-100);
         l_light = vec3(0,0,0);
         break;
 
