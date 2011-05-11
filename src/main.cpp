@@ -102,8 +102,6 @@ GeometryShader *darkShade;
 Sweep *sweep;
 Vehicle *vehicle;
 Mesh * vehMesh;
-//for the sake of cleanliness
-RenderOptions renderOpt;
 
 //==LIGHT SCATTERING STUFF
 GLuint scatterTextureId;
@@ -663,7 +661,9 @@ void renderScene() {
     
   // Clear previous frame values
   if(trippyMode) {  
-    glClearColor(1,1,1,1.0f);
+    //glClearColor(1,1,1,1.0f);
+    glClearColor(1,0,0,1.0f);
+
   } else {
     glClearColor(0,0,0,1.0f);
   }
@@ -1736,18 +1736,9 @@ int main(int argc,char** argv) {
   if(evolutionFont->Error() || digitalNinjaFont->Error() || accidentalPresidencyFont->Error() ||
       evolutionBufferFont->Error() || accidentalPresidencyBufferFont->Error())
           return -1;
-
-
-
+  
   sweep = new Sweep();
-  
-  //load the default render options
-  renderOpt = RenderOptions();
-  //but for the sake of coolness we'll display the blurred color depth buffer by default
-  renderOpt.setDepthBufferOption(DISPLAY_DEPTH_SQUARED_COMPLETE_BUFFER);
-  renderOpt.setDepthBufferOption(DISPLAY_DEPTH_SQUARED_COMPLETE_BUFFER);
 
-  
 
   vehMesh = new Mesh();
   vehMesh->loadFile("test.obj");
