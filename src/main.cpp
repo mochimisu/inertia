@@ -66,6 +66,10 @@ vec3 p_light(110,60,0);
 vec3 l_light(0,0,0);
 //Light Scatter Physical Light Location (used for demonstrations like title screen, where illumination is not same place as physical light in light scatter render)
 vec3 p_light_scatter(110,60,0);
+//Sky Color
+vec4 skyColor(0,0,0,0);
+//Trippy Light Scattering Mode
+bool trippyMode = false;
 
 //===DEBUG STUFF 
 //background texture
@@ -658,7 +662,11 @@ void renderScene() {
   glViewport(0,0,lightScatterWidth,lightScatterHeight);
     
   // Clear previous frame values
-  glClearColor(0,0,0,1.0f);
+  if(trippyMode) {  
+    glClearColor(1,1,1,1.0f);
+  } else {
+    glClearColor(0,0,0,1.0f);
+  }
   //glClearColor(1,1,1,1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
@@ -690,7 +698,9 @@ void renderScene() {
   glViewport(0,0,renderWidth,renderHeight);
     
   // Clear previous frame values
-  glClearColor(.764705882,.890196078,1,1.0f);
+  //glClearColor(.764705882,.890196078,1,1.0f);
+  glClearColor(skyColor[0], skyColor[1], skyColor[2], skyColor[3]);
+
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
   //Using the shadow shader
@@ -971,13 +981,9 @@ namespace raceScene {
     case 27:	
       setMode(MODE_TITLE);
       break;
-    case 'B':
-    case 'b':
-      renderOpt.toggleDispDepthBuffer();
-      break;
-    case 'G':
-    case 'g':
-      renderOpt.toggleDispGround();
+    case 'A':
+    case 'a':
+      trippyMode = !trippyMode;
       break;
     case '1':
       alSourceStop(currentMusic);
@@ -1241,13 +1247,9 @@ namespace titleScene {
     case 27:	
       exit(0);
       break;
-    case 'B':
-    case 'b':
-      renderOpt.toggleDispDepthBuffer();
-      break;
-    case 'G':
-    case 'g':
-      renderOpt.toggleDispGround();
+    case 'A':
+    case 'a':
+      trippyMode = !trippyMode;
       break;
     case '1':
       alSourceStop(currentMusic);
@@ -1419,6 +1421,10 @@ namespace trackSelectScene {
     case 27:	
       setMode(MODE_TITLE);
       break;
+    case 'A':
+    case 'a':
+      trippyMode = !trippyMode;
+      break;
     case 'G':
     case 'g':
       generateNewTrack();
@@ -1554,10 +1560,9 @@ void setMode(int newMode) {
         glutSpecialUpFunc(raceScene::processSpecialKeysUp);
         glutJoystickFunc(raceScene::joystickFunc,10);
             
-        
+        skyColor = vec4(.764705882,.890196078,1,1);
         p_light = vec3(110,60,0);
         p_light_scatter = vec3(110,60,0);
-
 
         //Lap time 
         vehicle->setLapStartTime(glutGet(GLUT_ELAPSED_TIME));
@@ -1585,6 +1590,8 @@ void setMode(int newMode) {
         glutSpecialUpFunc(titleScene::processSpecialKeysUp);
         glutJoystickFunc(titleScene::joystickFunc,10);
 
+        skyColor = vec4(0,.152941176,.282352941,1);
+
         p_camera = vec3(0,10,16);
         l_camera = vec3(0,0,0);
         u_camera = vec3(0,1,0);
@@ -1592,7 +1599,6 @@ void setMode(int newMode) {
         p_light_scatter = vec3(0,-30,-40);
         l_light = vec3(0,0,0);        
         p_light = vec3(0,30,6);
-
         break;
 	
     case MODE_TRACK_SELECT:
@@ -1612,6 +1618,8 @@ void setMode(int newMode) {
         glutSpecialFunc(trackSelectScene::processSpecialKeys);
         glutSpecialUpFunc(trackSelectScene::processSpecialKeysUp);
         glutJoystickFunc(trackSelectScene::joystickFunc,10);
+
+        skyColor = vec4(0,.152941176,.282352941,1);
 
         p_camera = vec3(0,10,16);
         l_camera = vec3(0,0,0);
