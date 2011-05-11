@@ -1099,7 +1099,7 @@ namespace raceScene {
 
     //Name 
     buff.str("");
-    buff << "cs184sp11 final project: inertia. pre-submission version. brandon wang, andrew lee, chris tandiono";
+    buff << "cs184sp11 final project: inertia. submission version. brandon wang, andrew lee, chris tandiono";
     drawString(accidentalPresidencyBufferFont, buff.str(), -renderWidth*3.9/8, renderHeight*3.85/8);
 
     //Energy
@@ -1404,7 +1404,7 @@ namespace titleScene {
 
     //Name 
     buff.str("");
-    buff << "cs184sp11 final project: inertia. pre-submission version. brandon wang, andrew lee, chris tandiono";
+    buff << "cs184sp11 final project: inertia. submission version. brandon wang, andrew lee, chris tandiono";
     drawString(accidentalPresidencyBufferFont, buff.str(), -renderWidth*3.9/8, renderHeight*3.85/8);
 
     glDisable(GL_BLEND);
@@ -1571,7 +1571,7 @@ namespace trackSelectScene {
 
     //Name 
     buff.str("");
-    buff << "cs184sp11 final project: inertia. pre-submission version. brandon wang, andrew lee, chris tandiono";
+    buff << "cs184sp11 final project: inertia. submission version. brandon wang, andrew lee, chris tandiono";
     drawString(accidentalPresidencyBufferFont, buff.str(), -renderWidth*3.9/8, renderHeight*3.85/8);
 
     glDisable(GL_BLEND);
