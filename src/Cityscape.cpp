@@ -134,30 +134,6 @@ void Cityscape::renderBuildingSubdivision(BuildingSubdivision* bsd) {
   }
 }
 
-void Cityscape::cull(double x, double z) {
-  cullHelper(x, z, rootBSD);
-}
-
-void Cityscape::cullHelper(double x, double z, BuildingSubdivision* bsd) {
-  if (bsd->leaf) {
-    bsd->draw = false;
-  }
-  else {
-    BuildingSubdivision* one = bsd->one;
-    BuildingSubdivision* two = bsd->two;
-    if (one->xMin < x &&
-      x < one->xMax &&
-      one->zMin < z &&
-      z < one->zMax
-      ) {
-        cullHelper(x, z, one);
-    }
-    else {
-      cullHelper(x, z, two);
-    }
-  }
-}
-
 double Cityscape::getAverageHeight(BuildingSubdivision* bsd) {
   if (bsd->leaf) {
     return bsd->height;
@@ -177,5 +153,46 @@ void Cityscape::setHeights(BuildingSubdivision* bsd, double scale) {
   else {
     setHeights(bsd->one, scale);
     setHeights(bsd->two, scale);
+  }
+}
+
+void Cityscape::carve(vector<vec3> carveAway) {
+  for (unsigned int i = 0; i < carveAway.size(); i++) {
+    carveHelper(carveAway[i], rootBSD);
+  }
+}
+
+void Cityscape::carveHelper(vec3 point, BuildingSubdivision* bsd) {
+  if (bsd->leaf) {
+    double xPt = point[0];
+    double zPt = point[2];
+    
+    double xBuilding = xPt;
+    double zBuilding = zPt;
+    if (xPt < bsd->xMin) {
+      xBuilding = bsd->xMin;
+    }
+    else if (xPt > bsd->xMax) {
+      xBuilding = bsd->xMax;
+    }
+    if (zPt < bsd->zMin) {
+      zBuilding = bsd->zMin;
+    }
+    else if (zPt > bsd->zMax) {
+      zBuilding = bsd->zMax;
+    }
+    
+    xPt -= xBuilding;
+    zPt -= zBuilding;
+
+    if (xPt * xPt + zPt * zPt < CARVE_RADIUS * CARVE_RADIUS) {
+      if (bsd->height > point[1] - CARVE_RADIUS) {
+        bsd->height = fmod(rand(), point[1] - CARVE_RADIUS);
+      }
+    }
+  }
+  else {
+    carveHelper(point, bsd->one);
+    carveHelper(point, bsd->two);
   }
 }

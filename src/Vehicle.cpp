@@ -156,7 +156,7 @@ void Vehicle::step(double amount) {
   
 
   //find sweep location @ new time
-  vec3 sweepLocNew = this->sweep->sample(this->pos[0]).point + tbn*vec3(0,0,pos[2]) + tbn*vec3(0,0.5,0);
+  vec3 sweepLocNew = this->sweep->sample(this->pos[0]).point + tbn*vec3(0,0,pos[2]) + tbn*vec3(0,0.0,0);
   
   //now reconstruct the worldPos
   worldPos = sweepLocNew;

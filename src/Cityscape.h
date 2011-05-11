@@ -8,6 +8,8 @@
 #ifndef CITYSCAPE_H_
 #define CITYSCAPE_H_
 
+#define CARVE_RADIUS 2.0
+
 #include <vector>
 #include "global.h"
 
@@ -40,13 +42,13 @@ class Cityscape {
 public:
   Cityscape(int xWidth, int zWidth, int area);
   void render();
-  void cull(double x, double z);
+  void carve(vector<vec3> carveAway);
 
 private:
   void renderBuildingSubdivision(BuildingSubdivision* bsd);
-  void cullHelper(double x, double z, BuildingSubdivision* bsd);
   double getAverageHeight(BuildingSubdivision* bsd);
   void setHeights(BuildingSubdivision* bsd, double scale);
+  void carveHelper(vec3 point, BuildingSubdivision* bsd);
 
   BuildingSubdivision* rootBSD;
   GLuint DLid;

@@ -917,9 +917,9 @@ namespace raceScene {
       drawString(evolutionBufferFont, buff.str(),renderWidth*2.4/8, renderHeight*3.5/8);
 
       buff.str("");
-      buff << mTime << ".";
-      buff << (sTime%60) << ".";
-      buff << (msTime%1000);
+      buff << setfill('0') << setw(2) << mTime << ".";
+      buff << setfill('0') << setw(2) << (sTime%60) << ".";
+      buff << setfill('0') << setw(3) << (msTime%1000);
       glColor4f(1,1,1,0.75);
       drawString(digitalNinjaFont, buff.str(),renderWidth*2.4/8, renderHeight*3.2/8);
 
@@ -937,7 +937,9 @@ namespace raceScene {
     drawString(evolutionBufferFont, buff.str(), -55,renderHeight*3.5/8);
 
     buff.str("");
-    buff << vehicle->getEnergy();
+    double energy = vehicle->getEnergy();
+    buff << int(energy) << ".";
+    buff  << setfill('0') << setw(3) << (int(1000 * energy) % 1000);
     drawString(digitalNinjaFont, buff.str(), -45,renderHeight*3.2/8);
 
 
@@ -1570,6 +1572,9 @@ void setMode(int newMode) {
  * Main
  */
 int main(int argc,char** argv) {
+  /*unsigned int seed = time(NULL);
+  cout << seed << endl;
+  srand(seed);*/
   srand(time(NULL));
 
   //Initialize OpenGL

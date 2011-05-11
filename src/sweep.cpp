@@ -180,7 +180,7 @@ vec3 Sweep::sampleUp(double t, double step) {
   t = fmod(t, 1.0);
   if (t < 0.0) t+=1.0;
   // orthonormalize the frame
-  vec3 dir = sampleForward(t);
+  vec3 dir = sampleForward(t, step);
   double azimuth = sample(t).azimuth;
   vec3 up(0, 1, 0);
   dir.normalize();
@@ -261,6 +261,9 @@ void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vec
     rights.push_back(right);
   }
   
+  cout << rights.size() << endl;
+  cout << polyline.size() << endl;
+  
   // FOR loop for going AROUND track
   for (unsigned int i = 0; i <= crossSection.size(); i++) {
     int aroundIndexCurr = (i) % crossSection.size();
@@ -272,7 +275,7 @@ void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vec
     
     // FOR loop for going ALONG track
     // Populating stripCurr
-    for (unsigned int j = 0; j < polyline.size(); j++) {
+    for (unsigned int j = 0; j < polyline.size() - 3; j++) {
       vec3 pt = rights[j] * csPtCurr[0] + ups[j] * csPtCurr[1];
       stripCurr[j] = polyline[j].point + pt;
     }
@@ -306,9 +309,6 @@ void Sweep::renderSweep(GeometryShader &shader, vector<PathPoint> &polyline, vec
         texT = percentageAroundTrackPrev;
         glTexCoord2d(texS, texT);
         glVertex3dv(&stripPrev[alongIndexCurr][0]);
-
-        // Cull ?????????????????????????????????????????????????????????????????????????????? I need to do a better version of this.....
-        cscape->cull(stripCurr[alongIndexCurr][0], stripCurr[alongIndexCurr][2]);
       }
       glEnd();
     }
@@ -344,15 +344,15 @@ void Sweep::render(GeometryShader &shader, int pathSamplesPerPt, double crossSec
   sampleBSpline(pathPts, polyline, totalSamples);
 
   vector<pair<vec2, double> > profile;
-  profile.push_back(pair<vec2, double>(vec2(0, 0), 0.0));
-  profile.push_back(pair<vec2, double>(vec2(7, 0), 0.10));
-  profile.push_back(pair<vec2, double>(vec2(7, 2), 0.15));
-  profile.push_back(pair<vec2, double>(vec2(6, 2), 0.20));
-  profile.push_back(pair<vec2, double>(vec2(6, 1), 0.25));
-  profile.push_back(pair<vec2, double>(vec2(-6, 1), 0.75));
-  profile.push_back(pair<vec2, double>(vec2(-6, 2), 0.80));
-  profile.push_back(pair<vec2, double>(vec2(-7, 2), 0.85));
-  profile.push_back(pair<vec2, double>(vec2(-7, 0), 0.90));
+  profile.push_back(pair<vec2, double>(vec2(0, -2), 0.0));
+  profile.push_back(pair<vec2, double>(vec2(7, -2), 0.10));
+  profile.push_back(pair<vec2, double>(vec2(7, 0), 0.15));
+  profile.push_back(pair<vec2, double>(vec2(6, 0), 0.20));
+  profile.push_back(pair<vec2, double>(vec2(6, -1), 0.25));
+  profile.push_back(pair<vec2, double>(vec2(-6, -1), 0.75));
+  profile.push_back(pair<vec2, double>(vec2(-6, 0), 0.80));
+  profile.push_back(pair<vec2, double>(vec2(-7, 0), 0.85));
+  profile.push_back(pair<vec2, double>(vec2(-7, -2), 0.90));
 
   int size = (int) polyline.size();
   if (size <= 1) { // a polyline with only one point is pretty lame!
@@ -360,7 +360,16 @@ void Sweep::render(GeometryShader &shader, int pathSamplesPerPt, double crossSec
     return;
   }
 
+  // Render the track geometry
   renderSweep(shader, polyline, profile, crossSectionScale);
+
+  // Carve away the buildings in the way
+  sampleBSpline(pathPts, polyline, totalSamples * 10);
+  vector<vec3> carveAway;
+  for (unsigned int i = 0 ; i < (polyline.size() - 3); i++) {
+    carveAway.push_back(polyline[i].point);
+  }
+  cscape->carve(carveAway);
 }
 
 void Sweep::renderWithDisplayList(GeometryShader &shader, int pathSamplesPerPt, double crossSectionScale, int xsectSamplesPerPt) {
