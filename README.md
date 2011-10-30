@@ -1,4 +1,5 @@
 # Inertia - CS184 Final Project
+CS184 Spring 2011.
 Brandon Wang, Chris Tandion, Andrew Lee
 
 ## Installing
