@@ -1,45 +1,8 @@
 #include "main.h"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
-// Buffers hold sound data.
-ALuint noiseBuffer;
-ALuint musicBuffer;
-ALuint deathBuffer;
-ALuint noiseBuffer2;
-ALuint musicBuffer2;
-ALuint deathBuffer2;
-ALuint selectBuffer1;
-ALuint selectBuffer2;
-
-// Sources are points emitting sound.
-ALuint noiseSource;
-ALuint musicSource;
-ALuint deathSource;
-ALuint noiseSource2;
-ALuint musicSource2;
-ALuint deathSource2;
-ALuint selectSource1;
-ALuint selectSource2;
-
-// For switching soundtracks
-ALuint currentMusic;
-ALuint currentNoise;
-ALuint currentDeath;
-
-// Position of the source sound.
-ALfloat SourcePos[] = { 0.0, 0.0, 0.0 };
-
-// Velocity of the source sound.
-ALfloat SourceVel[] = { 0.0, 0.0, 0.0 };
-
-// Position of the listener.
-ALfloat ListenerPos[] = { 0.0, 0.0, 0.0 };
-
-// Velocity of the listener.
-ALfloat ListenerVel[] = { 0.0, 0.0, 0.0 };
-
-// Orientation of the listener. (first 3 elements are "at", second 3 are "up")
-ALfloat ListenerOri[] = { 0.0, 0.0, -1.0,  0.0, 1.0, 0.0 };
+//Sound Engine
+SoundEngine * soundengine;
 
 //===RENDER CONSTANTS
 const float shadowMapCoef = 0.5;
@@ -126,320 +89,6 @@ void (*drawOverlayTarget)();
 enum { MODE_RACE, MODE_TRACK_SELECT, MODE_TITLE , MODE_DEATH};
 int lastStartPress = 0;
 
-
-ALboolean LoadALData()
-{
-    // Variables to load into.
-
-    ALenum format;
-    ALsizei size;
-    ALvoid* data;
-    ALsizei freq;
-    ALboolean loop;
-    // Load wav data into a buffer.
-    alGenBuffers(1, &musicBuffer);
-    if (alGetError() != AL_NO_ERROR)
-        return AL_FALSE;
-
-    alutLoadWAVFile("race2.wav", &format, &data, &size, &freq, &loop);
-    alBufferData(musicBuffer, format, data, size, freq);
-    alutUnloadWAV(format, data, size, freq);
-    // Bind buffer with a source.
-    alGenSources(1, &musicSource);
-
-    if (alGetError() != AL_NO_ERROR)
-        return AL_FALSE;
-
-    alSourcei (musicSource, AL_BUFFER,   musicBuffer   );
-    alSourcef (musicSource, AL_PITCH,    1.0f     );
-    alSourcef (musicSource, AL_GAIN,     1.0f     );
-    alSourcefv(musicSource, AL_POSITION, SourcePos);
-    alSourcefv(musicSource, AL_VELOCITY, SourceVel);
-    alSourcei (musicSource, AL_LOOPING,  AL_TRUE     );
-    // Do another error check and return.
-    if (alGetError() == AL_NO_ERROR)
-        return AL_TRUE;
-
-    return AL_FALSE;
-}
-
-ALboolean LoadALData2()
-{
-    // Variables to load into.
-
-    ALenum format;
-    ALsizei size;
-    ALvoid* data;
-    ALsizei freq;
-    ALboolean loop;
-    // Load wav data into a buffer.
-    alGenBuffers(1, &noiseBuffer);
-    if (alGetError() != AL_NO_ERROR)
-        return AL_FALSE;
-
-    alutLoadWAVFile("Engine.wav", &format, &data, &size, &freq, &loop);
-    alBufferData(noiseBuffer, format, data, size, freq);
-    alutUnloadWAV(format, data, size, freq);
-    // Bind buffer with a source.
-    alGenSources(1, &noiseSource);
-
-    if (alGetError() != AL_NO_ERROR)
-        return AL_FALSE;
-
-    alSourcei (noiseSource, AL_BUFFER,   noiseBuffer   );
-    cout << alGetString(alGetError()) << endl;
-    alSourcef (noiseSource, AL_PITCH,    1.0f     );
-    alSourcef (noiseSource, AL_GAIN,     1.0f     );
-    alSourcefv(noiseSource, AL_POSITION, SourcePos);
-    alSourcefv(noiseSource, AL_VELOCITY, SourceVel);
-    alSourcei (noiseSource, AL_LOOPING,  AL_TRUE     );
-    // Do another error check and return.
-    if (alGetError() == AL_NO_ERROR)
-        return AL_TRUE;
-
-    return AL_FALSE;
-}
-
-ALboolean LoadALData3()
-{
-    // Variables to load into.
-
-    ALenum format;
-    ALsizei size;
-    ALvoid* data;
-    ALsizei freq;
-    ALboolean loop;
-    // Load wav data into a buffer.
-    alGenBuffers(1, &musicBuffer2);
-    if (alGetError() != AL_NO_ERROR)
-        return AL_FALSE;
-
-    alutLoadWAVFile("pacman.wav", &format, &data, &size, &freq, &loop);
-    alBufferData(musicBuffer2, format, data, size, freq);
-    alutUnloadWAV(format, data, size, freq);
-    // Bind buffer with a source.
-    alGenSources(1, &musicSource2);
-
-    if (alGetError() != AL_NO_ERROR)
-        return AL_FALSE;
-
-    alSourcei (musicSource2, AL_BUFFER,   musicBuffer2   );
-    alSourcef (musicSource2, AL_PITCH,    1.0f     );
-    alSourcef (musicSource2, AL_GAIN,     1.0f     );
-    alSourcefv(musicSource2, AL_POSITION, SourcePos);
-    alSourcefv(musicSource2, AL_VELOCITY, SourceVel);
-    alSourcei (musicSource2, AL_LOOPING,  AL_FALSE     );
-    // Do another error check and return.
-    if (alGetError() == AL_NO_ERROR)
-        return AL_TRUE;
-
-    return AL_FALSE;
-}
-
-ALboolean LoadALData4()
-{
-    // Variables to load into.
-
-    ALenum format;
-    ALsizei size;
-    ALvoid* data;
-    ALsizei freq;
-    ALboolean loop;
-    // Load wav data into a buffer.
-    alGenBuffers(1, &noiseBuffer2);
-    if (alGetError() != AL_NO_ERROR)
-        return AL_FALSE;
-
-    alutLoadWAVFile("wakka.wav", &format, &data, &size, &freq, &loop);
-    alBufferData(noiseBuffer2, format, data, size, freq);
-    alutUnloadWAV(format, data, size, freq);
-    // Bind buffer with a source.
-    alGenSources(1, &noiseSource2);
-
-    if (alGetError() != AL_NO_ERROR)
-        return AL_FALSE;
-
-    alSourcei (noiseSource2, AL_BUFFER,   noiseBuffer2   );
-    alSourcef (noiseSource2, AL_PITCH,    1.0f     );
-    alSourcef (noiseSource2, AL_GAIN,     1.0f     );
-    alSourcefv(noiseSource2, AL_POSITION, SourcePos);
-    alSourcefv(noiseSource2, AL_VELOCITY, SourceVel);
-    alSourcei (noiseSource2, AL_LOOPING,  AL_TRUE     );
-    // Do another error check and return.
-    if (alGetError() == AL_NO_ERROR)
-        return AL_TRUE;
-
-    return AL_FALSE;
-}
-
-ALboolean LoadALData5()
-{
-    // Variables to load into.
-
-    ALenum format;
-    ALsizei size;
-    ALvoid* data;
-    ALsizei freq;
-    ALboolean loop;
-    // Load wav data into a buffer.
-    alGenBuffers(1, &deathBuffer);
-    if (alGetError() != AL_NO_ERROR)
-        return AL_FALSE;
-	
-    alutLoadWAVFile("death.wav", &format, &data, &size, &freq, &loop);
-    alBufferData(deathBuffer, format, data, size, freq);
-    alutUnloadWAV(format, data, size, freq);
-    // Bind buffer with a source.
-    alGenSources(1, &deathSource);
-    if (alGetError() != AL_NO_ERROR) {
-        return AL_FALSE;
-	}
-
-    alSourcei (deathSource, AL_BUFFER,   deathBuffer   );
-    alSourcef (deathSource, AL_PITCH,    1.0f     );
-    alSourcef (deathSource, AL_GAIN,     1.0f     );
-    alSourcefv(deathSource, AL_POSITION, SourcePos);
-    alSourcefv(deathSource, AL_VELOCITY, SourceVel);
-    alSourcei (deathSource, AL_LOOPING,  AL_FALSE     );
-    // Do another error check and return.
-    if (alGetError() == AL_NO_ERROR) {
-        return AL_TRUE;
-		}
-
-    return AL_FALSE;
-}
-
-ALboolean LoadALData6()
-{
-    // Variables to load into.
-
-    ALenum format;
-    ALsizei size;
-    ALvoid* data;
-    ALsizei freq;
-    ALboolean loop;
-    // Load wav data into a buffer.
-    alGenBuffers(1, &deathBuffer2);
-    if (alGetError() != AL_NO_ERROR)
-        return AL_FALSE;
-
-    alutLoadWAVFile("pacdeath.wav", &format, &data, &size, &freq, &loop);
-    alBufferData(deathBuffer2, format, data, size, freq);
-    alutUnloadWAV(format, data, size, freq);
-    // Bind buffer with a source.
-    alGenSources(1, &deathSource2);
-
-    if (alGetError() != AL_NO_ERROR)
-        return AL_FALSE;
-
-    alSourcei (deathSource2, AL_BUFFER,   deathBuffer2   );
-    alSourcef (deathSource2, AL_PITCH,    1.0f     );
-    alSourcef (deathSource2, AL_GAIN,     1.0f     );
-    alSourcefv(deathSource2, AL_POSITION, SourcePos);
-    alSourcefv(deathSource2, AL_VELOCITY, SourceVel);
-    alSourcei (deathSource2, AL_LOOPING,  AL_FALSE     );
-    // Do another error check and return.
-    if (alGetError() == AL_NO_ERROR)
-        return AL_TRUE;
-
-    return AL_FALSE;
-}
-
-ALboolean LoadALDataSelect1()
-{
-    // Variables to load into.
-
-    ALenum format;
-    ALsizei size;
-    ALvoid* data;
-    ALsizei freq;
-    ALboolean loop;
-    // Load wav data into a buffer.
-    alGenBuffers(1, &selectBuffer1);
-    if (alGetError() != AL_NO_ERROR)
-        return AL_FALSE;
-
-    alutLoadWAVFile("select1.wav", &format, &data, &size, &freq, &loop);
-    alBufferData(selectBuffer1, format, data, size, freq);
-    alutUnloadWAV(format, data, size, freq);
-    // Bind buffer with a source.
-    alGenSources(1, &selectSource1);
-
-    if (alGetError() != AL_NO_ERROR)
-        return AL_FALSE;
-
-    alSourcei (selectSource1, AL_BUFFER,   selectBuffer1   );
-    alSourcef (selectSource1, AL_PITCH,    1.0f     );
-    alSourcef (selectSource1, AL_GAIN,     1.0f     );
-    alSourcefv(selectSource1, AL_POSITION, SourcePos);
-    alSourcefv(selectSource1, AL_VELOCITY, SourceVel);
-    alSourcei (selectSource1, AL_LOOPING,  AL_FALSE     );
-    // Do another error check and return.
-    if (alGetError() == AL_NO_ERROR)
-        return AL_TRUE;
-
-    return AL_FALSE;
-}
-
-ALboolean LoadALDataSelect2()
-{
-    // Variables to load into.
-
-    ALenum format;
-    ALsizei size;
-    ALvoid* data;
-    ALsizei freq;
-    ALboolean loop;
-    // Load wav data into a buffer.
-    alGenBuffers(1, &selectBuffer2);
-    if (alGetError() != AL_NO_ERROR)
-        return AL_FALSE;
-
-    alutLoadWAVFile("select2.wav", &format, &data, &size, &freq, &loop);
-    alBufferData(selectBuffer2, format, data, size, freq);
-    alutUnloadWAV(format, data, size, freq);
-    // Bind buffer with a source.
-    alGenSources(1, &selectSource2);
-
-    if (alGetError() != AL_NO_ERROR)
-        return AL_FALSE;
-
-    alSourcei (selectSource2, AL_BUFFER,   selectBuffer2   );
-    alSourcef (selectSource2, AL_PITCH,    1.0f     );
-    alSourcef (selectSource2, AL_GAIN,     1.0f     );
-    alSourcefv(selectSource2, AL_POSITION, SourcePos);
-    alSourcefv(selectSource2, AL_VELOCITY, SourceVel);
-    alSourcei (selectSource2, AL_LOOPING,  AL_FALSE     );
-    // Do another error check and return.
-    if (alGetError() == AL_NO_ERROR)
-        return AL_TRUE;
-
-    return AL_FALSE;
-}
-
-void SetListenerValues()
-{
-    alListenerfv(AL_POSITION,    ListenerPos);
-    alListenerfv(AL_VELOCITY,    ListenerVel);
-    alListenerfv(AL_ORIENTATION, ListenerOri);
-}
-
-void KillALData()
-{
-    alDeleteBuffers(1, &noiseBuffer);
-    alDeleteSources(1, &noiseSource);
-    alDeleteBuffers(1, &musicBuffer);
-    alDeleteSources(1, &musicSource);
-	alDeleteSources(1, &musicSource2);
-	alDeleteBuffers(1, &musicBuffer2);
-	alDeleteSources(1, &noiseSource2);
-	alDeleteBuffers(1, &noiseBuffer2);
-	alDeleteSources(1, &selectSource1);
-	alDeleteBuffers(1, &selectBuffer1);
-	alDeleteSources(1, &selectSource2);
-	alDeleteBuffers(1, &selectBuffer2);
-    alutExit();
-}
 
 //Draw Text
 void drawString(FTFont *font, string str, float x, float y) {
@@ -1136,41 +785,16 @@ namespace raceScene {
   }
 
   void processNormalKeys(unsigned char key, int x, int y) {
-	ALint sourceState;
     switch (key) {
     case 'Q':
     case 'q':
     case 27:	
-      alSourcePlay(selectSource2);
+			soundengine->playSelectSource2();
       setMode(MODE_TITLE);
       break;
     case 'A':
     case 'a':
       deathScatter = !deathScatter;
-      break;
-    case '1':
-	  alGetSourcei(currentNoise, AL_SOURCE_STATE, &sourceState);
-      alSourceStop(currentMusic);
-      alSourceStop(currentNoise);
-      currentMusic = musicSource;
-      currentNoise = noiseSource;
-	  currentDeath = deathSource;
-      alSourcePlay(currentMusic);
-	  if (sourceState == AL_PLAYING) {
-		alSourcePlay(currentNoise);
-	  }
-	    break;
-    case '2':
-      alGetSourcei(currentNoise, AL_SOURCE_STATE, &sourceState);
-      alSourceStop(currentMusic);
-      alSourceStop(currentNoise);
-      currentMusic = musicSource2;
-      currentNoise = noiseSource2;
-	  currentDeath = deathSource2;
-      alSourcePlay(currentMusic);
-      if (sourceState == AL_PLAYING) {
-        alSourcePlay(currentNoise);
-      }
       break;
     case ' ':
       vehicle->setAirBrake(0.00008);
@@ -1187,21 +811,13 @@ namespace raceScene {
   }
 
   void processSpecialKeys(int key, int x, int y) {
-
-    ALint sourceState;
     switch(key) {
       case GLUT_KEY_UP:
-        alGetSourcei(currentNoise, AL_SOURCE_STATE, &sourceState);
-        if (sourceState != AL_PLAYING) {
-          alSourcePlay(currentNoise);
-        }
+				soundengine->playEngineSound();
         vehicle->setAccel(0.2);
         break;
       case GLUT_KEY_DOWN:
-        alGetSourcei(currentNoise, AL_SOURCE_STATE, &sourceState);
-        if (sourceState != AL_PLAYING) {
-          alSourcePlay(currentNoise);
-        }
+        soundengine->playEngineSound();
         vehicle->setAccel(-0.1);
         break;
       case GLUT_KEY_LEFT:
@@ -1216,21 +832,14 @@ namespace raceScene {
   void joystickFunc(unsigned int buttonMask, int x, int y, int z) {
     //cout << (buttonMask) << endl;
     //cout << (buttonMask & 16384) << endl;
-    ALint sourceState;
     if(buttonMask & 16384 || buttonMask & 1) { //button 14: X on DualShock3, button 1 is trigger on Chris' joystick
       vehicle->setAccel(0.2);
-	  alGetSourcei(currentNoise, AL_SOURCE_STATE, &sourceState);
-	  if (sourceState != AL_PLAYING) {
-		  alSourcePlay(currentNoise);
-	  }
+		soundengine->playEngineSound();
     } else if(buttonMask & 8192) { //button 13: O on DualShock3
       vehicle->setAccel(-0.1);
-	  alGetSourcei(currentNoise, AL_SOURCE_STATE, &sourceState);
-	  if (sourceState != AL_PLAYING) {
-		  alSourcePlay(currentNoise);
-	  }
+	 		soundengine->playEngineSound(); 
     } else {
-      alSourceStop(currentNoise);
+			soundengine->stopEngineSound();
       vehicle->setAccel(0.0);
     }
     if(buttonMask & 256 && buttonMask & 512) { //256:L2, 512: R2
@@ -1256,7 +865,7 @@ namespace raceScene {
     switch(key) {
       case GLUT_KEY_UP:
       case GLUT_KEY_DOWN:
-        alSourceStop(currentNoise);
+				soundengine->stopEngineSound();
         vehicle->setAccel(0.0);
         break;
       case GLUT_KEY_LEFT:
@@ -1432,26 +1041,9 @@ namespace titleScene {
     case 'a':
       deathScatter = !deathScatter;
       break;
-    case '1':
-      alSourceStop(currentMusic);
-      alSourceStop(currentNoise);
-      currentMusic = musicSource;
-      currentNoise = noiseSource;
-	  currentDeath = deathSource;
-      alSourcePlay(currentMusic);
-	  break;
-    case '2':
-      alSourceStop(currentMusic);
-      alSourceStop(currentNoise);
-      currentMusic = musicSource2;
-      currentNoise = noiseSource2;
-	  currentDeath = deathSource2;
-      alSourcePlay(currentMusic);
-      break;
-
       //temp keys for debugging
     case ' ':
-      alSourcePlay(selectSource1);
+			soundengine->playSelectSource1();
       setMode(MODE_TRACK_SELECT);
       break;
     }
@@ -1603,7 +1195,7 @@ namespace trackSelectScene {
     case 'Q':
     case 'q':
     case 27:	
-      alSourcePlay(selectSource2);
+			soundengine->playSelectSource2();
       setMode(MODE_TITLE);
       break;
     case 'A':
@@ -1612,29 +1204,12 @@ namespace trackSelectScene {
       break;
     case 'G':
     case 'g':
-      alSourcePlay(selectSource2);
+			soundengine->playSelectSource2();
       generateNewTrack();
       break;
-    case '1':
-      alSourceStop(currentMusic);
-      alSourceStop(currentNoise);
-      currentMusic = musicSource;
-      currentNoise = noiseSource;
-	  currentDeath = deathSource;
-      alSourcePlay(currentMusic);
-	  break;
-    case '2':
-      alSourceStop(currentMusic);
-      alSourceStop(currentNoise);
-      currentMusic = musicSource2;
-      currentNoise = noiseSource2;
-	  currentDeath = deathSource2;
-      alSourcePlay(currentMusic);
-      break;
-
       //temp keys for debugging
     case ' ':
-      alSourcePlay(selectSource1);
+      soundengine->playSelectSource1();
       setMode(MODE_RACE);
       break;
     }
@@ -1772,7 +1347,7 @@ void stepVehicle(int x) {
     l_light = vehicle->worldSpacePos();
 
     if(vehicle->getEnergy() < 0.0000001) {
-	  alSourcePlay(currentDeath);
+			soundengine->playDeathSound();
       setMode(MODE_DEATH);
     }
   }
@@ -1817,8 +1392,8 @@ void setMode(int newMode) {
 
     case MODE_TITLE:
         gameMode = MODE_TITLE;
+				soundengine->stopEngineSound();
 
-        alSourceStop(currentNoise);
 
         vehMesh->centerAndScale(40);
         drawObjectTarget = titleScene::drawObjects;
@@ -1849,7 +1424,7 @@ void setMode(int newMode) {
 
     case MODE_DEATH:
         gameMode = MODE_DEATH;  
-        alSourceStop(currentNoise);
+				soundengine->stopEngineSound();
 
         vehMesh->centerAndScale(40);
         drawObjectTarget = titleScene::drawObjects;
@@ -1882,7 +1457,7 @@ void setMode(int newMode) {
     case MODE_TRACK_SELECT:
         gameMode = MODE_TRACK_SELECT;
 
-        alSourceStop(currentNoise);
+				soundengine->stopEngineSound();
 
         vehMesh->centerAndScale(40);
         drawObjectTarget = trackSelectScene::drawObjects;
@@ -1928,36 +1503,9 @@ int main(int argc,char** argv) {
   //Initialize OpenGL
   glutInit(&argc, argv);
 
-  //Initialize OpenAL
-  alutInit(&argc, argv);
-  alGetError(); // zero-out the error status
   // Load the wav data.
-  if (LoadALData() == AL_FALSE)
-    return -1;
-  SetListenerValues();
-  if (LoadALData2() == AL_FALSE)
-    return -2;
-  SetListenerValues();
-  if (LoadALData3() == AL_FALSE)
-    return -3;
-  SetListenerValues();
-  if (LoadALData4() == AL_FALSE)
-    return -4;
-  SetListenerValues();
-  if (LoadALData6() == AL_FALSE)
-    return -6;
-  SetListenerValues();
-  if (LoadALData5() == AL_FALSE)
-    return -5;
-  if (LoadALDataSelect1() == AL_FALSE)
-    return -7;
-  if (LoadALDataSelect2() == AL_FALSE)
-    return -7;
-  SetListenerValues();
-
-  // Setup an exit procedure.
-  atexit(KillALData);
-
+	soundengine = new SoundEngine();
+	soundengine->initialise();
 
   glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH);
   viewport.w = 1024;
@@ -2044,10 +1592,7 @@ int main(int argc,char** argv) {
   setMode(MODE_TITLE);
 
   //And Go!
-  currentMusic = musicSource;
-  currentNoise = noiseSource;
-  currentDeath = deathSource;
-  alSourcePlay(currentMusic);
+	soundengine->start();
   glutMainLoop();
 }
 

@@ -29,10 +29,19 @@
 #include <GL/glu.h>
 #endif
 
+
 //Include our math library
 #include <algebra3.h>
 //Include our Image Saving library.
 #include "UCB/ImageSaver.h"
 #include "FreeImage.h"
+
+// Sound support
+#include <stdlib.h>
+#include <al.h>
+#include <alc.h>
+#include <alut.h>
+
+
 
 #endif /* GLOBAL_H_ */

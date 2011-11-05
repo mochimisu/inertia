@@ -31,12 +31,8 @@
 #include <float.h>
 #include <ctime>
 
-
-// Sound support
-#include <stdlib.h>
-#include <al.h>
-#include <alc.h>
-#include <alut.h>
+//Sound Engine
+#include "SoundEngine.h"
 
 //#include "freetype.h"
 #include <FTGL/ftgl.h>
