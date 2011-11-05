@@ -40,7 +40,7 @@
 #include <stdlib.h>
 #include <al.h>
 #include <alc.h>
-#include <alut.h>
+#include <AL/alut.h>
 
 
 
