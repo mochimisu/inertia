@@ -17,8 +17,8 @@ ifeq ($(shell sw_vers 2>/dev/null | grep Mac | awk '{ print $$2}'),Mac)
 	#Assume Mac
 	INCLUDE := -I./include/ -I/usr/X11/include \
 		-I"lib/mac/OpenAL.framework/Headers" \
-		-I"dependencies/freealut-1.1.0-bin/include/AL" \
-		-I"dependencies/ftgl-2.1.3~rc5/src"
+		-I"include/AL" \
+		-I"include/FTGL"
 	LIBRARY := -L./lib/mac/ \
     	-L"/System/Library/Frameworks/OpenGL.framework/Libraries" \
 	-L"/usr/lib" -L"/usr/local/lib" \
