@@ -1562,11 +1562,11 @@ int main(int argc,char** argv) {
  //FTGL checking
 
   // Set the fonts size and render a small text.
-  evolutionFont = new FTGLTextureFont("Evolution.ttf");
-  digitalNinjaFont = new FTGLTextureFont("DigitalNinja.ttf");
-  accidentalPresidencyFont = new FTGLTextureFont("AccidentalPresidency.ttf");
-  evolutionBufferFont = new FTBufferFont("Evolution.ttf");
-  accidentalPresidencyBufferFont = new FTBufferFont("AccidentalPresidency.ttf");
+  evolutionFont = new FTGLTextureFont("resources/fonts/Evolution.ttf");
+  digitalNinjaFont = new FTGLTextureFont("resources/fonts/DigitalNinja.ttf");
+  accidentalPresidencyFont = new FTGLTextureFont("resources/fonts/AccidentalPresidency.ttf");
+  evolutionBufferFont = new FTBufferFont("resources/fonts/Evolution.ttf");
+  accidentalPresidencyBufferFont = new FTBufferFont("resources/fonts/AccidentalPresidency.ttf");
 
   evolutionFont->FaceSize(36);
   evolutionBufferFont->FaceSize(36);
@@ -1584,8 +1584,8 @@ int main(int argc,char** argv) {
 
 
   vehMesh = new Mesh();
-  vehMesh->loadFile("test.obj");
-  vehMesh->loadTextures("test.png","test.png");
+  vehMesh->loadFile("resources/models/test.obj");
+  vehMesh->loadTextures("resources/textures/test.png","resources/textures/test.png");
 
   vehicle = new Vehicle(sweep, vehMesh);
 

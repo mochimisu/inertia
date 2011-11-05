@@ -46,7 +46,7 @@ ALboolean SoundEngine::LoadALData()
     if (alGetError() != AL_NO_ERROR)
         return AL_FALSE;
 
-    alutLoadWAVFile("race2.wav", &format, &data, &size, &freq, &loop);
+    alutLoadWAVFile("resources/sounds/race2.wav", &format, &data, &size, &freq, &loop);
     alBufferData(musicBuffer, format, data, size, freq);
     alutUnloadWAV(format, data, size, freq);
     // Bind buffer with a source.
@@ -82,7 +82,7 @@ ALboolean SoundEngine::LoadALData2()
     if (alGetError() != AL_NO_ERROR)
         return AL_FALSE;
 
-    alutLoadWAVFile("Engine.wav", &format, &data, &size, &freq, &loop);
+    alutLoadWAVFile("resources/sounds/Engine.wav", &format, &data, &size, &freq, &loop);
     alBufferData(noiseBuffer, format, data, size, freq);
     alutUnloadWAV(format, data, size, freq);
     // Bind buffer with a source.
@@ -119,7 +119,7 @@ ALboolean SoundEngine::LoadALData3()
     if (alGetError() != AL_NO_ERROR)
         return AL_FALSE;
 
-    alutLoadWAVFile("pacman.wav", &format, &data, &size, &freq, &loop);
+    alutLoadWAVFile("resources/sounds/pacman.wav", &format, &data, &size, &freq, &loop);
     alBufferData(musicBuffer2, format, data, size, freq);
     alutUnloadWAV(format, data, size, freq);
     // Bind buffer with a source.
@@ -155,7 +155,7 @@ ALboolean SoundEngine::LoadALData4()
     if (alGetError() != AL_NO_ERROR)
         return AL_FALSE;
 
-    alutLoadWAVFile("wakka.wav", &format, &data, &size, &freq, &loop);
+    alutLoadWAVFile("resources/sounds/wakka.wav", &format, &data, &size, &freq, &loop);
     alBufferData(noiseBuffer2, format, data, size, freq);
     alutUnloadWAV(format, data, size, freq);
     // Bind buffer with a source.
@@ -191,7 +191,7 @@ ALboolean SoundEngine::LoadALData5()
     if (alGetError() != AL_NO_ERROR)
         return AL_FALSE;
 	
-    alutLoadWAVFile("death.wav", &format, &data, &size, &freq, &loop);
+    alutLoadWAVFile("resources/sounds/death.wav", &format, &data, &size, &freq, &loop);
     alBufferData(deathBuffer, format, data, size, freq);
     alutUnloadWAV(format, data, size, freq);
     // Bind buffer with a source.
@@ -228,7 +228,7 @@ ALboolean SoundEngine::LoadALData6()
     if (alGetError() != AL_NO_ERROR)
         return AL_FALSE;
 
-    alutLoadWAVFile("pacdeath.wav", &format, &data, &size, &freq, &loop);
+    alutLoadWAVFile("resources/sounds/pacdeath.wav", &format, &data, &size, &freq, &loop);
     alBufferData(deathBuffer2, format, data, size, freq);
     alutUnloadWAV(format, data, size, freq);
     // Bind buffer with a source.
@@ -264,7 +264,7 @@ ALboolean SoundEngine::LoadALDataSelect1()
     if (alGetError() != AL_NO_ERROR)
         return AL_FALSE;
 
-    alutLoadWAVFile("select1.wav", &format, &data, &size, &freq, &loop);
+    alutLoadWAVFile("resources/sounds/select1.wav", &format, &data, &size, &freq, &loop);
     alBufferData(selectBuffer1, format, data, size, freq);
     alutUnloadWAV(format, data, size, freq);
     // Bind buffer with a source.
@@ -300,7 +300,7 @@ ALboolean SoundEngine::LoadALDataSelect2()
     if (alGetError() != AL_NO_ERROR)
         return AL_FALSE;
 
-    alutLoadWAVFile("select2.wav", &format, &data, &size, &freq, &loop);
+    alutLoadWAVFile("resources/sounds/select2.wav", &format, &data, &size, &freq, &loop);
     alBufferData(selectBuffer2, format, data, size, freq);
     alutUnloadWAV(format, data, size, freq);
     // Bind buffer with a source.

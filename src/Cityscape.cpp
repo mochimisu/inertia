@@ -46,8 +46,8 @@ Cityscape::Cityscape(int xWidth, int zWidth, int area) {
   this->xWidth = xWidth;
   this->zWidth = zWidth;
 
-  loadTexture("building.png", this->myTexture);
-  loadHeightAndNormalMaps("building_height.png", this->myHeightTexture, this->myNormalTexture, 0.1);
+  loadTexture("resources/textures/building.png", this->myTexture);
+  loadHeightAndNormalMaps("resources/textures/building_height.png", this->myHeightTexture, this->myNormalTexture, 0.1);
 }
 
 void Cityscape::render() {

@@ -135,7 +135,7 @@ void sampleBSpline(const vector<Pt> &pathPts, vector<Pt> &polyline, int totalSam
 
 Sweep::Sweep() : globalTwist(0), globalAzimuth(0), widthRepeats(1) {
 
-  loadTexture("road.png", texture);
+  loadTexture("resources/textures/road.png", texture);
   lengthRepeats = 50;
   
   // Procedurally generated
