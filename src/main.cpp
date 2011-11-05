@@ -1584,8 +1584,8 @@ int main(int argc,char** argv) {
 
 
   vehMesh = new Mesh();
-  vehMesh->loadFile("resources/models/test.obj");
-  vehMesh->loadTextures("resources/textures/test.png","resources/textures/test.png");
+  vehMesh->loadFile("resources/models/wipeoutship.obj");
+  vehMesh->loadTextures("resources/textures/wipeoutship.png","resources/textures/wipeoutship.png");
 
   vehicle = new Vehicle(sweep, vehMesh);
 
