@@ -36,6 +36,8 @@
 #include "UCB/ImageSaver.h"
 #include "FreeImage.h"
 
+#include "functions.h"
+
 // Sound support
 #include <stdlib.h>
 #include <al.h>

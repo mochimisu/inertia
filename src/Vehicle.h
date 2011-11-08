@@ -1,5 +1,5 @@
-#ifndef VEHICLE_H
-#define VEHICLE_H
+#ifndef VEHICLE_H_
+#define VEHICLE_H_
 
 #include "sweep.h"
 #include "mesh.h"

@@ -34,6 +34,9 @@
 //Sound Engine
 #include "SoundEngine.h"
 
+//Render Engine
+#include "RenderEngine.h"
+
 //#include "freetype.h"
 #include <FTGL/ftgl.h>
 

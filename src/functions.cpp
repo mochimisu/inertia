@@ -16,3 +16,62 @@ void makeFromMat4(double * glmat, const mat4 &mat) {
     }
   }
 }
+
+
+// Use these instead of pushMatrix() and popMatrix(). These maintain the orientations of the depth buffer in transformed objects.
+void pushTranslate(float x,float y,float z) {
+
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glTranslatef(x,y,z);
+    
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE7);
+
+  glPushMatrix();
+  glTranslatef(x,y,z);
+}
+
+void pushMat4(mat4 xform) {
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  applyMat4(xform);
+    
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE7);
+
+  glPushMatrix();
+  applyMat4(xform);
+}
+
+void pushXformd(const GLdouble* m) {
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glMultMatrixd(m);
+    
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE7);
+
+  glPushMatrix();
+  glMultMatrixd(m);
+}
+
+void pushXformf(const GLfloat* m) {
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glMultMatrixf(m);
+    
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE7);
+
+  glPushMatrix();
+  glMultMatrixf(m);
+}
+
+void popTransform() {
+  glMatrixMode(GL_TEXTURE);
+  glActiveTextureARB(GL_TEXTURE7);
+  glPopMatrix();
+  glMatrixMode(GL_MODELVIEW);
+  glPopMatrix();
+}
