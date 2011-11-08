@@ -9,8 +9,8 @@
 //===DEBUG STUFF 
 //background texture
 enum { DISPLAY_DEPTH_BUFFER,
-       DISPLAY_DEPTH_SQUARED_HALF_BLUR_BUFFER,
-       DISPLAY_DEPTH_SQUARED_COMPLETE_BUFFER };
+		DISPLAY_DEPTH_SQUARED_HALF_BLUR_BUFFER,
+		DISPLAY_DEPTH_SQUARED_COMPLETE_BUFFER };
 
 
 
@@ -66,56 +66,56 @@ class RenderEngine {
 				void toggleDeathScatter() { deathScatter = !deathScatter; };
 				void setDeathScatter(bool val) { deathScatter = val; };
 
-//===SCENE DESCRIPTORS
-//Camera position
-vec3 p_camera;
-//Camera lookAt
-vec3 l_camera;
-//Camera up
-vec3 u_camera;
-//Light position
-vec3 p_light;
-//Light lookAt
-vec3 l_light;
-//Light Scatter Physical Light Location (used for demonstrations like title screen, where illumination is not same place as physical light in light scatter render)
-vec3 p_light_scatter;
-//Sky Color
-vec4 skyColor;
+				//===SCENE DESCRIPTORS
+				//Camera position
+				vec3 p_camera;
+				//Camera lookAt
+				vec3 l_camera;
+				//Camera up
+				vec3 u_camera;
+				//Light position
+				vec3 p_light;
+				//Light lookAt
+				vec3 l_light;
+				//Light Scatter Physical Light Location (used for demonstrations like title screen, where illumination is not same place as physical light in light scatter render)
+				vec3 p_light_scatter;
+				//Sky Color
+				vec4 skyColor;
 		private:
 
-//Pointer to render functions
-void (*drawObjectTarget)(GeometryShader *);
-void (*drawOverlayTarget)();
+				//Pointer to render functions
+				void (*drawObjectTarget)(GeometryShader *);
+				void (*drawOverlayTarget)();
 
-//Trippy Light Scattering Mode
-bool deathScatter;
-
-
-//==FRAME BUFFER OBJECTS/RELATED TEXTURES
-// Hold id of the framebuffer for light POV rendering
-GLuint shadowFboId;
+				//Trippy Light Scattering Mode
+				bool deathScatter;
 
 
-//===SHADOW STUFF
-// Z values will be rendered to this texture when using fboId framebuffer
-GLuint depthTextureId;
-GLuint colorTextureId;
-// Bluring FBO
-GLuint blurFboId;
-// Z values will be rendered to this texture when using fboId framebuffer
-GLuint blurFboIdColorTextureId;
-
-//===SHADERS
-ShadowShader *shade;
-BlurShader *blurShade;
-GeometryShader *depthShade;
-ScatterShader *scatterShade;
-GeometryShader *darkShade;
+				//==FRAME BUFFER OBJECTS/RELATED TEXTURES
+				// Hold id of the framebuffer for light POV rendering
+				GLuint shadowFboId;
 
 
-//==LIGHT SCATTERING STUFF
-GLuint scatterTextureId;
-GLuint scatterFboId;
+				//===SHADOW STUFF
+				// Z values will be rendered to this texture when using fboId framebuffer
+				GLuint depthTextureId;
+				GLuint colorTextureId;
+				// Bluring FBO
+				GLuint blurFboId;
+				// Z values will be rendered to this texture when using fboId framebuffer
+				GLuint blurFboIdColorTextureId;
+
+				//===SHADERS
+				ShadowShader *shade;
+				BlurShader *blurShade;
+				GeometryShader *depthShade;
+				ScatterShader *scatterShade;
+				GeometryShader *darkShade;
+
+
+				//==LIGHT SCATTERING STUFF
+				GLuint scatterTextureId;
+				GLuint scatterFboId;
 
 
 
