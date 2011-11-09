@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{50D74BAD-8FC9-4AEA-BB62-D2D28C58EB9E}</ProjectGuid>
+    <RootNamespace>inertia</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectName>inertia</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Debug\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</LinkIncremental>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">inertia</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">inertia</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>ftgl-2.1.3~rc5\src;freealut-1.1.0-bin\include\AL;C:\Program Files (x86)\OpenAL 1.1 SDK\include;glew\include;FreeImage\Dist;glut-3.7.6-bin;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ftgl.lib;freetype.lib;OpenAL32.lib;Alut.lib;glew32.lib;FreeImage.lib;glut32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>ftgl-2.1.3~rc5\msvc\Build;lib;freealut-1.1.0-bin\lib;C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;glew\lib;FreeImage\Dist;glut-3.7.6-bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>ftgl-2.1.3~rc5\src;freealut-1.1.0-bin\include\AL;C:\Program Files (x86)\OpenAL 1.1 SDK\include;glew\include;FreeImage\Dist;glut-3.7.6-bin;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ftgl.lib;freetype.lib;OpenAL32.lib;Alut.lib;glew32.lib;FreeImage.lib;glut32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>lib\win\ftgl-2.1.3~rc5;lib;lib\win\freealut-1.1.0;C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32;lib\win\glew;lib\win\FreeImage;lib\win\glut-3.7.6-bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Cityscape.h" />
+    <ClInclude Include="src\Console.h" />
+    <ClInclude Include="src\deathscene.h" />
+    <ClInclude Include="src\functions.h" />
+    <ClInclude Include="src\gameengine.h" />
+    <ClInclude Include="src\global.h" />
+    <ClInclude Include="src\LoadImage.h" />
+    <ClInclude Include="src\main.h" />
+    <ClInclude Include="src\mesh.h" />
+    <ClInclude Include="src\racescene.h" />
+    <ClInclude Include="src\RenderEngine.h" />
+    <ClInclude Include="src\RenderOptions.h" />
+    <ClInclude Include="src\scene.h" />
+    <ClInclude Include="src\shaders.h" />
+    <ClInclude Include="src\SoundEngine.h" />
+    <ClInclude Include="src\sweep.h" />
+    <ClInclude Include="src\titlescene.h" />
+    <ClInclude Include="src\TrackGenerator.h" />
+    <ClInclude Include="src\trackselectscene.h" />
+    <ClInclude Include="src\ucb\Image.h" />
+    <ClInclude Include="src\ucb\ImageSaver.h" />
+    <ClInclude Include="src\UCB\UCBglobal.h" />
+    <ClInclude Include="src\Vehicle.h" />
+    <ClInclude Include="src\Viewport.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Cityscape.cpp" />
+    <ClCompile Include="src\Console.cpp" />
+    <ClCompile Include="src\deathscene.cpp" />
+    <ClCompile Include="src\functions.cpp" />
+    <ClCompile Include="src\gameengine.cpp" />
+    <ClCompile Include="src\LoadImage.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\mesh.cpp" />
+    <ClCompile Include="src\racescene.cpp" />
+    <ClCompile Include="src\RenderEngine.cpp" />
+    <ClCompile Include="src\scene.cpp" />
+    <ClCompile Include="src\shaders.cpp" />
+    <ClCompile Include="src\SoundEngine.cpp" />
+    <ClCompile Include="src\sweep.cpp" />
+    <ClCompile Include="src\titlescene.cpp" />
+    <ClCompile Include="src\TrackGenerator.cpp" />
+    <ClCompile Include="src\trackselectscene.cpp" />
+    <ClCompile Include="src\ucb\Image.cpp" />
+    <ClCompile Include="src\ucb\ImageSaver.cpp" />
+    <ClCompile Include="src\Vehicle.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
