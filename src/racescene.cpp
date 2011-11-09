@@ -1,5 +1,7 @@
 #include "racescene.h"
-
+#include "gameengine.h"
+#include "vehicle.h"
+#include <FTGL/ftgl.h>
 
 //Only 1 engine is available at a time...
 //GLUT/C++ limitation, timerfunc must not be a class method...

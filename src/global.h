@@ -58,6 +58,8 @@ const float kLightScatterHeight = kRenderHeight * kLightScatteringCoef;
 #include <alc.h>
 #include <AL/alut.h>
 
+#include <FTGL/ftgl.h>
+
 
 
 #endif /* GLOBAL_H_ */

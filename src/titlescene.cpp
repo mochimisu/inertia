@@ -1,5 +1,6 @@
 #include "titlescene.h"
 #include "mesh.h"
+#include "gameengine.h"
 
 int TitleScene::Init() {
 	Scene::Init();

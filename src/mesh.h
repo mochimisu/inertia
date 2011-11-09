@@ -11,7 +11,6 @@
 #ifndef MESH_H_
 #define MESH_H_
 
-#include "main.h"
 #include "shaders.h"
 
 #include <string>

@@ -2,10 +2,11 @@
 #define RACESCENE_H_
 
 #include "scene.h"
-#include "gameengine.h"
 
+class GameEngine;
 class Vehicle;
 class Mesh;
+class Sweep;
 
 class RaceScene : public Scene {
 	

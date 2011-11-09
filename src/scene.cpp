@@ -1,4 +1,5 @@
 #include "scene.h"
+#include <FTGL/ftgl.h>
 
 bool Scene::initialised = false;
 
@@ -30,4 +31,5 @@ int Scene::Init() {
 			return -1;
 		initialised = true;
 	}
+	return 0;
 }

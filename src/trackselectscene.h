@@ -5,6 +5,7 @@
 
 class Vehicle;
 class Mesh;
+class Sweep;
 
 class TrackSelectScene : public Scene {
 	public:

@@ -1,10 +1,11 @@
 #ifndef SCENE_H_
 #define SCENE_H_
 
-#include "shaders.h"
-#include "sweep.h"
-#include <FTGL/ftgl.h>
+#include "global.h"
 
+class GeometryShader;
+class FTGLTextureFont;
+class FTBufferFont;
 class GameEngine;
 
 class Scene {

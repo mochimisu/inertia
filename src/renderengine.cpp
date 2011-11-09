@@ -77,7 +77,7 @@ int RenderEngine::init() {
 		scatterShade = new ScatterShader("shaders/ScatteringVertexShader.c", "shaders/ScatteringFragmentShader.c");
 		darkShade = new GeometryShader("shaders/SimpleDarkVertexShader.c", "shaders/SimpleDarkFragmentShader.c");
 
-		//FTGL checking
+		return 0;
 
 
 }

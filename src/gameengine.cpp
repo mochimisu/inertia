@@ -1,4 +1,6 @@
 #include "gameengine.h"
+#include "vehicle.h"
+#include "scene.h"
 
 //Messy... is there a way to not do this?
 //I need to reference the active scene's functions, but the functions are method clfunctions
@@ -41,6 +43,13 @@ void ActiveDrawOverlay() {
 }
 
 void GameEngine::Init() {
+
+	//Initialize GLUT and create the window
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH);
+	glutInitWindowSize(kRenderWidth,kRenderHeight);
+	glutInitWindowPosition(0,0);
+	glutCreateWindow("Inertia Alpha");
+
 	// Load the wav data.
 	sound_engine_ = new SoundEngine();
 	sound_engine_->initialise();
@@ -91,6 +100,7 @@ void GameEngine::Init() {
 void GameEngine::Go() {
 	SetTitleMode();
 	sound_engine_->start();
+	glutMainLoop();
 }
 
 void GameEngine::SetTitleMode() {

@@ -1,5 +1,7 @@
 #include "trackselectscene.h"
 #include "gameengine.h"
+#include "sweep.h"
+#include "vehicle.h"
 
 int TrackSelectScene::Init() {
 	game_engine->render_engine()->skyColor = vec4(0,.152941176,.282352941,1);
