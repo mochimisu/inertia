@@ -69,6 +69,7 @@ void GameEngine::Init() {
 	title_scene->set_vehicle_mesh(vehMesh);
 	race_scene->set_vehicle_mesh(vehMesh);
 	track_select_scene->set_vehicle_mesh(vehMesh);
+	death_scene->set_vehicle_mesh(vehMesh);
 
 	race_scene->set_vehicle(vehicle);
 	track_select_scene->set_vehicle(vehicle);
@@ -109,9 +110,11 @@ void GameEngine::SetTrackSelectMode() {
 void GameEngine::SetDeathMode() {
 	is_racing = false;
 	SetSceneFunc(death_scene);
+	render_engine_->setDeathScatter(true);
 }
 
 void GameEngine::SetSceneFunc(Scene * scene) {
+	render_engine_->setDeathScatter(false);
 	sound_engine_->stopEngineSound();
 	active_scene = scene;
 	scene->Init();
