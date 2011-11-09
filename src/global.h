@@ -10,6 +10,20 @@
 
 #define IMPLEMENT_ME(file,line)    cout << "METHOD NEEDS TO BE IMPLEMENTED AT " << file << ":" << line << endl; exit(1);
 
+//===RENDER CONSTANTS
+const float shadowMapCoef = 0.5;
+const float blurCoef = 0.5;
+const float lightScatteringCoef = 0.5;
+
+const float renderWidth = 1024.0;
+const float renderHeight = 768.0;
+const float shadowMapWidth = renderWidth * shadowMapCoef;
+const float shadowMapHeight = renderHeight * shadowMapCoef;
+const float shadowMapBlurWidth = shadowMapWidth * blurCoef;
+const float shadowMapBlurHeight = shadowMapHeight * blurCoef;
+const float lightScatterWidth = renderWidth * lightScatteringCoef;
+const float lightScatterHeight = renderHeight * lightScatteringCoef;
+
 #include <string>
 #include <sstream>
 #include <iostream>

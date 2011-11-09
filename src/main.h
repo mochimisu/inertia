@@ -31,11 +31,9 @@
 #include <float.h>
 #include <ctime>
 
-//Sound Engine
-#include "SoundEngine.h"
+//Game Engine
+#include "gameengine.h"
 
-//Render Engine
-#include "RenderEngine.h"
 
 //#include "freetype.h"
 #include <FTGL/ftgl.h>

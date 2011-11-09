@@ -137,27 +137,27 @@ Sweep::Sweep() : globalTwist(0), globalAzimuth(0), widthRepeats(1) {
 
   loadTexture("resources/textures/road.png", texture);
   lengthRepeats = 50;
-  
-  // Procedurally generated
-  TrackGenerator trkGen;
-  pathPts = trkGen.getControlPts();
 
-  cscape = new Cityscape(trkGen.getXWidth() + 20, trkGen.getZWidth() + 20, 64);
+	Generate();
+    
+}
 
-  renderingCity = false;
-  
-  /*vector<vec2>::iterator fwd = profilePts.begin();
-  vector<vec2>::iterator bkwd = profilePts.end();
-  bkwd--;
-  while(fwd < bkwd) {
-    vec2 tmpfw = *fwd;
-    *fwd = *bkwd;
-    *bkwd = tmpfw;
-    fwd++;
-    bkwd--;
-  }*/
+void Sweep::Generate() {
+	// Procedurally generated
+	TrackGenerator trkGen;
+	pathPts = trkGen.getControlPts();
+	
+	cscape = new Cityscape(trkGen.getXWidth() + 20, trkGen.getZWidth() + 20, 64);
 
+	renderingCity = false;
 
+}
+
+void Sweep::Regenerate() {
+	Cityscape * oldcscape = cscape;
+	Generate();
+	delete oldcscape;
+	clearDisplayList();
 }
 
 

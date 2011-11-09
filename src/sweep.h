@@ -41,6 +41,9 @@ class Sweep {
     return skyMap;
   }
 
+	void Generate();
+	void Regenerate();
+
   // renders the coaster
   void render(GeometryShader &shade, int pathSamplesPerPt, double crossSectionScale=.2, int xsectSamplesPerPt=3);
   // renders the coaster with a cache.  Ignores parameters after display list is set; use clearDisplayList() before updating parameters

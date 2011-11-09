@@ -14,19 +14,6 @@ enum { DISPLAY_DEPTH_BUFFER,
 
 
 
-//===RENDER CONSTANTS
-const float shadowMapCoef = 0.5;
-const float blurCoef = 0.5;
-const float lightScatteringCoef = 0.5;
-
-const float renderWidth = 1024.0;
-const float renderHeight = 768.0;
-const float shadowMapWidth = renderWidth * shadowMapCoef;
-const float shadowMapHeight = renderHeight * shadowMapCoef;
-const float shadowMapBlurWidth = shadowMapWidth * blurCoef;
-const float shadowMapBlurHeight = shadowMapHeight * blurCoef;
-const float lightScatterWidth = renderWidth * lightScatteringCoef;
-const float lightScatterHeight = renderHeight * lightScatteringCoef;
 class RenderEngine;
 
 class RenderEngine {
@@ -35,7 +22,7 @@ class RenderEngine {
 
 				int init();
 
-				void setDrawObject(void (*drawFn)(GeometryShader *)) { drawObjectTarget = drawFn; };
+				void setDrawObjects(void (*drawFn)(GeometryShader *)) { drawObjectTarget = drawFn; };
 				void setDrawOverlay(void (*drawFn)()) { drawOverlayTarget = drawFn; };
 
 				//Draw Text
