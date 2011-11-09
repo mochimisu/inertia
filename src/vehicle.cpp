@@ -1,4 +1,4 @@
-#include "Vehicle.h"
+#include "vehicle.h"
 
 Vehicle::Vehicle(Sweep * sw, Mesh * mesh) {
   this->sweep = sw;

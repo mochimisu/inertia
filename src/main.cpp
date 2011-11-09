@@ -32,29 +32,29 @@ Viewport viewport;
  * Main
  */
 int main(int argc,char** argv) {
-		/*unsigned int seed = time(NULL);
-			cout << seed << endl;
-			srand(seed);*/
-		srand(time(NULL));
+	/*unsigned int seed = time(NULL);
+		cout << seed << endl;
+		srand(seed);*/
+	srand(time(NULL));
 
-		//Initialize OpenGL
-		glutInit(&argc, argv);
+	//Initialize OpenGL
+	glutInit(&argc, argv);
 
-		glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH);
-		viewport.w = 1024;
-		viewport.h = 768;
-		glutInitWindowSize(viewport.w,viewport.h);
-		glutInitWindowPosition(0,0);
-		glutCreateWindow("Inertia Alpha");
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH);
+	viewport.w = kRenderWidth;
+	viewport.h = kRenderHeight;
+	glutInitWindowSize(viewport.w,viewport.h);
+	glutInitWindowPosition(0,0);
+	glutCreateWindow("Inertia Alpha");
 
-		//initialize game engine
-		game_engine = new GameEngine();
-		game_engine->Init();
+	//initialize game engine
+	game_engine = new GameEngine();
+	game_engine->Init();
 
 
-		game_engine->Go();
+	game_engine->Go();
 
-		//And Go!
-		glutMainLoop();
+	//And Go!
+	glutMainLoop();
 }
 

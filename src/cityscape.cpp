@@ -1,4 +1,4 @@
-#include "Cityscape.h"
+#include "cityscape.h"
 
 bool loadTexture(string filename, GLuint &texture);
 bool loadHeightAndNormalMaps(string filename, GLuint &heightmap, GLuint &normalmap, double zScale);

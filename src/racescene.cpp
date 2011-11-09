@@ -82,7 +82,7 @@ void RaceScene::DrawObjects(GeometryShader * curShade) {
 
 void RaceScene::DrawOverlay() {
 	//fudging this... hack hack hack hack hack
-	const float maxVelocityWidth = renderWidth * 2.5/8 /20;
+	const float maxVelocityWidth = kRenderWidth * 2.5/8 /20;
 
 	glEnable (GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
@@ -91,7 +91,7 @@ void RaceScene::DrawOverlay() {
 	glUseProgramObjectARB(0);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-renderWidth/2,renderWidth/2,-renderHeight/2,renderHeight/2,1,20);
+	glOrtho(-kRenderWidth/2,kRenderWidth/2,-kRenderHeight/2,kRenderHeight/2,1,20);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
@@ -104,46 +104,46 @@ void RaceScene::DrawOverlay() {
 	//header
 	glColor4f(.250980392,.458823529,.631372549,0.95);
 	glBegin(GL_QUADS);
-	glVertex3f(-renderWidth/2,renderHeight * 3.8/8,0);
-	glVertex3f(renderWidth/2,renderHeight * 3.8/8,0);
-	glVertex3f(renderWidth/2,renderHeight/2,0);
-	glVertex3f(-renderWidth/2,renderHeight/2,0);
+	glVertex3f(-kRenderWidth/2,kRenderHeight * 3.8/8,0);
+	glVertex3f(kRenderWidth/2,kRenderHeight * 3.8/8,0);
+	glVertex3f(kRenderWidth/2,kRenderHeight/2,0);
+	glVertex3f(-kRenderWidth/2,kRenderHeight/2,0);
 
 	glColor4f(.250980392,.458823529,.631372549,0.1);
 
 	//Lap
-	glVertex3f(-renderWidth/2,renderHeight * 3.0/8,0);
-	glVertex3f(-renderWidth * 3.4/8,renderHeight * 3.0/8,0);
-	glVertex3f(-renderWidth * 3.4/8,renderHeight * 3.8/8,0);
-	glVertex3f(-renderWidth/2,renderHeight * 3.8/8,0);
+	glVertex3f(-kRenderWidth/2,kRenderHeight * 3.0/8,0);
+	glVertex3f(-kRenderWidth * 3.4/8,kRenderHeight * 3.0/8,0);
+	glVertex3f(-kRenderWidth * 3.4/8,kRenderHeight * 3.8/8,0);
+	glVertex3f(-kRenderWidth/2,kRenderHeight * 3.8/8,0);
 
 	//Record (with record to have less branches)
 	/*
 		 glBegin(GL_QUADS);
-		 glVertex3f(renderWidth * 2.2/8,renderHeight * 3.0/8,0);
-		 glVertex3f(renderWidth/2,renderHeight * 3.0/8,0);
-		 glVertex3f(renderWidth/2,renderHeight * 3.8/8,0);
-		 glVertex3f(renderWidth * 2.2/8,renderHeight * 3.8/8,0);
+		 glVertex3f(kRenderWidth * 2.2/8,kRenderHeight * 3.0/8,0);
+		 glVertex3f(kRenderWidth/2,kRenderHeight * 3.0/8,0);
+		 glVertex3f(kRenderWidth/2,kRenderHeight * 3.8/8,0);
+		 glVertex3f(kRenderWidth * 2.2/8,kRenderHeight * 3.8/8,0);
 		 glEnd(); */
 
 
 	//Energy
-	glVertex3f(-65,renderHeight * 3.0/8,0);
-	glVertex3f(65,renderHeight * 3.0/8,0);
-	glVertex3f(65,renderHeight * 3.8/8,0);
-	glVertex3f(-65,renderHeight * 3.8/8,0);
+	glVertex3f(-65,kRenderHeight * 3.0/8,0);
+	glVertex3f(65,kRenderHeight * 3.0/8,0);
+	glVertex3f(65,kRenderHeight * 3.8/8,0);
+	glVertex3f(-65,kRenderHeight * 3.8/8,0);
 
 	//Lap Time
-	glVertex3f(-renderWidth/2, -renderHeight*4.0/8,0);
-	glVertex3f(-renderWidth*2.5/8, -renderHeight*4.0/8,0);
-	glVertex3f(-renderWidth*2.5/8, -renderHeight*3.0/8,0);
-	glVertex3f(-renderWidth/2, -renderHeight*3.0/8,0);
+	glVertex3f(-kRenderWidth/2, -kRenderHeight*4.0/8,0);
+	glVertex3f(-kRenderWidth*2.5/8, -kRenderHeight*4.0/8,0);
+	glVertex3f(-kRenderWidth*2.5/8, -kRenderHeight*3.0/8,0);
+	glVertex3f(-kRenderWidth/2, -kRenderHeight*3.0/8,0);
 
 	//Velocity
-	glVertex3f(renderWidth*2/8, -renderHeight*4.0/8,0);
-	glVertex3f(renderWidth/2, -renderHeight*4.0/8,0);
-	glVertex3f(renderWidth/2, -renderHeight*3.0/8,0);
-	glVertex3f(renderWidth*2/8, -renderHeight*3.0/8,0);
+	glVertex3f(kRenderWidth*2/8, -kRenderHeight*4.0/8,0);
+	glVertex3f(kRenderWidth/2, -kRenderHeight*4.0/8,0);
+	glVertex3f(kRenderWidth/2, -kRenderHeight*3.0/8,0);
+	glVertex3f(kRenderWidth*2/8, -kRenderHeight*3.0/8,0);
 	glEnd();
 
 	//Actual stuff
@@ -152,15 +152,15 @@ void RaceScene::DrawOverlay() {
 	buff.str("");
 	buff << "Velocity";
 	glColor4f(.188235294,.474509804,1,0.9);
-	game_engine->render_engine()->drawString(evolutionBufferFont, buff.str(),renderWidth*2.3/8,-renderHeight*3.4/8 + 5); 
+	game_engine->render_engine()->drawString(evolutionBufferFont, buff.str(),kRenderWidth*2.3/8,-kRenderHeight*3.4/8 + 5); 
 
 	//Velocity Bar
 	glColor4f(.188235294,.474509804,1,0.5);
 	glBegin(GL_QUADS);
-	glVertex3f(renderWidth*2.1/8,-renderHeight*3.8/8,0); // bottom left
-	glVertex3f(renderWidth*2.1/8 + vehicle->getVelocityScalar() * maxVelocityWidth,-renderHeight*3.8/8,0); //bottom right
-	glVertex3f(renderWidth*2.1/8 + vehicle->getVelocityScalar() * maxVelocityWidth,-renderHeight*3.4/8,0); //top right
-	glVertex3f(renderWidth*2.1/8,-renderHeight*3.4/8,0); //top left
+	glVertex3f(kRenderWidth*2.1/8,-kRenderHeight*3.8/8,0); // bottom left
+	glVertex3f(kRenderWidth*2.1/8 + vehicle->getVelocityScalar() * maxVelocityWidth,-kRenderHeight*3.8/8,0); //bottom right
+	glVertex3f(kRenderWidth*2.1/8 + vehicle->getVelocityScalar() * maxVelocityWidth,-kRenderHeight*3.4/8,0); //top right
+	glVertex3f(kRenderWidth*2.1/8,-kRenderHeight*3.4/8,0); //top left
 	glEnd();
 
 	//Velocity Text
@@ -169,7 +169,7 @@ void RaceScene::DrawOverlay() {
 	buff << setfill('0') << setw(3) << int(velocity * 10) << ".";
 	buff << setfill('0') << setw(3) << (int(velocity * 10000) % 1000);
 	glColor4f(.9,.9,1,0.8);
-	game_engine->render_engine()->drawString(digitalNinjaFont, buff.str(),renderWidth*2.3/8,-renderHeight*3.3/8 - 44); 
+	game_engine->render_engine()->drawString(digitalNinjaFont, buff.str(),kRenderWidth*2.3/8,-kRenderHeight*3.3/8 - 44); 
 
 	//Air Break Bar
 	if(vehicle->isAirBrake()) {
@@ -177,10 +177,10 @@ void RaceScene::DrawOverlay() {
 		glColor4f(.901960784,.160784314,.160784314,0.5);  
 
 		glBegin(GL_QUADS);
-		glVertex3f(renderWidth*2.1/8,-renderHeight*3.9/8,0); // bottom left
-		glVertex3f(renderWidth*3.8/8 ,-renderHeight*3.9/8,0); //bottom right
-		glVertex3f(renderWidth*3.8/8,-renderHeight*3.8/8,0); //top right
-		glVertex3f(renderWidth*2.1/8,-renderHeight*3.8/8,0); //top left
+		glVertex3f(kRenderWidth*2.1/8,-kRenderHeight*3.9/8,0); // bottom left
+		glVertex3f(kRenderWidth*3.8/8 ,-kRenderHeight*3.9/8,0); //bottom right
+		glVertex3f(kRenderWidth*3.8/8,-kRenderHeight*3.8/8,0); //top right
+		glVertex3f(kRenderWidth*2.1/8,-kRenderHeight*3.8/8,0); //top left
 		glEnd();
 	} 
 
@@ -188,7 +188,7 @@ void RaceScene::DrawOverlay() {
 	buff.str("");
 	buff << "Lap Time";
 	glColor4f(1,1,1,0.75);
-	game_engine->render_engine()->drawString(evolutionBufferFont, buff.str(),-renderWidth*3.8/8,-renderHeight*3.4/8); 
+	game_engine->render_engine()->drawString(evolutionBufferFont, buff.str(),-kRenderWidth*3.8/8,-kRenderHeight*3.4/8); 
 
 	buff.str("");
 	int msTime = glutGet(GLUT_ELAPSED_TIME) - vehicle->getLapStartTime();
@@ -198,17 +198,17 @@ void RaceScene::DrawOverlay() {
 	buff << setfill('0') << setw(2) << (sTime%60) << ".";
 	buff << setfill('0') << setw(3) << (msTime%1000);
 	glColor4f(1,1,1,0.75);
-	game_engine->render_engine()->drawString(digitalNinjaFont, buff.str(),-renderWidth*3.8/8,-renderHeight*3.7/8); 
+	game_engine->render_engine()->drawString(digitalNinjaFont, buff.str(),-kRenderWidth*3.8/8,-kRenderHeight*3.7/8); 
 
 	//Lap Number
 	buff.str("");
 	buff << "Lap"; // << vehicle->getLap();
 	glColor4f(1,1,1,0.75);
-	game_engine->render_engine()->drawString(evolutionBufferFont, buff.str(),-renderWidth*3.9/8,renderHeight*3.5/8); 
+	game_engine->render_engine()->drawString(evolutionBufferFont, buff.str(),-kRenderWidth*3.9/8,kRenderHeight*3.5/8); 
 
 	buff.str("");
 	buff << vehicle->getLap();
-	game_engine->render_engine()->drawString(digitalNinjaFont, buff.str(), -renderWidth * 3.9/8, renderHeight*3.2/8);
+	game_engine->render_engine()->drawString(digitalNinjaFont, buff.str(), -kRenderWidth * 3.9/8, kRenderHeight*3.2/8);
 
 	//Record
 	buff.str("");
@@ -217,42 +217,42 @@ void RaceScene::DrawOverlay() {
 		//backdrop
 		glColor4f(.250980392,.458823529,.631372549,0.3);
 		glBegin(GL_QUADS);
-		glVertex3f(renderWidth * 2.2/8,renderHeight * 3.0/8,0);
-		glVertex3f(renderWidth*2/2,renderHeight * 3.0/8,0);
-		glVertex3f(renderWidth*2/2,renderHeight * 3.8/8,0);
-		glVertex3f(renderWidth * 2.2/8,renderHeight * 3.8/8,0);
+		glVertex3f(kRenderWidth * 2.2/8,kRenderHeight * 3.0/8,0);
+		glVertex3f(kRenderWidth*2/2,kRenderHeight * 3.0/8,0);
+		glVertex3f(kRenderWidth*2/2,kRenderHeight * 3.8/8,0);
+		glVertex3f(kRenderWidth * 2.2/8,kRenderHeight * 3.8/8,0);
 		glEnd();
 
 		sTime = msTime/1000;
 		mTime  = sTime/60;
 		buff << "Lap Record:";
-		game_engine->render_engine()->drawString(evolutionBufferFont, buff.str(),renderWidth*2.4/8, renderHeight*3.5/8);
+		game_engine->render_engine()->drawString(evolutionBufferFont, buff.str(),kRenderWidth*2.4/8, kRenderHeight*3.5/8);
 
 		buff.str("");
 		buff << setfill('0') << setw(2) << mTime << ".";
 		buff << setfill('0') << setw(2) << (sTime%60) << ".";
 		buff << setfill('0') << setw(3) << (msTime%1000);
 		glColor4f(1,1,1,0.75);
-		game_engine->render_engine()->drawString(digitalNinjaFont, buff.str(),renderWidth*2.4/8, renderHeight*3.2/8);
+		game_engine->render_engine()->drawString(digitalNinjaFont, buff.str(),kRenderWidth*2.4/8, kRenderHeight*3.2/8);
 
 	}
 
 	//Name 
 	buff.str("");
 	buff << "cs184sp11 final project: inertia. submission version. brandon wang, andrew lee, chris tandiono";
-	game_engine->render_engine()->drawString(accidentalPresidencyBufferFont, buff.str(), -renderWidth*3.9/8, renderHeight*3.85/8);
+	game_engine->render_engine()->drawString(accidentalPresidencyBufferFont, buff.str(), -kRenderWidth*3.9/8, kRenderHeight*3.85/8);
 
 	//Energy
 	buff.str("");
 	buff << "Energy: ";
 	//buff << vehicle->getEnergy();
-	game_engine->render_engine()->drawString(evolutionBufferFont, buff.str(), -55,renderHeight*3.5/8);
+	game_engine->render_engine()->drawString(evolutionBufferFont, buff.str(), -55,kRenderHeight*3.5/8);
 
 	buff.str("");
 	double energy = vehicle->getEnergy();
 	buff << int(energy) << ".";
 	buff  << setfill('0') << setw(3) << (int(1000 * energy) % 1000);
-	game_engine->render_engine()->drawString(digitalNinjaFont, buff.str(), -45,renderHeight*3.2/8);
+	game_engine->render_engine()->drawString(digitalNinjaFont, buff.str(), -45,kRenderHeight*3.2/8);
 
 
 	glDisable(GL_BLEND);

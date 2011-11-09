@@ -1,4 +1,4 @@
-#include "SoundEngine.h"
+#include "soundengine.h"
 
 SoundEngine::SoundEngine() {
 }

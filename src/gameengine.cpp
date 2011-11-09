@@ -1,5 +1,7 @@
 #include "gameengine.h"
 
+//Messy... is there a way to not do this?
+//I need to reference the active scene's functions, but the functions are method clfunctions
 Scene * active_scene;
 
 void ActiveKeyboardNormalUp(unsigned char key, int x, int y) {

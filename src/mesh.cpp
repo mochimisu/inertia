@@ -1,6 +1,6 @@
 
 #include "mesh.h"
-#include "LoadImage.h"
+#include "loadimage.h"
 
 void Mesh::centerAndScale(double scale) {
     if (verts.empty())

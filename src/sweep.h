@@ -15,11 +15,11 @@
 
 #include "algebra3.h"
 //#include "main.h"
-#include "TrackGenerator.h"
-#include "Cityscape.h"
+#include "trackgenerator.h"
+#include "cityscape.h"
 #include "shaders.h"
 
-#include "LoadImage.h"
+#include "loadimage.h"
 
 using namespace std;
 

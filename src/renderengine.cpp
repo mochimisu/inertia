@@ -1,4 +1,4 @@
-#include "RenderEngine.h"
+#include "renderengine.h"
 
 RenderEngine * activeEngine;
 
@@ -113,7 +113,7 @@ vec2 RenderEngine::getLightScreenCoor() {
 						modelView, projection, viewport,
 						&winX, &winY, &winZ);
 
-		return vec2(winX/renderWidth,  winY/renderHeight);
+		return vec2(winX/kRenderWidth,  winY/kRenderHeight);
 }
 
 //Generate the FBO the light scatter shader will write to
@@ -128,7 +128,7 @@ void RenderEngine::generateLightFBO() {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
 		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F_ARB, lightScatterWidth, lightScatterHeight, 0 , GL_RGB, GL_FLOAT, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F_ARB, kLightScatterWidth, kLightScatterHeight, 0 , GL_RGB, GL_FLOAT, 0);
 
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, scatterTextureId, 0);
 
@@ -160,7 +160,7 @@ void RenderEngine::generateShadowFBO() {
 		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
 
 		// No need to force GL_DEPTH_COMPONENT24, drivers usually give you the max precision if available 
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowMapWidth, shadowMapHeight, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, kShadowMapWidth, kShadowMapHeight, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		glGenTextures(1,&colorTextureId);
@@ -176,7 +176,7 @@ void RenderEngine::generateShadowFBO() {
 		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
 		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
 
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F_ARB, shadowMapWidth, shadowMapHeight, 0, GL_RGB, GL_FLOAT, 0);
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F_ARB, kShadowMapWidth, kShadowMapHeight, 0, GL_RGB, GL_FLOAT, 0);
 		glGenerateMipmapEXT(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -212,7 +212,7 @@ void RenderEngine::generateBlurFBO() {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
 		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F_ARB, shadowMapBlurWidth, shadowMapBlurHeight, 0, GL_RGB, GL_FLOAT, 0);
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F_ARB, kShadowMapBlurWidth, kShadowMapBlurHeight, 0, GL_RGB, GL_FLOAT, 0);
 
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,GL_TEXTURE_2D, blurFboIdColorTextureId, 0);
 		FBOstatus = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
@@ -229,9 +229,9 @@ void RenderEngine::blurShadowMap() {
 
 		// Bluring the shadow map  horizontaly
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,blurFboId);	
-		glViewport(0,0,renderWidth * shadowMapCoef *blurCoef ,renderHeight* shadowMapCoef*blurCoef);
+		glViewport(0,0,kRenderWidth * kShadowMapCoef *kBlurCoef ,kRenderHeight* kShadowMapCoef*kBlurCoef);
 		glUseProgramObjectARB(blurShade->getProgram());
-		//glUniform2fARB( blurShade->getScaleAttrib(),1.0/ (renderWidth * shadowMapCoef * blurCoef),0.0);
+		//glUniform2fARB( blurShade->getScaleAttrib(),1.0/ (kRenderWidth * kShadowMapCoef * kBlurCoef),0.0);
 		glUniform2fARB( blurShade->getScaleAttrib(),1.0/512.0,0.0);		// horiz
 		//glUniform1iARB(blurShade->getTextureSourceAttrib(),0);
 		glActiveTextureARB(GL_TEXTURE0);
@@ -241,17 +241,17 @@ void RenderEngine::blurShadowMap() {
 		//Preparing to draw quad
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(-renderWidth/2,renderWidth/2,-renderHeight/2,renderHeight/2,1,20);
+		glOrtho(-kRenderWidth/2,kRenderWidth/2,-kRenderHeight/2,kRenderHeight/2,1,20);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 
 		//Drawing quad 
 		glTranslated(0,0,-5);
 		glBegin(GL_QUADS);
-		glTexCoord2d(0,0);glVertex3f(-renderWidth/2,-renderHeight/2,0);
-		glTexCoord2d(1,0);glVertex3f(renderWidth/2,-renderHeight/2,0);
-		glTexCoord2d(1,1);glVertex3f(renderWidth/2,renderHeight/2,0);
-		glTexCoord2d(0,1);glVertex3f(-renderWidth/2,renderHeight/2,0);
+		glTexCoord2d(0,0);glVertex3f(-kRenderWidth/2,-kRenderHeight/2,0);
+		glTexCoord2d(1,0);glVertex3f(kRenderWidth/2,-kRenderHeight/2,0);
+		glTexCoord2d(1,1);glVertex3f(kRenderWidth/2,kRenderHeight/2,0);
+		glTexCoord2d(0,1);glVertex3f(-kRenderWidth/2,kRenderHeight/2,0);
 		glEnd();
 		//glGenerateMipmapEXT(GL_TEXTURE_2D);
 
@@ -259,16 +259,16 @@ void RenderEngine::blurShadowMap() {
 		// Bluring vertically
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,shadowFboId);	
 		//glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);	
-		glViewport(0,0,renderWidth * shadowMapCoef ,renderHeight* shadowMapCoef);
-		//glUniform2fARB( blurShade->getScaleAttrib(),0.0, 1.0/ (renderHeight * shadowMapCoef ) );	
+		glViewport(0,0,kRenderWidth * kShadowMapCoef ,kRenderHeight* kShadowMapCoef);
+		//glUniform2fARB( blurShade->getScaleAttrib(),0.0, 1.0/ (kRenderHeight * kShadowMapCoef ) );	
 		glUniform2fARB( blurShade->getScaleAttrib(),0.0, 1.0/ (512.0 ) );
 		glBindTexture(GL_TEXTURE_2D,blurFboIdColorTextureId);
 		//glBindTexture(GL_TEXTURE_2D,colorTextureId);
 		glBegin(GL_QUADS);
-		glTexCoord2d(0,0);glVertex3f(-renderWidth/2,-renderHeight/2,0);
-		glTexCoord2d(1,0);glVertex3f(renderWidth/2,-renderHeight/2,0);
-		glTexCoord2d(1,1);glVertex3f(renderWidth/2,renderHeight/2,0);
-		glTexCoord2d(0,1);glVertex3f(-renderWidth/2,renderHeight/2,0);
+		glTexCoord2d(0,0);glVertex3f(-kRenderWidth/2,-kRenderHeight/2,0);
+		glTexCoord2d(1,0);glVertex3f(kRenderWidth/2,-kRenderHeight/2,0);
+		glTexCoord2d(1,1);glVertex3f(kRenderWidth/2,kRenderHeight/2,0);
+		glTexCoord2d(0,1);glVertex3f(-kRenderWidth/2,kRenderHeight/2,0);
 		glEnd();
 
 		glEnable(GL_CULL_FACE);
@@ -278,8 +278,8 @@ void RenderEngine::setupMatrices(float position_x,float position_y,float positio
 {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		//gluPerspective(45,renderWidth/renderHeight,zNear,zFar);
-		gluPerspective(fovy,renderWidth/renderHeight,zNear,zFar);
+		//gluPerspective(45,kRenderWidth/kRenderHeight,zNear,zFar);
+		gluPerspective(fovy,kRenderWidth/kRenderHeight,zNear,zFar);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		gluLookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,up_x,up_y,up_z);
@@ -323,7 +323,7 @@ void RenderEngine::drawDebugBuffer(int option) {
 		glUseProgramObjectARB(0);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(-renderWidth/2,renderWidth/2,-renderHeight/2,renderHeight/2,1,20);
+		glOrtho(-kRenderWidth/2,kRenderWidth/2,-kRenderHeight/2,kRenderHeight/2,1,20);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		glColor4f(1,1,1,1);
@@ -346,9 +346,9 @@ void RenderEngine::drawDebugBuffer(int option) {
 		glTranslated(0,0,-1);
 		glBegin(GL_QUADS);
 		glTexCoord2d(0,0);glVertex3f(0,0,0);
-		glTexCoord2d(1,0);glVertex3f(renderWidth/2,0,0);
-		glTexCoord2d(1,1);glVertex3f(renderWidth/2,renderHeight/2,0);
-		glTexCoord2d(0,1);glVertex3f(0,renderHeight/2,0);
+		glTexCoord2d(1,0);glVertex3f(kRenderWidth/2,0,0);
+		glTexCoord2d(1,1);glVertex3f(kRenderWidth/2,kRenderHeight/2,0);
+		glTexCoord2d(0,1);glVertex3f(0,kRenderHeight/2,0);
 		glEnd();
 		glDisable(GL_TEXTURE_2D);
 }
@@ -373,7 +373,7 @@ void RenderEngine::renderScene() {
 		//Using the depth shader to do so
 		glUseProgramObjectARB(depthShade->getProgram());
 		// In the case we render the shadowmap to a higher resolution, the viewport must be modified accordingly.
-		glViewport(0,0,renderWidth * shadowMapCoef,renderHeight* shadowMapCoef);
+		glViewport(0,0,kRenderWidth * kShadowMapCoef,kRenderHeight* kShadowMapCoef);
 		//try to make shadow view "bigger" than normal view
 
 		// Clear previous frame values
@@ -398,7 +398,7 @@ void RenderEngine::renderScene() {
 		//==THIRD RENDER: PATH TRACED LIGHT SCATTERING EFFECT (CREPUSCULAR RAYS)
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,scatterFboId);
 
-		glViewport(0,0,lightScatterWidth,lightScatterHeight);
+		glViewport(0,0,kLightScatterWidth,kLightScatterHeight);
 
 		// Clear previous frame values
 		if(deathScatter) {  
@@ -436,7 +436,7 @@ void RenderEngine::renderScene() {
 		// Now rendering from the camera POV, using the FBO to generate shadows
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);
 
-		glViewport(0,0,renderWidth,renderHeight);
+		glViewport(0,0,kRenderWidth,kRenderHeight);
 
 		// Clear previous frame values
 		//glClearColor(.764705882,.890196078,1,1.0f);
@@ -465,7 +465,7 @@ void RenderEngine::renderScene() {
 		//==FIFTH PASS: LIGHT SCATTERING OVERLAY
 		//uses main screen
 		//glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);
-		//glViewport(0,0,renderWidth,renderHeight);
+		//glViewport(0,0,kRenderWidth,kRenderHeight);
 		glClear (GL_DEPTH_BUFFER_BIT );
 
 		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -486,7 +486,7 @@ void RenderEngine::renderScene() {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(-renderWidth/2,renderWidth/2,-renderHeight/2,renderHeight/2,1,20);
+		glOrtho(-kRenderWidth/2,kRenderWidth/2,-kRenderHeight/2,kRenderHeight/2,1,20);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 
@@ -494,10 +494,10 @@ void RenderEngine::renderScene() {
 		glPushMatrix();
 		glTranslated(0,0,-5);
 		glBegin(GL_QUADS);
-		glTexCoord2d(0,0);glVertex3f(-renderWidth/2,-renderHeight/2,0);
-		glTexCoord2d(1,0);glVertex3f(renderWidth/2,-renderHeight/2,0);
-		glTexCoord2d(1,1);glVertex3f(renderWidth/2,renderHeight/2,0);
-		glTexCoord2d(0,1);glVertex3f(-renderWidth/2,renderHeight/2,0);
+		glTexCoord2d(0,0);glVertex3f(-kRenderWidth/2,-kRenderHeight/2,0);
+		glTexCoord2d(1,0);glVertex3f(kRenderWidth/2,-kRenderHeight/2,0);
+		glTexCoord2d(1,1);glVertex3f(kRenderWidth/2,kRenderHeight/2,0);
+		glTexCoord2d(0,1);glVertex3f(-kRenderWidth/2,kRenderHeight/2,0);
 		glEnd();
 		glPopMatrix();
 		glDisable(GL_BLEND);

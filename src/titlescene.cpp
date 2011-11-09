@@ -33,7 +33,7 @@ void TitleScene::DrawObjects(GeometryShader * curShade) {
 }
 void TitleScene::DrawOverlay() {
 	//fudging this...
-	//const float maxVelocityWidth = renderWidth * 2.5/8 /20;
+	//const float maxVelocityWidth = kRenderWidth * 2.5/8 /20;
 
 	glEnable (GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
@@ -42,7 +42,7 @@ void TitleScene::DrawOverlay() {
 	glUseProgramObjectARB(0);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-renderWidth/2,renderWidth/2,-renderHeight/2,renderHeight/2,1,20);
+	glOrtho(-kRenderWidth/2,kRenderWidth/2,-kRenderHeight/2,kRenderHeight/2,1,20);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
@@ -52,16 +52,16 @@ void TitleScene::DrawOverlay() {
 
 	glColor4f(1,1,1,0.75);
 	glBegin(GL_QUADS);
-	glTexCoord2d(0,0);glVertex3f(-20,-renderHeight*3/24,0);
-	glTexCoord2d(1,0);glVertex3f(renderWidth*0.45,-renderHeight*3/24,0);
-	glTexCoord2d(1,1);glVertex3f(renderWidth*0.45,renderHeight/6,0);
-	glTexCoord2d(0,1);glVertex3f(-20,renderHeight/6,0);
+	glTexCoord2d(0,0);glVertex3f(-20,-kRenderHeight*3/24,0);
+	glTexCoord2d(1,0);glVertex3f(kRenderWidth*0.45,-kRenderHeight*3/24,0);
+	glTexCoord2d(1,1);glVertex3f(kRenderWidth*0.45,kRenderHeight/6,0);
+	glTexCoord2d(0,1);glVertex3f(-20,kRenderHeight/6,0);
 
 
-	glTexCoord2d(0,0);glVertex3f(-renderWidth/2,-renderHeight/2,0);
-	glTexCoord2d(1,0);glVertex3f(-renderWidth*3/16,-renderHeight/2,0);
-	glTexCoord2d(1,1);glVertex3f(-renderWidth*3/16,-renderHeight*5/16,0);
-	glTexCoord2d(0,1);glVertex3f(-renderWidth/2,-renderHeight*5/16,0);
+	glTexCoord2d(0,0);glVertex3f(-kRenderWidth/2,-kRenderHeight/2,0);
+	glTexCoord2d(1,0);glVertex3f(-kRenderWidth*3/16,-kRenderHeight/2,0);
+	glTexCoord2d(1,1);glVertex3f(-kRenderWidth*3/16,-kRenderHeight*5/16,0);
+	glTexCoord2d(0,1);glVertex3f(-kRenderWidth/2,-kRenderHeight*5/16,0);
 	glEnd();
 
 	buff.str("");
@@ -85,41 +85,41 @@ void TitleScene::DrawOverlay() {
 	if((glutGet(GLUT_ELAPSED_TIME)/500)%2) {
 		glColor4f(1,1,1,0.75);
 		glBegin(GL_QUADS);
-		glTexCoord2d(0,0);glVertex3f(-renderWidth*0.075,-renderHeight*3/8 - renderHeight/64,0);
-		glTexCoord2d(1,0);glVertex3f(renderWidth*0.075,-renderHeight*3/8 - renderHeight/64,0);
-		glTexCoord2d(1,1);glVertex3f(renderWidth*0.075,-renderHeight*3/8 + renderHeight/64,0);
-		glTexCoord2d(0,1);glVertex3f(-renderWidth*0.075,-renderHeight*3/8 + renderHeight/64,0);
+		glTexCoord2d(0,0);glVertex3f(-kRenderWidth*0.075,-kRenderHeight*3/8 - kRenderHeight/64,0);
+		glTexCoord2d(1,0);glVertex3f(kRenderWidth*0.075,-kRenderHeight*3/8 - kRenderHeight/64,0);
+		glTexCoord2d(1,1);glVertex3f(kRenderWidth*0.075,-kRenderHeight*3/8 + kRenderHeight/64,0);
+		glTexCoord2d(0,1);glVertex3f(-kRenderWidth*0.075,-kRenderHeight*3/8 + kRenderHeight/64,0);
 		glEnd();
 
 		glColor4f(.188235294,.474509804,1,0.9);
 		buff.str("");
 		buff << "Press Space or Start";
-		game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(),-renderWidth*0.065,-renderHeight*3/8 - 5); 
+		game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(),-kRenderWidth*0.065,-kRenderHeight*3/8 - 5); 
 	}
 
 	buff.str("");
 	buff << "Controls";
-	game_engine->render_engine()->drawString(evolutionFont, buff.str(),-renderWidth/2 + 10, -renderHeight*2.85/8); 
+	game_engine->render_engine()->drawString(evolutionFont, buff.str(),-kRenderWidth/2 + 10, -kRenderHeight*2.85/8); 
 
 	buff.str("");
 	buff << "Left and Right Arrow/Analog Stick: Turn";
-	game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(),-renderWidth/2 + 10, -renderHeight*3.05/8);
+	game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(),-kRenderWidth/2 + 10, -kRenderHeight*3.05/8);
 
 	buff.str("");
 	buff << "Up Arrow/X Button: Accelerate";
-	game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(),-renderWidth/2 + 10, -renderHeight*3.25/8);
+	game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(),-kRenderWidth/2 + 10, -kRenderHeight*3.25/8);
 
 	buff.str("");
 	buff << "Down Arrow/O Button: Decelerate";
-	game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(),-renderWidth/2 + 10, -renderHeight*3.45/8);  
+	game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(),-kRenderWidth/2 + 10, -kRenderHeight*3.45/8);  
 
 	buff.str("");
 	buff << "Space/L2 or R2: Air Brake";
-	game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(),-renderWidth/2 + 10, -renderHeight*3.65/8);  
+	game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(),-kRenderWidth/2 + 10, -kRenderHeight*3.65/8);  
 
 	buff.str("");
 	buff << "Esc/Start: Quit";
-	game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(),-renderWidth/2 + 10, -renderHeight*3.85/8);  
+	game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(),-kRenderWidth/2 + 10, -kRenderHeight*3.85/8);  
 
 
 
@@ -129,7 +129,7 @@ void TitleScene::DrawOverlay() {
 	//Name 
 	buff.str("");
 	buff << "cs184sp11 final project: inertia. submission version. brandon wang, andrew lee, chris tandiono";
-	game_engine->render_engine()->drawString(accidentalPresidencyBufferFont, buff.str(), -renderWidth*3.9/8, renderHeight*3.85/8);
+	game_engine->render_engine()->drawString(accidentalPresidencyBufferFont, buff.str(), -kRenderWidth*3.9/8, kRenderHeight*3.85/8);
 
 	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);

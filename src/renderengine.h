@@ -4,7 +4,7 @@
 #include "global.h" 
 #include "shaders.h"
 #include <FTGL/ftgl.h>
-#include "Viewport.h"
+#include "viewport.h"
 
 //===DEBUG STUFF 
 //background texture

@@ -11,18 +11,18 @@
 #define IMPLEMENT_ME(file,line)    cout << "METHOD NEEDS TO BE IMPLEMENTED AT " << file << ":" << line << endl; exit(1);
 
 //===RENDER CONSTANTS
-const float shadowMapCoef = 0.5;
-const float blurCoef = 0.5;
-const float lightScatteringCoef = 0.5;
+const float kShadowMapCoef = 0.5;
+const float kBlurCoef = 0.5;
+const float kLightScatteringCoef = 0.5;
 
-const float renderWidth = 1024.0;
-const float renderHeight = 768.0;
-const float shadowMapWidth = renderWidth * shadowMapCoef;
-const float shadowMapHeight = renderHeight * shadowMapCoef;
-const float shadowMapBlurWidth = shadowMapWidth * blurCoef;
-const float shadowMapBlurHeight = shadowMapHeight * blurCoef;
-const float lightScatterWidth = renderWidth * lightScatteringCoef;
-const float lightScatterHeight = renderHeight * lightScatteringCoef;
+const float kRenderWidth = 1024.0;
+const float kRenderHeight = 768.0;
+const float kShadowMapWidth = kRenderWidth * kShadowMapCoef;
+const float kShadowMapHeight = kRenderHeight * kShadowMapCoef;
+const float kShadowMapBlurWidth = kShadowMapWidth * kBlurCoef;
+const float kShadowMapBlurHeight = kShadowMapHeight * kBlurCoef;
+const float kLightScatterWidth = kRenderWidth * kLightScatteringCoef;
+const float kLightScatterHeight = kRenderHeight * kLightScatteringCoef;
 
 #include <string>
 #include <sstream>

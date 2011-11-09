@@ -33,7 +33,7 @@ void TrackSelectScene::DrawObjects(GeometryShader * curShade) {
 }
 void TrackSelectScene::DrawOverlay() {
 	//fudging this...
-	//const float maxVelocityWidth = renderWidth * 2.5/8 /20;
+	//const float maxVelocityWidth = kRenderWidth * 2.5/8 /20;
 	glEnable (GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -41,7 +41,7 @@ void TrackSelectScene::DrawOverlay() {
 	glUseProgramObjectARB(0);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-renderWidth/2,renderWidth/2,-renderHeight/2,renderHeight/2,1,20);
+	glOrtho(-kRenderWidth/2,kRenderWidth/2,-kRenderHeight/2,kRenderHeight/2,1,20);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
@@ -52,26 +52,26 @@ void TrackSelectScene::DrawOverlay() {
 	glColor4f(1,1,1,0.75);
 
 	glBegin(GL_QUADS);
-	glTexCoord2d(0,0);glVertex3f(-20,-renderHeight/2,0);
-	glTexCoord2d(1,0);glVertex3f(renderWidth*0.45,-renderHeight/2,0);
-	glTexCoord2d(1,1);glVertex3f(renderWidth*0.45,-renderHeight*25/64,0);
-	glTexCoord2d(0,1);glVertex3f(-20,-renderHeight*25/64,0);
+	glTexCoord2d(0,0);glVertex3f(-20,-kRenderHeight/2,0);
+	glTexCoord2d(1,0);glVertex3f(kRenderWidth*0.45,-kRenderHeight/2,0);
+	glTexCoord2d(1,1);glVertex3f(kRenderWidth*0.45,-kRenderHeight*25/64,0);
+	glTexCoord2d(0,1);glVertex3f(-20,-kRenderHeight*25/64,0);
 	glEnd();
 
 	glColor4f(.188235294,.474509804,1,0.9);
 	accidentalPresidencyFont->FaceSize(36);
 	buff.str("");
 	buff << "Press G/X to generate a new track";
-	game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(), 0, -renderHeight * 28/64);
+	game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(), 0, -kRenderHeight * 28/64);
 
 	buff.str("");
 	buff << "Press Space/Start to start!";
-	game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(), 0, -renderHeight * 31/64);
+	game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(), 0, -kRenderHeight * 31/64);
 
 	//Name 
 	buff.str("");
 	buff << "cs184sp11 final project: inertia. submission version. brandon wang, andrew lee, chris tandiono";
-	game_engine->render_engine()->drawString(accidentalPresidencyBufferFont, buff.str(), -renderWidth*3.9/8, renderHeight*3.85/8);
+	game_engine->render_engine()->drawString(accidentalPresidencyBufferFont, buff.str(), -kRenderWidth*3.9/8, kRenderHeight*3.85/8);
 
 	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);

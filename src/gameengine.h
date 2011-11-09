@@ -2,8 +2,8 @@
 #define GAMEENGINE_H_
 
 #include "global.h"
-#include "RenderEngine.h"
-#include "SoundEngine.h"
+#include "renderengine.h"
+#include "soundengine.h"
 #include "scene.h"
 
 #include "racescene.h"

@@ -2,7 +2,7 @@
 #include "sweep.h"
 
 #include "global.h"
-#include "LoadImage.h"
+#include "loadimage.h"
 
 #include <fstream>
 

@@ -12,16 +12,15 @@
 
 #include "global.h"
 
-#include "TrackGenerator.h"
+#include "trackgenerator.h"
 #include "sweep.h"
 #include "mesh.h"
 
-#include "LoadImage.h"
-#include "Console.h"
+#include "loadimage.h"
 
-#include "Viewport.h"
-#include "RenderOptions.h"
-#include "Vehicle.h"
+#include "viewport.h"
+#include "renderoptions.h"
+#include "vehicle.h"
 
 //#include "GL/gl.h"
 

@@ -1,4 +1,4 @@
-#include "TrackGenerator.h"
+#include "trackgenerator.h"
 
 #include <algorithm>
 
