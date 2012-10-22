@@ -4,7 +4,7 @@ uniform float density;
 uniform float weight;
 uniform vec2 lightPositionOnScreen;
 uniform sampler2D myTexture;
-const int NUM_SAMPLES = 100;
+const int NUM_SAMPLES = 200;
 
 void main()
 {	
@@ -26,8 +26,7 @@ void main()
       illuminationDecay *= decay;
     }
 	
-	
-  gl_FragColor *= exposure;
+  gl_FragColor *= exposure * 100./float(NUM_SAMPLES);
 
   //gl_FragColor =  texture2D(myTexture, gl_TexCoord[0].st );
 }

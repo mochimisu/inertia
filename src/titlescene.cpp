@@ -53,51 +53,48 @@ void TitleScene::DrawOverlay() {
 
 	glColor4f(1,1,1,0.75);
 	glBegin(GL_QUADS);
-	glTexCoord2d(0,0);glVertex3f(-20,-kRenderHeight*3/24,0);
-	glTexCoord2d(1,0);glVertex3f(kRenderWidth*0.45,-kRenderHeight*3/24,0);
-	glTexCoord2d(1,1);glVertex3f(kRenderWidth*0.45,kRenderHeight/6,0);
+	glTexCoord2d(0,0);glVertex3f(-20,-kRenderHeight*3/34,0);
+	glTexCoord2d(1,0);glVertex3f(kRenderWidth*0.30,-kRenderHeight*3/34,0);
+	glTexCoord2d(1,1);glVertex3f(kRenderWidth*0.30,kRenderHeight/6,0);
 	glTexCoord2d(0,1);glVertex3f(-20,kRenderHeight/6,0);
 
 
+  /*
 	glTexCoord2d(0,0);glVertex3f(-kRenderWidth/2,-kRenderHeight/2,0);
 	glTexCoord2d(1,0);glVertex3f(-kRenderWidth*3/16,-kRenderHeight/2,0);
 	glTexCoord2d(1,1);glVertex3f(-kRenderWidth*3/16,-kRenderHeight*5/16,0);
 	glTexCoord2d(0,1);glVertex3f(-kRenderWidth/2,-kRenderHeight*5/16,0);
+  */
 	glEnd();
 
 	buff.str("");
 	buff << "INERTIA";
-	glColor4f(.188235294,.474509804,1,0.9);
+	//glColor4f(.188235294,.474509804,1,0.9);
+  glColor4f(0,0,0,0.9);
 
 
-	evolutionFont->FaceSize(150);
+	evolutionFont->FaceSize(130);
 	game_engine->render_engine()->drawString(evolutionFont, buff.str(),0,0); 
 	evolutionFont->FaceSize(36);
 
-	accidentalPresidencyFont->FaceSize(36);
+  buff.str("");
+  buff << "Real-time Racing Game";
+  accidentalPresidencyFont->FaceSize(35);
+  game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(),0,-30); 
 	buff.str("");
-	buff << "CS184Sp11 Final Project";
-	game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(),0,-50); 
-	accidentalPresidencyFont->FaceSize(20);
-	buff.str("");
-	buff << "Brandon Wang, Andrew Lee, Chris Tandiono";
-	game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(),0,-75); 
+	buff << "C++, GLSL, GLUT, OpenAL, OpenGL";
+  accidentalPresidencyFont->FaceSize(20);
+	game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(),0,-53); 
 
 	if((glutGet(GLUT_ELAPSED_TIME)/500)%2) {
-		glColor4f(1,1,1,0.75);
-		glBegin(GL_QUADS);
-		glTexCoord2d(0,0);glVertex3f(-kRenderWidth*0.075,-kRenderHeight*3/8 - kRenderHeight/64,0);
-		glTexCoord2d(1,0);glVertex3f(kRenderWidth*0.075,-kRenderHeight*3/8 - kRenderHeight/64,0);
-		glTexCoord2d(1,1);glVertex3f(kRenderWidth*0.075,-kRenderHeight*3/8 + kRenderHeight/64,0);
-		glTexCoord2d(0,1);glVertex3f(-kRenderWidth*0.075,-kRenderHeight*3/8 + kRenderHeight/64,0);
-		glEnd();
-
 		glColor4f(.188235294,.474509804,1,0.9);
 		buff.str("");
 		buff << "Press Space or Start";
-		game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(),-kRenderWidth*0.065,-kRenderHeight*3/8 - 5); 
+		//game_engine->render_engine()->drawString(accidentalPresidencyFont, buff.str(),-kRenderWidth*0.065,-kRenderHeight*3/8 - 5); 
 	}
+  glColor4f(0,0,0,0.9);
 
+  /*
 	buff.str("");
 	buff << "Controls";
 	game_engine->render_engine()->drawString(evolutionFont, buff.str(),-kRenderWidth/2 + 10, -kRenderHeight*2.85/8); 
@@ -131,6 +128,7 @@ void TitleScene::DrawOverlay() {
 	buff.str("");
 	buff << "cs184sp11 final project: inertia. submission version. brandon wang, andrew lee, chris tandiono";
 	game_engine->render_engine()->drawString(accidentalPresidencyBufferFont, buff.str(), -kRenderWidth*3.9/8, kRenderHeight*3.85/8);
+  */
 
 	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);

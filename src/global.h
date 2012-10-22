@@ -13,10 +13,12 @@
 //===RENDER CONSTANTS
 const float kShadowMapCoef = 0.5;
 const float kBlurCoef = 0.5;
-const float kLightScatteringCoef = 0.5;
+const float kLightScatteringCoef = 0.75;
 
-const float kRenderWidth = 1024.0;
-const float kRenderHeight = 768.0;
+//const float kRenderWidth = 1024.0;
+//const float kRenderHeight = 768.0;
+const float kRenderWidth = 1280.0;
+const float kRenderHeight = 720.0;
 const float kShadowMapWidth = kRenderWidth * kShadowMapCoef;
 const float kShadowMapHeight = kRenderHeight * kShadowMapCoef;
 const float kShadowMapBlurWidth = kShadowMapWidth * kBlurCoef;
